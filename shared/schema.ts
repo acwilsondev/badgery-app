@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, json, uuid } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, json, uuid, jsonb, numeric } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
@@ -69,6 +69,8 @@ export const badges = pgTable("badges", {
   categoryId: integer("category_id").references(() => badgeCategories.id),
   organizationId: integer("organization_id").references(() => organizations.id).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  requiresProgress: boolean("requires_progress").default(false).notNull(),
+  criteriaSections: jsonb("criteria_sections"), // JSON array of criteria sections
 });
 
 export const badgesInsertSchema = createInsertSchema(badges, {
@@ -77,6 +79,8 @@ export const badgesInsertSchema = createInsertSchema(badges, {
   criteria: (schema) => schema.optional(),
   imageUrl: (schema) => schema.optional(),
   color: (schema) => schema.optional(),
+  requiresProgress: (schema) => schema.optional(),
+  criteriaSections: (schema) => schema.optional(),
 });
 
 export type InsertBadge = z.infer<typeof badgesInsertSchema>;
@@ -102,6 +106,32 @@ export const awardedBadgesInsertSchema = createInsertSchema(awardedBadges, {
 export type InsertAwardedBadge = z.infer<typeof awardedBadgesInsertSchema>;
 export type AwardedBadge = typeof awardedBadges.$inferSelect;
 
+// Badge Progress Tracking
+export const badgeProgress = pgTable("badge_progress", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  badgeId: integer("badge_id").references(() => badges.id).notNull(),
+  progress: numeric("progress").default("0").notNull(), // Progress percentage (0-100)
+  progressData: jsonb("progress_data"), // JSON object storing progress against criteria
+  lastUpdated: timestamp("last_updated").defaultNow().notNull(),
+  updatedBy: integer("updated_by").references(() => users.id).notNull(), // User who last updated progress
+  notes: text("notes"), // Optional notes about progress
+  status: text("status").default("in_progress").notNull(), // in_progress, completed, etc.
+});
+
+export const badgeProgressInsertSchema = createInsertSchema(badgeProgress, {
+  userId: (schema) => schema,
+  badgeId: (schema) => schema,
+  progress: (schema) => schema.optional(),
+  progressData: (schema) => schema.optional(),
+  updatedBy: (schema) => schema,
+  notes: (schema) => schema.optional(),
+  status: (schema) => schema.optional(),
+});
+
+export type InsertBadgeProgress = z.infer<typeof badgeProgressInsertSchema>;
+export type BadgeProgress = typeof badgeProgress.$inferSelect;
+
 // Define relationships
 export const organizationsRelations = relations(organizations, ({ many }) => ({
   users: many(users),
@@ -116,6 +146,8 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   }),
   awardedBadges: many(awardedBadges, { relationName: "user_badges" }),
   badgesAwarded: many(awardedBadges, { relationName: "awarded_by_user" }),
+  badgeProgress: many(badgeProgress, { relationName: "user_badge_progress" }),
+  progressUpdates: many(badgeProgress, { relationName: "progress_updated_by_user" }),
 }));
 
 export const badgeCategoriesRelations = relations(badgeCategories, ({ one, many }) => ({
@@ -136,6 +168,7 @@ export const badgesRelations = relations(badges, ({ one, many }) => ({
     references: [badgeCategories.id],
   }),
   awardedBadges: many(awardedBadges),
+  badgeProgress: many(badgeProgress),
 }));
 
 export const awardedBadgesRelations = relations(awardedBadges, ({ one }) => ({
@@ -152,5 +185,22 @@ export const awardedBadgesRelations = relations(awardedBadges, ({ one }) => ({
     fields: [awardedBadges.awardedBy],
     references: [users.id],
     relationName: "awarded_by_user",
+  }),
+}));
+
+export const badgeProgressRelations = relations(badgeProgress, ({ one }) => ({
+  badge: one(badges, {
+    fields: [badgeProgress.badgeId],
+    references: [badges.id],
+  }),
+  user: one(users, {
+    fields: [badgeProgress.userId],
+    references: [users.id],
+    relationName: "user_badge_progress",
+  }),
+  updatedByUser: one(users, {
+    fields: [badgeProgress.updatedBy],
+    references: [users.id],
+    relationName: "progress_updated_by_user",
   }),
 }));
