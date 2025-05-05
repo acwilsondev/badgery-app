@@ -4,9 +4,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Badge } from '@shared/schema';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiRequest } from '@lib/queryClient';
-import { useToast } from '@hooks/use-toast';
-import { generateBadgeIcon } from '@lib/badge-icons';
+import { apiRequest } from '@/lib/queryClient';
+import { useToast } from '@/hooks/use-toast';
+import { generateBadgeIcon } from '@/lib/badge-icons';
 
 import {
   Dialog,
@@ -15,8 +15,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@components/ui/dialog';
-import { Button } from '@components/ui/button';
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
@@ -25,11 +25,11 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@components/ui/form';
-import { Input } from '@components/ui/input';
-import { Textarea } from '@components/ui/textarea';
-import { Slider } from '@components/ui/slider';
-import { Checkbox } from '@components/ui/checkbox';
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Slider } from '@/components/ui/slider';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface BadgeProgressDialogProps {
   open: boolean;
@@ -129,13 +129,10 @@ export function BadgeProgressDialog({
         completedItems: data.completedItems,
       };
       
-      return apiRequest(`/api/badges/${badge.id}/progress/${userId}`, {
-        method: 'POST',
-        body: JSON.stringify({
-          progress: data.progress,
-          progressData,
-          notes: data.notes,
-        }),
+      return apiRequest('POST', `/api/badges/${badge.id}/progress/${userId}`, {
+        progress: data.progress,
+        progressData,
+        notes: data.notes,
       });
     },
     onSuccess: () => {

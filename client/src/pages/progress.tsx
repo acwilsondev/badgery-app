@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Badge } from '@shared/schema';
-import { useToast } from '@hooks/use-toast';
-import { Sidebar } from '@components/sidebar';
-import { BadgeProgressDialog } from '@components/badge-progress-dialog';
-import { generateBadgeIcon } from '@lib/badge-icons';
-import { formatDate } from '@lib/utils';
+import { useToast } from '@/hooks/use-toast';
+import { Sidebar } from '@/components/sidebar';
+import { BadgeProgressDialog } from '@/components/badge-progress-dialog';
+import { generateBadgeIcon } from '@/lib/badge-icons';
+import { formatDate } from '@/lib/utils';
 
 import {
   Card,
@@ -13,13 +13,13 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@components/ui/card';
+} from '@/components/ui/card';
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from '@components/ui/tabs';
+} from '@/components/ui/tabs';
 import {
   Table,
   TableBody,
@@ -27,9 +27,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@components/ui/table';
-import { Progress } from '@components/ui/progress';
-import { Button } from '@components/ui/button';
+} from '@/components/ui/table';
+import { Progress } from '@/components/ui/progress';
+import { Button } from '@/components/ui/button';
 import { LucideEdit, Award, ArrowRight } from 'lucide-react';
 
 interface ProgressProps {
@@ -50,20 +50,37 @@ export default function ProgressTracker({ user, onLogout }: ProgressProps) {
   const [progressDialogOpen, setProgressDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('my-progress');
   
+  // Define types for progress data
+  type ProgressItem = {
+    id: number;
+    badgeId: number;
+    userId: number;
+    progress: number;
+    status: string;
+    lastUpdated: string;
+    notes?: string;
+    progressData?: any;
+    badgeName: string;
+    badgeDescription: string;
+    badgeColor: string;
+    badgeImageUrl: string | null;
+    criteriaSections?: any;
+  };
+
   // Fetch user progress
-  const { data: userProgress, isLoading: loadingUserProgress } = useQuery({
+  const { data: userProgress, isLoading: loadingUserProgress } = useQuery<ProgressItem[]>({
     queryKey: [`/api/users/${user.id}/progress`],
     enabled: !!user.id,
   });
 
   // Fetch organization progress (for admins/managers)
-  const { data: orgProgress, isLoading: loadingOrgProgress } = useQuery({
+  const { data: orgProgress, isLoading: loadingOrgProgress } = useQuery<ProgressItem[]>({
     queryKey: [`/api/organizations/${user.organizationId}/progress`],
     enabled: !!user.organizationId && (user.role === 'admin' || user.role === 'manager'),
   });
 
   // Fetch all badges
-  const { data: badges } = useQuery({
+  const { data: badges } = useQuery<Badge[]>({
     queryKey: [`/api/organizations/${user.organizationId}/badges`],
     enabled: !!user.organizationId,
   });

@@ -7,6 +7,7 @@ import Dashboard from "@/pages/dashboard";
 import Badges from "@/pages/badges";
 import Users from "@/pages/users";
 import UserProfile from "@/pages/user-profile";
+import ProgressTracker from "@/pages/progress";
 import { useState, useEffect } from "react";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -89,6 +90,9 @@ function Router() {
       </Route>
       <Route path="/users/:id">
         {(params) => <UserProfile id={params.id} user={currentUser} onLogout={handleLogout} />}
+      </Route>
+      <Route path="/progress">
+        <ProgressTracker user={currentUser} onLogout={handleLogout} />
       </Route>
       <Route>
         <NotFound />

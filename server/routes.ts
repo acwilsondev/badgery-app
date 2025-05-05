@@ -443,7 +443,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const updatedProgress = await storage.createOrUpdateBadgeProgress(progressData);
       
       // Check if badge should be auto-awarded based on progress
-      if (updatedProgress.progress === 100) {
+      if (Number(updatedProgress.progress) === 100) {
         await storage.autoAwardBadgeIfComplete(updatedProgress);
       }
       

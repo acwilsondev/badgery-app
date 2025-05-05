@@ -7,6 +7,7 @@ import {
   Users,
   ClipboardList,
   Settings,
+  BarChart2,
 } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -58,6 +59,11 @@ export function Sidebar({ user, onLogout, isMobileOpen, onMobileClose }: Sidebar
       name: "Badges",
       href: "/badges",
       icon: <Tag className="mr-3 h-6 w-6" />,
+    },
+    {
+      name: "Progress",
+      href: "/progress",
+      icon: <BarChart2 className="mr-3 h-6 w-6" />,
     },
     {
       name: "Users",
