@@ -71,6 +71,7 @@ export const badges = pgTable("badges", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   requiresProgress: boolean("requires_progress").default(false).notNull(),
   criteriaSections: jsonb("criteria_sections"), // JSON array of criteria sections
+  criteriaType: text("criteria_type").default("binary").notNull(), // "binary" or "numeric"
 });
 
 export const badgesInsertSchema = createInsertSchema(badges, {
@@ -81,6 +82,10 @@ export const badgesInsertSchema = createInsertSchema(badges, {
   color: (schema) => schema.optional(),
   requiresProgress: (schema) => schema.optional(),
   criteriaSections: (schema) => schema.optional(),
+  criteriaType: (schema) => schema.optional().refine(
+    val => !val || ['binary', 'numeric'].includes(val), 
+    { message: "Criteria type must be either 'binary' or 'numeric'" }
+  ),
 });
 
 export type InsertBadge = z.infer<typeof badgesInsertSchema>;
