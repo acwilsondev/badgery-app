@@ -186,18 +186,21 @@ export function BadgeDialog({ open, onOpenChange, badge, organizationId }: Badge
   });
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    // Ensure criteriaSections is a string before sending to API
+    // Create a new object without the criteriaSections field
+    const { criteriaSections, ...otherValues } = values;
+    
+    // Add the stringified criteriaSections to the object
     const dataToSubmit = {
-      ...values,
-      criteriaSections: values.criteriaSections 
-        ? JSON.stringify(values.criteriaSections) 
+      ...otherValues,
+      criteriaSections: criteriaSections 
+        ? JSON.stringify(criteriaSections) 
         : undefined
     };
     
     if (badge) {
-      updateBadgeMutation.mutate(dataToSubmit);
+      updateBadgeMutation.mutate(dataToSubmit as any);
     } else {
-      createBadgeMutation.mutate(dataToSubmit);
+      createBadgeMutation.mutate(dataToSubmit as any);
     }
   };
 
