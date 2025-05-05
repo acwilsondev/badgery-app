@@ -10,11 +10,13 @@ import {
   badges,
   badgeCategories,
   awardedBadges,
+  badgeProgress,
   insertUserSchema,
   organizationsInsertSchema,
   badgesInsertSchema,
   badgeCategoriesInsertSchema,
   awardedBadgesInsertSchema,
+  badgeProgressInsertSchema,
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -366,6 +368,88 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(200).json(awardedBadges);
     } catch (error) {
       console.error('Error fetching user awarded badges:', error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Badge Progress tracking endpoints
+  app.get('/api/badges/:badgeId/progress/:userId', async (req, res) => {
+    try {
+      const badgeId = parseInt(req.params.badgeId);
+      const userId = parseInt(req.params.userId);
+      
+      const progress = await storage.getBadgeProgress(badgeId, userId);
+      
+      if (!progress) {
+        return res.status(404).json({ message: "Progress not found" });
+      }
+      
+      return res.status(200).json(progress);
+    } catch (error) {
+      console.error('Error fetching badge progress:', error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.get('/api/users/:userId/progress', async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const progress = await storage.getUserProgressForAllBadges(userId);
+      
+      return res.status(200).json(progress);
+    } catch (error) {
+      console.error('Error fetching user progress:', error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.get('/api/organizations/:orgId/progress', async (req, res) => {
+    try {
+      const orgId = parseInt(req.params.orgId);
+      const progress = await storage.getBadgeProgressForOrganization(orgId);
+      
+      return res.status(200).json(progress);
+    } catch (error) {
+      console.error('Error fetching organization progress:', error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.post('/api/badges/:badgeId/progress/:userId', async (req, res) => {
+    try {
+      const badgeId = parseInt(req.params.badgeId);
+      const userId = parseInt(req.params.userId);
+      
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      
+      // Only admins or managers can update progress
+      const currentUser = await storage.getUserById(req.session.userId);
+      if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'manager')) {
+        return res.status(403).json({ message: "Unauthorized to update progress" });
+      }
+      
+      const progressData = {
+        badgeId,
+        userId,
+        updatedBy: req.session.userId,
+        progress: req.body.progress,
+        progressData: req.body.progressData,
+        notes: req.body.notes,
+        status: req.body.status || 'in_progress',
+      };
+      
+      const updatedProgress = await storage.createOrUpdateBadgeProgress(progressData);
+      
+      // Check if badge should be auto-awarded based on progress
+      if (updatedProgress.progress === 100) {
+        await storage.autoAwardBadgeIfComplete(updatedProgress);
+      }
+      
+      return res.status(200).json(updatedProgress);
+    } catch (error) {
+      console.error('Error updating badge progress:', error);
       return res.status(500).json({ message: "Internal server error" });
     }
   });

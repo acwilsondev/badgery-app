@@ -6,11 +6,13 @@ import {
   badges, 
   badgeCategories, 
   awardedBadges,
+  badgeProgress,
   type Organization,
   type User,
   type Badge,
   type BadgeCategory,
-  type AwardedBadge
+  type AwardedBadge,
+  type BadgeProgress
 } from "@shared/schema";
 
 // Organizations
@@ -201,6 +203,130 @@ export async function getUserAwardedBadges(userId: number) {
   .orderBy(desc(awardedBadges.awardedAt));
 }
 
+// Badge Progress
+export async function getBadgeProgress(badgeId: number, userId: number) {
+  return db.query.badgeProgress.findFirst({
+    where: and(
+      eq(badgeProgress.badgeId, badgeId),
+      eq(badgeProgress.userId, userId)
+    ),
+    with: {
+      badge: true,
+      user: true,
+      updatedByUser: true
+    }
+  });
+}
+
+export async function getUserProgressForAllBadges(userId: number) {
+  return db.select({
+    id: badgeProgress.id,
+    badgeId: badgeProgress.badgeId,
+    userId: badgeProgress.userId,
+    progress: badgeProgress.progress,
+    progressData: badgeProgress.progressData,
+    lastUpdated: badgeProgress.lastUpdated,
+    updatedBy: badgeProgress.updatedBy,
+    notes: badgeProgress.notes,
+    status: badgeProgress.status,
+    badgeName: badges.name,
+    badgeDescription: badges.description,
+    badgeColor: badges.color,
+    badgeImageUrl: badges.imageUrl,
+    requiresProgress: badges.requiresProgress,
+    criteriaSections: badges.criteriaSections,
+    updatedByName: sql<string>`updated_by_user.name`,
+  })
+  .from(badgeProgress)
+  .innerJoin(badges, eq(badgeProgress.badgeId, badges.id))
+  .innerJoin(sql`users as updated_by_user`, eq(badgeProgress.updatedBy, sql`updated_by_user.id`))
+  .where(eq(badgeProgress.userId, userId))
+  .orderBy(desc(badgeProgress.lastUpdated));
+}
+
+export async function getBadgeProgressForOrganization(organizationId: number) {
+  return db.select({
+    id: badgeProgress.id,
+    badgeId: badgeProgress.badgeId,
+    userId: badgeProgress.userId,
+    progress: badgeProgress.progress,
+    progressData: badgeProgress.progressData,
+    lastUpdated: badgeProgress.lastUpdated,
+    updatedBy: badgeProgress.updatedBy,
+    notes: badgeProgress.notes,
+    status: badgeProgress.status,
+    badgeName: badges.name,
+    userName: users.name,
+    updatedByName: sql<string>`updated_by_user.name`,
+  })
+  .from(badgeProgress)
+  .innerJoin(badges, eq(badgeProgress.badgeId, badges.id))
+  .innerJoin(users, eq(badgeProgress.userId, users.id))
+  .innerJoin(sql`users as updated_by_user`, eq(badgeProgress.updatedBy, sql`updated_by_user.id`))
+  .where(eq(badges.organizationId, organizationId))
+  .orderBy(desc(badgeProgress.lastUpdated));
+}
+
+export async function createOrUpdateBadgeProgress(progressData: Omit<BadgeProgress, "id" | "lastUpdated">) {
+  // Check if progress record exists
+  const existingProgress = await db.query.badgeProgress.findFirst({
+    where: and(
+      eq(badgeProgress.badgeId, progressData.badgeId),
+      eq(badgeProgress.userId, progressData.userId)
+    )
+  });
+
+  if (existingProgress) {
+    // Update existing progress
+    const [updatedProgress] = await db.update(badgeProgress)
+      .set({
+        ...progressData,
+        lastUpdated: new Date(),
+      })
+      .where(eq(badgeProgress.id, existingProgress.id))
+      .returning();
+    return updatedProgress;
+  } else {
+    // Create new progress
+    const [newProgress] = await db.insert(badgeProgress)
+      .values(progressData)
+      .returning();
+    return newProgress;
+  }
+}
+
+// Auto-award badge when progress reaches 100%
+export async function autoAwardBadgeIfComplete(progressData: BadgeProgress) {
+  // Check if the progress is at 100% and status is 'in_progress'
+  if (Number(progressData.progress) === 100 && progressData.status === 'in_progress') {
+    // Check if the badge has already been awarded
+    const existingAward = await db.query.awardedBadges.findFirst({
+      where: and(
+        eq(awardedBadges.badgeId, progressData.badgeId),
+        eq(awardedBadges.userId, progressData.userId)
+      )
+    });
+
+    if (!existingAward) {
+      // Award the badge
+      await db.insert(awardedBadges).values({
+        badgeId: progressData.badgeId,
+        userId: progressData.userId,
+        awardedBy: progressData.updatedBy,
+        status: 'completed'
+      });
+
+      // Update the progress status
+      await db.update(badgeProgress)
+        .set({ status: 'completed' })
+        .where(eq(badgeProgress.id, progressData.id));
+
+      return true;
+    }
+  }
+  return false;
+}
+
 // Statistics
 export async function getOrganizationStats(organizationId: number) {
   const badgeCount = await db
@@ -219,9 +345,19 @@ export async function getOrganizationStats(organizationId: number) {
     .innerJoin(badges, eq(awardedBadges.badgeId, badges.id))
     .where(eq(badges.organizationId, organizationId));
 
+  const inProgressCount = await db
+    .select({ count: count() })
+    .from(badgeProgress)
+    .innerJoin(badges, eq(badgeProgress.badgeId, badges.id))
+    .where(and(
+      eq(badges.organizationId, organizationId),
+      eq(badgeProgress.status, 'in_progress')
+    ));
+
   return {
     totalBadges: badgeCount[0]?.count || 0,
     totalUsers: userCount[0]?.count || 0,
     totalAwarded: awardCount[0]?.count || 0,
+    inProgress: inProgressCount[0]?.count || 0,
   };
 }
