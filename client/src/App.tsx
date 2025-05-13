@@ -10,6 +10,7 @@ import UserProfile from "@/pages/user-profile";
 import ProgressTracker from "@/pages/progress";
 import { useState, useEffect } from "react";
 import { apiRequest } from "@/lib/queryClient";
+import { ThemeProvider } from "@/components/theme-provider";
 
 function Router() {
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -198,8 +199,10 @@ function LoginPage({ onLogin }: { onLogin: (username: string, password: string) 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Router />
-      <Toaster />
+      <ThemeProvider defaultTheme="light" storageKey="meritmark-theme">
+        <Router />
+        <Toaster />
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

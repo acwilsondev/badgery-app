@@ -9,6 +9,7 @@ User
 - id (PK)
 - name
 - email
+- password
 - etc.
 
 Organization
@@ -25,6 +26,8 @@ UserOrganizationScope
 - user_id (FK → User)
 - organization_id (FK → Organization)
 - scope (string or enum)  -- e.g., 'grant_achievement', 'revoke_achievement', 'edit_badge', 'viewer'
+
+
 
 Badge
 - id (PK)
