@@ -275,7 +275,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/badges/:id', async (req, res) => {
+  app.delete(`${apiPrefix}/badges/:id`, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.deleteBadge(id);
@@ -288,7 +288,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // User endpoints
-  app.get('/api/organizations/:orgId/users', async (req, res) => {
+  app.get(`${apiPrefix}/organizations/:orgId/users`, async (req, res) => {
     try {
       const orgId = parseInt(req.params.orgId);
       const users = await storage.getUsersByOrganization(orgId);
@@ -300,7 +300,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/users/:id', async (req, res) => {
+  app.get(`${apiPrefix}/users/:id`, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const user = await storage.getUserById(id);
@@ -324,7 +324,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Badge Awarding endpoints
-  app.post('/api/badges/:badgeId/award', async (req, res) => {
+  app.post(`${apiPrefix}/badges/:badgeId/award`, async (req, res) => {
     try {
       const badgeId = parseInt(req.params.badgeId);
       const { userId } = req.body;
@@ -351,7 +351,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/organizations/:orgId/awarded-badges', async (req, res) => {
+  app.get(`${apiPrefix}/organizations/:orgId/awarded-badges`, async (req, res) => {
     try {
       const orgId = parseInt(req.params.orgId);
       const awardedBadges = await storage.getAwardedBadges(orgId);
@@ -363,7 +363,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/users/:userId/awarded-badges', async (req, res) => {
+  app.get(`${apiPrefix}/users/:userId/awarded-badges`, async (req, res) => {
     try {
       const userId = parseInt(req.params.userId);
       const awardedBadges = await storage.getUserAwardedBadges(userId);
@@ -376,7 +376,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Badge Progress tracking endpoints
-  app.get('/api/badges/:badgeId/progress/:userId', async (req, res) => {
+  app.get(`${apiPrefix}/badges/:badgeId/progress/:userId`, async (req, res) => {
     try {
       const badgeId = parseInt(req.params.badgeId);
       const userId = parseInt(req.params.userId);
@@ -394,7 +394,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/users/:userId/progress', async (req, res) => {
+  app.get(`${apiPrefix}/users/:userId/progress`, async (req, res) => {
     try {
       const userId = parseInt(req.params.userId);
       const progress = await storage.getUserProgressForAllBadges(userId);
