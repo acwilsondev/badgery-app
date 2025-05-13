@@ -124,7 +124,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/organizations/:id', async (req, res) => {
+  app.get(`${apiPrefix}/organizations/:id`, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const organization = await storage.getOrganizationById(id);
@@ -140,7 +140,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/organizations', async (req, res) => {
+  app.post(`${apiPrefix}/organizations`, async (req, res) => {
     try {
       const organizationData = organizationsInsertSchema.parse(req.body);
       const newOrganization = await storage.createOrganization(organizationData);
@@ -155,7 +155,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put('/api/organizations/:id', async (req, res) => {
+  app.put(`${apiPrefix}/organizations/:id`, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const updateData = req.body;
@@ -174,7 +174,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Badge Category endpoints
-  app.get('/api/organizations/:orgId/categories', async (req, res) => {
+  app.get(`${apiPrefix}/organizations/:orgId/categories`, async (req, res) => {
     try {
       const orgId = parseInt(req.params.orgId);
       const categories = await storage.getBadgeCategories(orgId);
@@ -186,7 +186,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/organizations/:orgId/categories', async (req, res) => {
+  app.post(`${apiPrefix}/organizations/:orgId/categories`, async (req, res) => {
     try {
       const orgId = parseInt(req.params.orgId);
       const categoryData = badgeCategoriesInsertSchema.parse(req.body);
@@ -207,7 +207,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Badge endpoints
-  app.get('/api/organizations/:orgId/badges', async (req, res) => {
+  app.get(`${apiPrefix}/organizations/:orgId/badges`, async (req, res) => {
     try {
       const orgId = parseInt(req.params.orgId);
       const categoryId = req.query.categoryId ? parseInt(req.query.categoryId as string) : undefined;
@@ -221,7 +221,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/badges/:id', async (req, res) => {
+  app.get(`${apiPrefix}/badges/:id`, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const badge = await storage.getBadgeById(id);
@@ -237,7 +237,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/organizations/:orgId/badges', async (req, res) => {
+  app.post(`${apiPrefix}/organizations/:orgId/badges`, async (req, res) => {
     try {
       const orgId = parseInt(req.params.orgId);
       const badgeData = badgesInsertSchema.parse(req.body);
@@ -257,7 +257,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put('/api/badges/:id', async (req, res) => {
+  app.put(`${apiPrefix}/badges/:id`, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const updateData = req.body;
