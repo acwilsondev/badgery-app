@@ -9,6 +9,7 @@ import { Menu, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 
 interface BadgesProps {
   user: {
@@ -187,12 +188,12 @@ export default function Badges({ user, onLogout }: BadgesProps) {
               
               {/* Tabs for category filtering */}
               <Tabs defaultValue="all" value={currentTab} onValueChange={setCurrentTab} className="mb-6">
-                <TabsList className="bg-gray-100 dark:bg-gray-800">
-                  <TabsTrigger value="all" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:text-primary-600 dark:data-[state=active]:text-primary-400">All</TabsTrigger>
-                  <TabsTrigger value="technical" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:text-primary-600 dark:data-[state=active]:text-primary-400">Technical</TabsTrigger>
-                  <TabsTrigger value="leadership" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:text-primary-600 dark:data-[state=active]:text-primary-400">Leadership</TabsTrigger>
-                  <TabsTrigger value="professional" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:text-primary-600 dark:data-[state=active]:text-primary-400">Professional</TabsTrigger>
-                  <TabsTrigger value="special" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:text-primary-600 dark:data-[state=active]:text-primary-400">Special</TabsTrigger>
+                <TabsList className="bg-accent/10 dark:bg-accent/5">
+                  <TabsTrigger value="all" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:text-primary">All</TabsTrigger>
+                  <TabsTrigger value="technical" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:text-primary">Technical</TabsTrigger>
+                  <TabsTrigger value="leadership" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:text-primary">Leadership</TabsTrigger>
+                  <TabsTrigger value="professional" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:text-primary">Professional</TabsTrigger>
+                  <TabsTrigger value="special" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:text-primary">Special</TabsTrigger>
                 </TabsList>
               </Tabs>
               
@@ -213,7 +214,7 @@ export default function Badges({ user, onLogout }: BadgesProps) {
               
               {filteredBadges.length === 0 && (
                 <div className="text-center py-10">
-                  <p className="text-gray-500 dark:text-gray-400">No badges found. Try adjusting your filters or create a new badge.</p>
+                  <p className="text-muted-foreground">No badges found. Try adjusting your filters or create a new badge.</p>
                 </div>
               )}
             </div>

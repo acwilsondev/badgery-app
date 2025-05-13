@@ -79,19 +79,19 @@ export function BadgeCard({ badge, onEdit, onAward, onClick }: BadgeCardProps) {
 
 export function NewBadgeCard({ onClick }: { onClick: () => void }) {
   return (
-    <Card className="bg-gray-50 dark:bg-gray-800/50 overflow-hidden shadow-sm border border-dashed border-gray-300 dark:border-gray-700 hover:shadow-md hover:border-gray-400 dark:hover:border-gray-600 transition-all duration-200">
+    <Card bordered className="overflow-hidden shadow-sm border-dashed bg-accent/5 dark:bg-accent/10 hover:shadow-md hover:border-brand-lilac/50 dark:hover:border-brand-lilac/30 transition-all duration-200">
       <button 
         type="button" 
         className="w-full h-full px-4 py-5 sm:p-6 flex flex-col items-center text-center"
         onClick={onClick}
       >
-        <div className="badge-circle w-20 h-20 bg-gray-100 dark:bg-gray-700 mb-4 flex items-center justify-center">
-          <svg className="h-10 w-10 text-gray-400 dark:text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="badge-circle w-20 h-20 bg-brand-purple/10 dark:bg-brand-purple/20 mb-4 flex items-center justify-center text-brand-purple">
+          <svg className="h-10 w-10" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
           </svg>
         </div>
-        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-1">Create New Badge</h3>
-        <p className="text-sm text-gray-500 dark:text-gray-400">Add a new achievement to your organization's system</p>
+        <h3 className="text-lg font-medium mb-1">Create New Badge</h3>
+        <p className="text-sm text-muted-foreground">Add a new achievement to your organization's system</p>
       </button>
     </Card>
   );
