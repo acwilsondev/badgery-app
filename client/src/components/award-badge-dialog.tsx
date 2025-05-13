@@ -65,8 +65,8 @@ export function AwardBadgeDialog({ open, onOpenChange, badge, organizationId }: 
         title: "Badge awarded",
         description: "The badge has been awarded successfully.",
       });
-      queryClient.invalidateQueries({ queryKey: [`/api/organizations/${organizationId}/awarded-badges`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/organizations/${organizationId}/stats`] });
+      queryClient.invalidateQueries({ queryKey: [`${apiPrefix}/organizations/${organizationId}/awarded-badges`] });
+      queryClient.invalidateQueries({ queryKey: [`${apiPrefix}/organizations/${organizationId}/stats`] });
       form.reset();
       onOpenChange(false);
     },
