@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, apiPrefix } from "@/lib/queryClient";
 import {
   Dialog,
   DialogContent,
@@ -57,7 +57,7 @@ export function AwardBadgeDialog({ open, onOpenChange, badge, organizationId }: 
 
   const awardBadgeMutation = useMutation({
     mutationFn: async (values: z.infer<typeof formSchema>) => {
-      const res = await apiRequest("POST", `/api/badges/${badge.id}/award`, values);
+      const res = await apiRequest("POST", `${apiPrefix}/badges/${badge.id}/award`, values);
       return res.json();
     },
     onSuccess: () => {

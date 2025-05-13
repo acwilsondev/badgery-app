@@ -27,13 +27,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { apiPrefix } from "@/lib/queryClient";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { PlusCircle, Trash2 } from "lucide-react";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { apiRequest, apiPrefix, queryClient } from "@/lib/queryClient";
 
 // Type definitions
 type ApiError = {
@@ -150,11 +149,11 @@ export function BadgeDialog({ open, onOpenChange, badge, organizationId }: Badge
         ...data,
         criteriaSectionsJson: data.criteriaSections ? JSON.stringify(data.criteriaSections) : undefined,
       };
-      const result = await apiRequest("POST", "/api/badges", payload);
+      const result = await apiRequest("POST", `${apiPrefix}/badges`, payload);
       return result;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/badges"] });
+      queryClient.invalidateQueries({ queryKey: [`${apiPrefix}/badges`] });
       onOpenChange(false);
     },
     onError: (error: ApiError) => {
@@ -170,10 +169,10 @@ export function BadgeDialog({ open, onOpenChange, badge, organizationId }: Badge
         ...data,
         criteriaSectionsJson: data.criteriaSections ? JSON.stringify(data.criteriaSections) : undefined,
       };
-      return apiRequest("PATCH", `/api/badges/${badge?.id}`, payload);
+      return apiRequest("PATCH", `${apiPrefix}/badges/${badge?.id}`, payload);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/badges"] });
+      queryClient.invalidateQueries({ queryKey: [`${apiPrefix}/badges`] });
       onOpenChange(false);
     },
     onError: (error: ApiError) => {
