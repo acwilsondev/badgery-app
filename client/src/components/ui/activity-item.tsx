@@ -18,14 +18,14 @@ export function ActivityItem({
   iconColor
 }: ActivityItemProps) {
   const bgColorClass = {
-    "primary": "bg-primary-100 text-primary-500",
-    "secondary": "bg-secondary-100 text-secondary-500",
-    "accent": "bg-accent-100 text-accent-500",
-  }[iconColor] || "bg-gray-100 text-gray-500";
+    "primary": "bg-primary-100 text-primary-500 dark:bg-primary-900 dark:text-primary-300",
+    "secondary": "bg-secondary-100 text-secondary-500 dark:bg-secondary-900 dark:text-secondary-300",
+    "accent": "bg-accent-100 text-accent-500 dark:bg-accent-900 dark:text-accent-300",
+  }[iconColor] || "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-300";
 
   const statusColorClass = status === "completed" 
-    ? "bg-green-100 text-green-800" 
-    : "bg-gray-100 text-gray-800";
+    ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300" 
+    : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300";
 
   return (
     <li>
@@ -38,9 +38,9 @@ export function ActivityItem({
               </div>
             </div>
             <div className="ml-4">
-              <div className="text-sm font-medium text-primary-600">{title}</div>
-              <div className="text-sm text-gray-500">
-                Awarded to <span className="font-medium text-gray-900">{userName}</span> on <time>{formatDate(date)}</time>
+              <div className="text-sm font-medium text-primary-600 dark:text-primary-400">{title}</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">
+                Awarded to <span className="font-medium text-gray-900 dark:text-white">{userName}</span> on <time>{formatDate(date)}</time>
               </div>
             </div>
           </div>
