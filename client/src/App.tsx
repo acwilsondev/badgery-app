@@ -8,6 +8,7 @@ import Badges from "@/pages/badges";
 import Users from "@/pages/users";
 import UserProfile from "@/pages/user-profile";
 import ProgressTracker from "@/pages/progress";
+import Branding from "@/pages/branding";
 import { useState, useEffect } from "react";
 import { apiRequest } from "@/lib/queryClient";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -95,6 +96,9 @@ function Router() {
       </Route>
       <Route path="/progress">
         <ProgressTracker user={currentUser} onLogout={handleLogout} />
+      </Route>
+      <Route path="/branding">
+        <Branding user={currentUser} onLogout={handleLogout} />
       </Route>
       <Route>
         <NotFound />

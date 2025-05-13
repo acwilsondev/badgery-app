@@ -8,6 +8,7 @@ import {
   ClipboardList,
   Settings,
   BarChart2,
+  Palette,
 } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -81,6 +82,11 @@ export function Sidebar({ user, onLogout, isMobileOpen, onMobileClose }: Sidebar
       name: "Reports",
       href: "/reports",
       icon: <ClipboardList className="mr-3 h-6 w-6" />,
+    },
+    {
+      name: "Branding",
+      href: "/branding",
+      icon: <Palette className="mr-3 h-6 w-6" />,
     },
     {
       name: "Settings",
