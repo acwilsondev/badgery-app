@@ -5,12 +5,14 @@ import { BadgeCard, NewBadgeCard } from "@/components/ui/badge-card";
 import { BadgeDialog } from "@/components/badge-dialog";
 import { AwardBadgeDialog } from "@/components/award-badge-dialog";
 import { Badge } from "@shared/schema";
-import { Menu, Search, Plus } from "lucide-react";
+import { Menu, Search, Plus, LayoutGrid, List } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { generateBadgeIcon } from "@/lib/badge-icons";
 
 interface BadgesProps {
   user: {
@@ -32,6 +34,7 @@ export default function Badges({ user, onLogout }: BadgesProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("all");
   const [currentTab, setCurrentTab] = useState("all");
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   type CategoryData = {
     id: number;
@@ -152,8 +155,9 @@ export default function Badges({ user, onLogout }: BadgesProps) {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
               {/* Remove filter dropdown as requested */}
               
-              {/* Tabs for category filtering */}
-              <div className="mb-6">
+              {/* Category filtering and view toggle */}
+              <div className="mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                {/* Category tabs */}
                 <div className="inline-flex rounded-md overflow-hidden bg-muted/30 border border-border p-1">
                   <button
                     onClick={() => setCurrentTab("all")}
@@ -206,26 +210,149 @@ export default function Badges({ user, onLogout }: BadgesProps) {
                     Special
                   </button>
                 </div>
-              </div>
-              
-              {/* Badge Grid */}
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {filteredBadges.map((badge: Badge) => (
-                  <BadgeCard
-                    key={badge.id}
-                    badge={badge}
-                    onEdit={handleEditBadge}
-                    onAward={handleAwardBadge}
-                    onClick={handleViewBadge}
-                  />
-                ))}
                 
-                <NewBadgeCard onClick={handleCreateBadge} />
+                {/* View toggle */}
+                <div className="inline-flex rounded-md overflow-hidden bg-muted/30 border border-border p-1">
+                  <button
+                    onClick={() => setViewMode('grid')}
+                    className={`px-3 py-2 text-sm font-medium rounded-md flex items-center ${
+                      viewMode === 'grid'
+                        ? "bg-brand-purple/10 text-brand-purple" 
+                        : "text-foreground/70 hover:text-foreground hover:bg-background/60"
+                    }`}
+                    aria-label="Grid view"
+                  >
+                    <LayoutGrid className="h-4 w-4 mr-1" />
+                    Grid
+                  </button>
+                  <button
+                    onClick={() => setViewMode('list')}
+                    className={`px-3 py-2 text-sm font-medium rounded-md flex items-center ${
+                      viewMode === 'list'
+                        ? "bg-brand-purple/10 text-brand-purple" 
+                        : "text-foreground/70 hover:text-foreground hover:bg-background/60"
+                    }`}
+                    aria-label="List view"
+                  >
+                    <List className="h-4 w-4 mr-1" />
+                    List
+                  </button>
+                </div>
               </div>
               
-              {filteredBadges.length === 0 && (
+              {/* Badge Display - Conditionally render grid or list view */}
+              {filteredBadges.length === 0 ? (
                 <div className="text-center py-10">
                   <p className="text-muted-foreground">No badges found. Try adjusting your filters or create a new badge.</p>
+                </div>
+              ) : viewMode === 'grid' ? (
+                // Grid View
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {filteredBadges.map((badge: Badge) => (
+                    <BadgeCard
+                      key={badge.id}
+                      badge={badge}
+                      onEdit={handleEditBadge}
+                      onAward={handleAwardBadge}
+                      onClick={handleViewBadge}
+                    />
+                  ))}
+                  
+                  {/* Only show "Add New Badge" card for admin users */}
+                  {user.role === 'admin' && (
+                    <NewBadgeCard onClick={handleCreateBadge} />
+                  )}
+                </div>
+              ) : (
+                // List View
+                <div className="bg-card rounded-lg border border-border overflow-hidden">
+                  <div className="grid grid-cols-12 bg-muted/50 p-4 font-medium text-sm border-b border-border">
+                    <div className="col-span-6 sm:col-span-3">Badge</div>
+                    <div className="hidden sm:block sm:col-span-3">Category</div>
+                    <div className="col-span-4 sm:col-span-3">Description</div>
+                    <div className="col-span-2 sm:col-span-3 text-right">Actions</div>
+                  </div>
+                  {filteredBadges.map((badge: Badge) => (
+                    <div 
+                      key={badge.id} 
+                      className="grid grid-cols-12 p-4 items-center border-b border-border hover:bg-muted/10 transition-colors"
+                    >
+                      <div className="col-span-6 sm:col-span-3 flex items-center gap-3">
+                        <Avatar className="h-10 w-10 rounded-md">
+                          <AvatarFallback 
+                            style={{ backgroundColor: badge.color || '#6941C6' }}
+                            className="text-white rounded-md"
+                          >
+                            {generateBadgeIcon(badge.name, badge.color || '#6941C6')}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <div className="font-medium">{badge.name}</div>
+                          <div className="text-xs text-muted-foreground truncate max-w-[200px]">
+                            {badge.category?.name || 'Uncategorized'}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="hidden sm:block sm:col-span-3 text-sm text-muted-foreground">
+                        {badge.category?.name || 'Uncategorized'}
+                      </div>
+                      <div className="col-span-4 sm:col-span-3 text-sm text-muted-foreground truncate max-w-[250px]">
+                        {badge.description}
+                      </div>
+                      <div className="col-span-2 sm:col-span-3 flex justify-end gap-2">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => handleViewBadge(badge)}
+                          className="h-8 w-8 p-0"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye">
+                            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                            <circle cx="12" cy="12" r="3" />
+                          </svg>
+                        </Button>
+                        {user.role === 'admin' && (
+                          <>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => handleEditBadge(badge)}
+                              className="h-8 w-8 p-0"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-pencil">
+                                <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                                <path d="m15 5 4 4" />
+                              </svg>
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => handleAwardBadge(badge)}
+                              className="h-8 w-8 p-0"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-award">
+                                <circle cx="12" cy="8" r="6" />
+                                <path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11" />
+                              </svg>
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {/* Add new badge option in list view */}
+                  {user.role === 'admin' && (
+                    <button
+                      onClick={handleCreateBadge}
+                      className="w-full p-4 text-left hover:bg-muted/10 transition-colors flex items-center gap-3 text-brand-purple"
+                    >
+                      <div className="h-10 w-10 rounded-md bg-brand-purple/10 flex items-center justify-center">
+                        <Plus className="h-5 w-5" />
+                      </div>
+                      <span className="font-medium">Create New Badge</span>
+                    </button>
+                  )}
                 </div>
               )}
             </div>
