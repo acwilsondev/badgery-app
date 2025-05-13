@@ -128,68 +128,28 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
       
       {/* Main content */}
       <div className="flex flex-col w-0 flex-1 overflow-hidden">
-        {/* Top navigation */}
-        <div className="relative z-10 flex-shrink-0 flex h-16 bg-background border-b">
-          <button
-            type="button"
-            className="lg:hidden px-4 border-r border-border text-brand-purple hover:text-brand-purple/80 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-brand-purple/50 transition-colors"
-            onClick={() => setMobileMenuOpen(true)}
-          >
-            <span className="sr-only">Open sidebar</span>
-            <Menu className="h-6 w-6" />
-          </button>
-          
-          <div className="flex-1 px-4 flex justify-between">
-            <div className="flex-1 flex">
-              <form className="w-full flex md:ml-0" action="#" method="GET">
-                <label htmlFor="search-field" className="sr-only">Search</label>
-                <div className="relative w-full focus-within:text-primary">
-                  <div className="absolute inset-y-0 left-0 flex items-center pointer-events-none pl-3">
-                    <Search className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                  <input
-                    id="search-field"
-                    className="block w-full h-full pl-10 pr-3 py-2 border-transparent rounded-md text-foreground placeholder:text-muted-foreground bg-accent/10 focus:outline-none focus:ring-1 focus:ring-primary/50 sm:text-sm"
-                    placeholder="Search badges, users..."
-                    type="search"
-                  />
-                </div>
-              </form>
-            </div>
-            
-            <div className="ml-4 flex items-center md:ml-6">
-              <button
-                type="button"
-                className="bg-accent/10 p-2 rounded-md text-brand-purple hover:text-brand-purple/80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-purple/50 transition-colors"
-              >
-                <span className="sr-only">View notifications</span>
-                <Bell className="h-5 w-5" />
-              </button>
-            </div>
-          </div>
-        </div>
+        {/* Mobile menu button - only visible on mobile */}
+        <button
+          type="button"
+          className="lg:hidden absolute left-0 top-0 z-50 px-4 h-16 border-r border-border text-brand-purple hover:text-brand-purple/80 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-brand-purple/50 transition-colors"
+          onClick={() => setMobileMenuOpen(true)}
+        >
+          <span className="sr-only">Open sidebar</span>
+          <Menu className="h-6 w-6" />
+        </button>
         
-        {/* Page header */}
-        <header className="bg-white dark:bg-gray-800 shadow-sm">
-          <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-brand-purple to-brand-lilac">Organization Dashboard</h1>
-              <p className="mt-1 text-sm text-muted-foreground">Manage your badge system and user achievements</p>
-            </div>
-            <div>
-              <Button
-                onClick={handleCreateBadge}
-                variant="default"
-                className="gap-2"
-              >
-                <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                Create New Badge
-              </Button>
-            </div>
-          </div>
-        </header>
+        {/* Standardized Page Header */}
+        <PageHeader
+          title="Organization Dashboard"
+          description="Manage your badge system and user achievements"
+          showSearch={true}
+          searchPlaceholder="Search badges, users..."
+          actionButton={{
+            label: "Create New Badge",
+            onClick: handleCreateBadge,
+            icon: <Plus className="h-4 w-4 mr-1" />
+          }}
+        />
         
         {/* Main content */}
         <main className="flex-1 relative overflow-y-auto focus:outline-none bg-background">

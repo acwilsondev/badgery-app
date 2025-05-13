@@ -6,6 +6,8 @@ import { Sidebar } from '@/components/sidebar';
 import { BadgeProgressDialog } from '@/components/badge-progress-dialog';
 import { generateBadgeIcon } from '@/lib/badge-icons';
 import { formatDate } from '@/lib/utils';
+import { PageHeader } from '@/components/page-header';
+import { Menu } from 'lucide-react';
 
 import {
   Card,
@@ -49,6 +51,7 @@ export default function ProgressTracker({ user, onLogout }: ProgressProps) {
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   const [progressDialogOpen, setProgressDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('my-progress');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   // Define types for progress data
   type ProgressItem = {
@@ -112,20 +115,29 @@ export default function ProgressTracker({ user, onLogout }: ProgressProps) {
 
   return (
     <div className="flex h-screen bg-background">
-      <Sidebar user={user} onLogout={onLogout} />
+      <Sidebar 
+        user={user} 
+        onLogout={onLogout} 
+        isMobileOpen={mobileMenuOpen}
+        onMobileClose={() => setMobileMenuOpen(false)}
+      />
       
       <div className="flex-1 overflow-auto">
-        {/* Page header */}
-        <header className="bg-background shadow-sm border-b border-border">
-          <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-            <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-brand-purple to-brand-lilac">
-              Progress Tracking
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Track your progress towards badge achievements
-            </p>
-          </div>
-        </header>
+        {/* Mobile menu button - only visible on mobile */}
+        <button
+          type="button"
+          className="lg:hidden absolute left-0 top-0 z-50 px-4 h-16 border-r border-border text-brand-purple hover:text-brand-purple/80 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-brand-purple/50 transition-colors"
+          onClick={() => setMobileMenuOpen(true)}
+        >
+          <span className="sr-only">Open sidebar</span>
+          <Menu className="h-6 w-6" />
+        </button>
+        
+        {/* Standardized Page Header */}
+        <PageHeader
+          title="Progress Tracking"
+          description="Track your progress towards badge achievements"
+        />
         
         <div className="p-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
