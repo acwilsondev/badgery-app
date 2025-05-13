@@ -191,7 +191,7 @@ export default function ProgressTracker({ user, onLogout }: ProgressProps) {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-6 text-gray-500 dark:text-gray-400">
+                  <div className="text-center py-6 text-muted-foreground">
                     You don't have any badges in progress
                   </div>
                 )}
@@ -289,7 +289,7 @@ export default function ProgressTracker({ user, onLogout }: ProgressProps) {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-6 text-gray-500 dark:text-gray-400">
+                  <div className="text-center py-6 text-muted-foreground">
                     You haven't completed any badges yet
                   </div>
                 )}
@@ -346,8 +346,8 @@ export default function ProgressTracker({ user, onLogout }: ProgressProps) {
                               <TableCell>
                                 <div className={`rounded-full px-2 py-1 text-xs font-medium inline-block
                                   ${item.status === 'completed' 
-                                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' 
-                                    : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'}`}>
+                                    ? 'bg-brand-orange/10 text-brand-orange dark:bg-brand-orange/20 dark:text-brand-orange' 
+                                    : 'bg-brand-purple/10 text-brand-purple dark:bg-brand-purple/20 dark:text-brand-purple'}`}>
                                   {item.status === 'completed' ? 'Completed' : 'In Progress'}
                                 </div>
                               </TableCell>
@@ -379,7 +379,7 @@ export default function ProgressTracker({ user, onLogout }: ProgressProps) {
                       </Table>
                     </div>
                   ) : (
-                    <div className="text-center py-6 text-gray-500 dark:text-gray-400">
+                    <div className="text-center py-6 text-muted-foreground">
                       No badge progress data found for your organization
                     </div>
                   )}
