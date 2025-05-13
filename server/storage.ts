@@ -30,9 +30,20 @@ import {
 
 // Organizations
 export async function getOrganizations() {
-  return db.query.organizations.findMany({
-    orderBy: asc(organizations.name),
-  });
+  try {
+    // Use raw SQL query to avoid schema-related issues
+    const sql = `
+      SELECT id, name, description, created_at as "createdAt"
+      FROM organizations
+      ORDER BY name ASC
+    `;
+    
+    const result = await pool.query(sql);
+    return result.rows;
+  } catch (error) {
+    console.error("Error in getOrganizations:", error);
+    throw error;
+  }
 }
 
 export async function getOrganizationById(id: number) {
@@ -236,10 +247,22 @@ export async function updateUser(id: number, data: Partial<User>, organizationId
 
 // Badge Categories
 export async function getBadgeCategories(organizationId: number) {
-  return db.query.badgeCategories.findMany({
-    where: eq(badgeCategories.organizationId, organizationId),
-    orderBy: asc(badgeCategories.name),
-  });
+  try {
+    // Use raw SQL query to avoid schema-related issues
+    const sql = `
+      SELECT id, name, organization_id as "organizationId", 
+             created_at as "createdAt"
+      FROM badge_categories
+      WHERE organization_id = $1
+      ORDER BY name ASC
+    `;
+    
+    const result = await pool.query(sql, [organizationId]);
+    return result.rows;
+  } catch (error) {
+    console.error("Error in getBadgeCategories:", error);
+    throw error;
+  }
 }
 
 export async function getBadgeCategoryById(id: number) {
@@ -831,44 +854,55 @@ export async function autoAwardBadgeIfComplete(data: { badgeId: number, userId: 
 export async function getOrganizationStats(organizationId: number) {
   try {
     // Count badges in organization
-    const badgeCount = await db
-      .select({ count: count() })
-      .from(badges)
-      .where(eq(badges.organizationId, organizationId));
+    const badgeSql = `
+      SELECT COUNT(*) as count
+      FROM badges
+      WHERE organization_id = $1
+    `;
+    const badgeResult = await pool.query(badgeSql, [organizationId]);
+    const badgeCount = parseInt(badgeResult.rows[0].count);
 
     // Count users in organization (using many-to-many)
-    const userCount = await db
-      .select({ count: count() })
-      .from(userOrganization)
-      .where(eq(userOrganization.organizationId, organizationId));
+    const userSql = `
+      SELECT COUNT(*) as count
+      FROM user_organization
+      WHERE organization_id = $1
+    `;
+    const userResult = await pool.query(userSql, [organizationId]);
+    const userCount = parseInt(userResult.rows[0].count);
 
     // Count awarded badges
-    const awardCount = await db
-      .select({ count: count() })
-      .from(achievements)
-      .innerJoin(badges, eq(achievements.badgeId, badges.id))
-      .where(eq(badges.organizationId, organizationId));
+    const awardSql = `
+      SELECT COUNT(*) as count
+      FROM achievements a
+      JOIN badges b ON a.badge_id = b.id
+      WHERE b.organization_id = $1
+    `;
+    const awardResult = await pool.query(awardSql, [organizationId]);
+    const awardCount = parseInt(awardResult.rows[0].count);
 
     // Count in-progress metrics (a bit more complex with the new schema)
-    const inProgressCount = await db.execute(sql`
+    const progressSql = `
       SELECT COUNT(DISTINCT p.user_id || '-' || bm.badge_id) as count
       FROM progress p
       JOIN metrics m ON p.metric_id = m.id
       JOIN badge_metrics bm ON m.id = bm.metric_id
       JOIN badges b ON bm.badge_id = b.id
-      WHERE b.organization_id = ${organizationId}
+      WHERE b.organization_id = $1
       AND NOT EXISTS (
         SELECT 1 FROM achievements a 
         WHERE a.badge_id = bm.badge_id 
         AND a.user_id = p.user_id
       )
-    `);
+    `;
+    const progressResult = await pool.query(progressSql, [organizationId]);
+    const inProgressCount = parseInt(progressResult.rows[0].count);
 
     return {
-      totalBadges: badgeCount[0]?.count || 0,
-      totalUsers: userCount[0]?.count || 0,
-      totalAwarded: awardCount[0]?.count || 0,
-      inProgress: inProgressCount[0]?.count || 0,
+      totalBadges: badgeCount || 0,
+      totalUsers: userCount || 0,
+      totalAwarded: awardCount || 0,
+      inProgress: inProgressCount || 0,
     };
   } catch (error) {
     console.error("Error in getOrganizationStats:", error);
