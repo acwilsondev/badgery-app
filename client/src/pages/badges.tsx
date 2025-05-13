@@ -152,59 +152,82 @@ export default function Badges({ user, onLogout }: BadgesProps) {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
               {/* Filter section */}
               <div className="flex justify-end mb-6">
-                <Select 
-                  value={selectedCategoryId} 
-                  onValueChange={setSelectedCategoryId}
-                >
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="All Categories" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Categories</SelectItem>
+                <div className="relative">
+                  <select 
+                    value={selectedCategoryId}
+                    onChange={(e) => setSelectedCategoryId(e.target.value)}
+                    className="border border-border rounded-md py-2 px-4 pr-8 bg-white dark:bg-card text-foreground appearance-none"
+                  >
+                    <option value="all">All Categories</option>
                     {categories.map((category: any) => (
-                      <SelectItem key={category.id} value={category.id.toString()}>
+                      <option key={category.id} value={category.id.toString()}>
                         {category.name}
-                      </SelectItem>
+                      </option>
                     ))}
-                  </SelectContent>
-                </Select>
+                  </select>
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                    <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                  </div>
+                </div>
               </div>
               
               {/* Tabs for category filtering */}
-              <Tabs defaultValue="all" value={currentTab} onValueChange={setCurrentTab} className="mb-6">
-                <TabsList className="bg-muted/50 border border-border">
-                  <TabsTrigger 
-                    value="all" 
-                    className="data-[state=active]:bg-brand-purple/10 data-[state=active]:text-brand-purple data-[state=active]:border-b-2 data-[state=active]:border-brand-purple"
+              <div className="mb-6">
+                <div className="inline-flex rounded-md overflow-hidden bg-muted/30 border border-border p-1">
+                  <button
+                    onClick={() => setCurrentTab("all")}
+                    className={`px-4 py-2 text-sm font-medium rounded-md ${
+                      currentTab === "all" 
+                        ? "bg-brand-purple/10 text-brand-purple" 
+                        : "text-foreground/70 hover:text-foreground hover:bg-background/60"
+                    }`}
                   >
                     All
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="technical" 
-                    className="data-[state=active]:bg-brand-purple/10 data-[state=active]:text-brand-purple data-[state=active]:border-b-2 data-[state=active]:border-brand-purple"
+                  </button>
+                  <button
+                    onClick={() => setCurrentTab("technical")}
+                    className={`px-4 py-2 text-sm font-medium rounded-md ${
+                      currentTab === "technical" 
+                        ? "bg-brand-purple/10 text-brand-purple" 
+                        : "text-foreground/70 hover:text-foreground hover:bg-background/60"
+                    }`}
                   >
                     Technical
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="leadership" 
-                    className="data-[state=active]:bg-brand-purple/10 data-[state=active]:text-brand-purple data-[state=active]:border-b-2 data-[state=active]:border-brand-purple"
+                  </button>
+                  <button
+                    onClick={() => setCurrentTab("leadership")}
+                    className={`px-4 py-2 text-sm font-medium rounded-md ${
+                      currentTab === "leadership" 
+                        ? "bg-brand-purple/10 text-brand-purple" 
+                        : "text-foreground/70 hover:text-foreground hover:bg-background/60"
+                    }`}
                   >
                     Leadership
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="professional" 
-                    className="data-[state=active]:bg-brand-purple/10 data-[state=active]:text-brand-purple data-[state=active]:border-b-2 data-[state=active]:border-brand-purple"
+                  </button>
+                  <button
+                    onClick={() => setCurrentTab("professional")}
+                    className={`px-4 py-2 text-sm font-medium rounded-md ${
+                      currentTab === "professional" 
+                        ? "bg-brand-purple/10 text-brand-purple" 
+                        : "text-foreground/70 hover:text-foreground hover:bg-background/60"
+                    }`}
                   >
                     Professional
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="special" 
-                    className="data-[state=active]:bg-brand-purple/10 data-[state=active]:text-brand-purple data-[state=active]:border-b-2 data-[state=active]:border-brand-purple"
+                  </button>
+                  <button
+                    onClick={() => setCurrentTab("special")}
+                    className={`px-4 py-2 text-sm font-medium rounded-md ${
+                      currentTab === "special" 
+                        ? "bg-brand-purple/10 text-brand-purple" 
+                        : "text-foreground/70 hover:text-foreground hover:bg-background/60"
+                    }`}
                   >
                     Special
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
+                  </button>
+                </div>
+              </div>
               
               {/* Badge Grid */}
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
