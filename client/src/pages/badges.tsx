@@ -97,19 +97,36 @@ export default function Badges({ user, onLogout }: BadgesProps) {
     setBadgeDialogOpen(true);
   };
 
+  // Enhanced handler functions with better state management
   const handleEditBadge = (badge: Badge) => {
+    console.log("Edit badge:", badge.id);
+    // Set the badge first, then open the dialog
     setSelectedBadge(badge);
-    setBadgeDialogOpen(true);
+    // Make sure to close other dialogs
+    setAwardDialogOpen(false);
+    // Open the edit dialog
+    setTimeout(() => {
+      setBadgeDialogOpen(true);
+    }, 50);
   };
 
   const handleAwardBadge = (badge: Badge) => {
+    console.log("Award badge:", badge.id);
+    // Set the badge first, then open the dialog
     setSelectedBadge(badge);
-    setAwardDialogOpen(true);
+    // Make sure to close other dialogs
+    setBadgeDialogOpen(false);
+    // Open the award dialog
+    setTimeout(() => {
+      setAwardDialogOpen(true);
+    }, 50);
   };
 
   const handleViewBadge = (badge: Badge) => {
     // This would show a badge details view in a real app
     console.log("View badge:", badge);
+    // Simple view functionality - could be enhanced later
+    // For now we're just logging the badge details
   };
 
   return (
@@ -303,13 +320,7 @@ export default function Badges({ user, onLogout }: BadgesProps) {
                         <Button 
                           variant="ghost" 
                           size="sm" 
-                          onClick={() => {
-                            setSelectedBadge(badge);
-                            setAwardDialogOpen(false);
-                            setBadgeDialogOpen(false);
-                            // Use console log to debug
-                            console.log("View badge:", badge);
-                          }}
+                          onClick={() => handleViewBadge(badge)}
                           className="h-8 w-8 p-0"
                           title="View badge details"
                         >
@@ -323,10 +334,7 @@ export default function Badges({ user, onLogout }: BadgesProps) {
                             <Button 
                               variant="ghost" 
                               size="sm" 
-                              onClick={() => {
-                                setSelectedBadge(badge);
-                                setBadgeDialogOpen(true);
-                              }}
+                              onClick={() => handleEditBadge(badge)}
                               className="h-8 w-8 p-0"
                               title="Edit badge"
                             >
@@ -338,10 +346,7 @@ export default function Badges({ user, onLogout }: BadgesProps) {
                             <Button 
                               variant="ghost" 
                               size="sm" 
-                              onClick={() => {
-                                setSelectedBadge(badge);
-                                setAwardDialogOpen(true);
-                              }}
+                              onClick={() => handleAwardBadge(badge)}
                               className="h-8 w-8 p-0"
                               title="Award badge"
                             >
