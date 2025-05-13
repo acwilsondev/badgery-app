@@ -96,10 +96,10 @@ export function Sidebar({ user, onLogout, isMobileOpen, onMobileClose }: Sidebar
   ];
 
   const sidebarContent = (
-    <div className="flex flex-col h-0 flex-1 bg-white border-r border-gray-200 dark:bg-gray-900 dark:border-gray-800">
+    <div className="flex flex-col h-0 flex-1 bg-card border-r border-border">
       {/* Logo and app name */}
-      <div className="flex items-center h-16 flex-shrink-0 px-4 bg-primary-500 dark:bg-primary-800">
-        <div className="badge-circle w-8 h-8 bg-white text-primary-500 dark:bg-primary-100 dark:text-primary-800 flex items-center justify-center">
+      <div className="flex items-center h-16 flex-shrink-0 px-4 bg-gradient-to-r from-brand-purple to-brand-lilac">
+        <div className="badge-circle w-8 h-8 bg-white/90 text-brand-purple flex items-center justify-center rounded-full">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
           </svg>
@@ -108,13 +108,13 @@ export function Sidebar({ user, onLogout, isMobileOpen, onMobileClose }: Sidebar
       </div>
       
       {/* Organization selector */}
-      <div className="px-4 pt-5 pb-4 border-b border-gray-200 dark:border-gray-800">
+      <div className="px-4 pt-5 pb-4 border-b border-border">
         <div className="relative">
           <Select value={selectedOrgId} onValueChange={handleOrganizationChange}>
-            <SelectTrigger className="w-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 focus:ring-0">
+            <SelectTrigger className="w-full bg-muted hover:bg-muted/80 focus:ring-1 focus:ring-brand-purple/30 border-border">
               <SelectValue placeholder="Select Organization" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="border-border">
               {organizations.map((org: Organization) => (
                 <SelectItem key={org.id} value={String(org.id)}>{org.name}</SelectItem>
               ))}
@@ -129,7 +129,7 @@ export function Sidebar({ user, onLogout, isMobileOpen, onMobileClose }: Sidebar
       </div>
       
       {/* Navigation items */}
-      <nav className="flex-1 px-2 py-4 bg-white dark:bg-gray-900 space-y-1">
+      <nav className="flex-1 px-2 py-4 bg-card space-y-1">
         {navItems.map((item) => (
           <Link
             key={item.name}
@@ -137,17 +137,17 @@ export function Sidebar({ user, onLogout, isMobileOpen, onMobileClose }: Sidebar
             onClick={onMobileClose}
             className={cn(
               location === item.href
-                ? "bg-gray-100 text-primary-600 dark:bg-gray-800 dark:text-primary-400"
-                : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100",
-              "group flex items-center px-2 py-2 text-sm font-medium rounded-md"
+                ? "bg-brand-purple/10 text-brand-purple"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground",
+              "group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors"
             )}
           >
             {React.cloneElement(item.icon, {
               className: cn(
                 location === item.href
-                  ? "text-primary-600 dark:text-primary-400"
-                  : "text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300",
-                "mr-3 h-6 w-6"
+                  ? "text-brand-purple"
+                  : "text-muted-foreground group-hover:text-foreground",
+                "mr-3 h-5 w-5"
               ),
             })}
             {item.name}
@@ -156,30 +156,30 @@ export function Sidebar({ user, onLogout, isMobileOpen, onMobileClose }: Sidebar
       </nav>
       
       {/* User profile and theme toggle */}
-      <div className="flex-shrink-0 border-t border-gray-200 p-4">
-        <div className="flex items-center justify-between mb-2">
-          <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
+      <div className="flex-shrink-0 border-t border-border p-4">
+        <div className="flex items-center justify-between mb-3">
+          <div className="text-sm font-medium">
             Appearance
           </div>
           <ThemeToggle />
         </div>
         
-        <div className="flex-shrink-0 w-full group block pt-2 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex-shrink-0 w-full group block pt-3 border-t border-border">
           <div className="flex items-center">
             <div>
               <Avatar>
-                <AvatarFallback>
+                <AvatarFallback className="bg-brand-purple/10 text-brand-purple">
                   {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                 </AvatarFallback>
               </Avatar>
             </div>
             <div className="ml-3">
-              <p className="text-sm font-medium text-gray-700 group-hover:text-gray-900 dark:text-gray-300 dark:group-hover:text-gray-100">
+              <p className="text-sm font-medium">
                 {user.name}
               </p>
               <button 
                 onClick={onLogout} 
-                className="text-xs font-medium text-gray-500 group-hover:text-gray-700 hover:underline dark:text-gray-400 dark:group-hover:text-gray-300"
+                className="text-xs font-medium text-muted-foreground hover:text-brand-purple hover:underline transition-colors"
               >
                 Sign out
               </button>
@@ -195,7 +195,7 @@ export function Sidebar({ user, onLogout, isMobileOpen, onMobileClose }: Sidebar
       {/* Mobile overlay */}
       {isMobileOpen && (
         <div 
-          className="lg:hidden fixed inset-0 bg-gray-600 bg-opacity-75 dark:bg-gray-900 dark:bg-opacity-80 z-20"
+          className="lg:hidden fixed inset-0 bg-background/80 backdrop-blur-sm z-20"
           onClick={onMobileClose}
         ></div>
       )}
@@ -203,7 +203,7 @@ export function Sidebar({ user, onLogout, isMobileOpen, onMobileClose }: Sidebar
       {/* Mobile sidebar */}
       <div 
         className={cn(
-          "lg:hidden fixed inset-y-0 left-0 flex flex-col w-64 z-30 transition-transform transform duration-300 ease-in-out",
+          "lg:hidden fixed inset-y-0 left-0 flex flex-col w-72 z-30 transition-transform transform duration-300 ease-in-out",
           isMobileOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
