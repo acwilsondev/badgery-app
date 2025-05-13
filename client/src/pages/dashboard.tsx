@@ -141,13 +141,13 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
             <div className="flex-1 flex">
               <form className="w-full flex md:ml-0" action="#" method="GET">
                 <label htmlFor="search-field" className="sr-only">Search</label>
-                <div className="relative w-full text-gray-400 dark:text-gray-500 focus-within:text-gray-600 dark:focus-within:text-gray-400">
-                  <div className="absolute inset-y-0 left-0 flex items-center pointer-events-none">
-                    <Search className="h-5 w-5" />
+                <div className="relative w-full focus-within:text-primary">
+                  <div className="absolute inset-y-0 left-0 flex items-center pointer-events-none pl-3">
+                    <Search className="h-5 w-5 text-muted-foreground" />
                   </div>
                   <input
                     id="search-field"
-                    className="block w-full h-full pl-8 pr-3 py-2 border-transparent text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 dark:focus:placeholder-gray-400 focus:ring-0 focus:border-transparent bg-transparent sm:text-sm"
+                    className="block w-full h-full pl-10 pr-3 py-2 border-transparent rounded-md text-foreground placeholder:text-muted-foreground bg-accent/10 focus:outline-none focus:ring-1 focus:ring-primary/50 sm:text-sm"
                     placeholder="Search badges, users..."
                     type="search"
                   />
@@ -158,28 +158,29 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
             <div className="ml-4 flex items-center md:ml-6">
               <button
                 type="button"
-                className="bg-white dark:bg-gray-700 p-1 rounded-full text-gray-400 dark:text-gray-300 hover:text-gray-500 dark:hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 focus:ring-primary-500"
+                className="bg-accent/10 p-2 rounded-md text-brand-purple hover:text-brand-purple/80 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-purple/50 transition-colors"
               >
                 <span className="sr-only">View notifications</span>
-                <Bell className="h-6 w-6" />
+                <Bell className="h-5 w-5" />
               </button>
             </div>
           </div>
         </div>
         
         {/* Page header */}
-        <header className="bg-white dark:bg-gray-800 shadow-sm dark:shadow-gray-700/20">
+        <header className="bg-white dark:bg-gray-800 shadow-sm">
           <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
             <div>
-              <h1 className="text-lg font-semibold text-gray-900 dark:text-white">Organization Dashboard</h1>
-              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Manage your badge system and user achievements</p>
+              <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-brand-purple to-brand-lilac">Organization Dashboard</h1>
+              <p className="mt-1 text-sm text-muted-foreground">Manage your badge system and user achievements</p>
             </div>
             <div>
               <Button
                 onClick={handleCreateBadge}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-500 hover:bg-primary-600 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 focus:ring-primary-500"
+                variant="default"
+                className="gap-2"
               >
-                <svg className="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
                 Create New Badge
@@ -249,14 +250,14 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
               </div>
               
               {/* Badge Management Section */}
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-medium text-gray-900 dark:text-white">Badge Management</h2>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-brand-purple to-brand-lilac">Badge Management</h2>
                 <div className="relative">
                   <Select 
                     value={selectedCategoryId} 
                     onValueChange={setSelectedCategoryId}
                   >
-                    <SelectTrigger className="w-[180px] bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
+                    <SelectTrigger className="w-[180px] bg-white/50 dark:bg-gray-800/50 border-brand-lilac/30 dark:border-brand-lilac/20">
                       <SelectValue placeholder="All Categories" />
                     </SelectTrigger>
                     <SelectContent>
