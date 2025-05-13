@@ -140,10 +140,10 @@ export const BrandBadge = React.forwardRef<HTMLDivElement, BrandBadgeProps>(
   ({ className, variant = "purple", size = "md", children, ...props }, ref) => {
     
     const variantClasses = {
-      purple: "bg-brand-purple/10 text-brand-purple border-brand-purple/20",
-      lilac: "bg-brand-lilac/20 text-brand-purple border-brand-lilac/30",
-      orange: "bg-brand-orange/10 text-brand-orange border-brand-orange/20",
-      coral: "bg-brand-coral/10 text-brand-charcoal border-brand-coral/20",
+      purple: "bg-brand-purple/10 text-brand-purple dark:bg-brand-purple/20 dark:text-white border-brand-purple/20",
+      lilac: "bg-brand-lilac/20 text-brand-purple dark:bg-brand-lilac/30 dark:text-white border-brand-lilac/30",
+      orange: "bg-brand-orange/10 text-brand-orange dark:bg-brand-orange/20 dark:text-white border-brand-orange/20",
+      coral: "bg-brand-coral/10 text-brand-charcoal dark:bg-brand-coral/20 dark:text-white border-brand-coral/20",
     }[variant];
     
     const sizeClasses = {
