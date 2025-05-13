@@ -27,6 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { apiPrefix } from "@/lib/queryClient";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -138,7 +139,7 @@ export function BadgeDialog({ open, onOpenChange, badge, organizationId }: Badge
   const [showProgressOptions, setShowProgressOptions] = useState(true); // Always show progress options
 
   const { data: categories = [] } = useQuery<BadgeCategory[]>({
-    queryKey: [`/api/badge-categories?organizationId=${organizationId}`],
+    queryKey: [`${apiPrefix}/badge-categories?organizationId=${organizationId}`],
   });
 
   // Mutation for creating a new badge
