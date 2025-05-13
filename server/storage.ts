@@ -69,39 +69,80 @@ export async function updateOrganization(id: number, data: Partial<Organization>
 
 // Users
 export async function getUsers() {
-  return db.query.users.findMany({
-    orderBy: asc(users.name),
-    with: {
-      userOrganizations: {
-        with: {
-          organization: true
-        }
-      }
-    }
-  });
+  try {
+    // Use raw SQL query for compatibility during schema transition
+    const sql = `
+      SELECT u.*,
+            array_agg(DISTINCT o.id) as organization_ids,
+            array_agg(DISTINCT o.name) as organization_names
+      FROM users u
+      LEFT JOIN user_organization uo ON u.id = uo.user_id
+      LEFT JOIN organizations o ON uo.organization_id = o.id
+      GROUP BY u.id
+      ORDER BY u.name ASC
+    `;
+    
+    const result = await pool.query(sql);
+    
+    // Format the results to include the organizations array
+    return result.rows.map(row => ({
+      id: row.id,
+      username: row.username,
+      name: row.name,
+      email: row.email,
+      role: row.role,
+      createdAt: row.created_at,
+      // Add organizations array from the joined data
+      organizations: row.organization_ids && row.organization_ids[0] !== null 
+        ? row.organization_ids.map((id: number, index: number) => ({
+            id,
+            name: row.organization_names[index]
+          }))
+        : []
+    }));
+  } catch (error) {
+    console.error("Error in getUsers:", error);
+    throw error;
+  }
 }
 
 export async function getUsersByOrganization(organizationId: number) {
-  const userIds = await db.select({ userId: userOrganization.userId })
-    .from(userOrganization)
-    .where(eq(userOrganization.organizationId, organizationId));
-  
-  if (userIds.length === 0) {
-    return [];
+  try {
+    // Use raw SQL query for compatibility during schema transition
+    const sql = `
+      SELECT u.*,
+            array_agg(DISTINCT o.id) as organization_ids,
+            array_agg(DISTINCT o.name) as organization_names
+      FROM users u
+      JOIN user_organization uo ON u.id = uo.user_id
+      JOIN organizations o ON uo.organization_id = o.id
+      WHERE uo.organization_id = $1
+      GROUP BY u.id
+      ORDER BY u.name ASC
+    `;
+    
+    const result = await pool.query(sql, [organizationId]);
+    
+    // Format the results to include the organizations array
+    return result.rows.map(row => ({
+      id: row.id,
+      username: row.username,
+      name: row.name,
+      email: row.email,
+      role: row.role,
+      createdAt: row.created_at,
+      // Add organizations array from the joined data
+      organizations: row.organization_ids && row.organization_ids[0] !== null 
+        ? row.organization_ids.map((id: number, index: number) => ({
+            id,
+            name: row.organization_names[index]
+          }))
+        : []
+    }));
+  } catch (error) {
+    console.error("Error in getUsersByOrganization:", error);
+    throw error;
   }
-  
-  return db.query.users.findMany({
-    where: inArray(users.id, userIds.map(u => u.userId)),
-    orderBy: asc(users.name),
-    with: {
-      userOrganizations: {
-        where: eq(userOrganization.organizationId, organizationId),
-        with: {
-          organization: true
-        }
-      }
-    }
-  });
 }
 
 export async function getUserById(id: number) {
