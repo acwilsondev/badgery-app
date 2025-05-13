@@ -132,10 +132,10 @@ export default function Badges({ user, onLogout }: BadgesProps) {
         </div>
         
         {/* Page header */}
-        <header className="bg-white dark:bg-gray-800 shadow-sm dark:shadow-gray-700/20">
+        <header className="bg-white dark:bg-gray-800 shadow-sm">
           <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
-            <h1 className="text-lg font-semibold text-gray-900 dark:text-white">Badges</h1>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Manage and award badges to users</p>
+            <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-brand-purple to-brand-lilac">Badges</h1>
+            <p className="mt-1 text-sm text-muted-foreground">Manage and award badges to users</p>
           </div>
         </header>
         
@@ -147,12 +147,12 @@ export default function Badges({ user, onLogout }: BadgesProps) {
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 space-y-4 md:space-y-0">
                 <div className="relative w-full md:w-64">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Search className="h-5 w-5 text-gray-400 dark:text-gray-500" />
+                    <Search className="h-5 w-5 text-muted-foreground" />
                   </div>
                   <Input
                     type="search"
                     placeholder="Search badges..."
-                    className="pl-10 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700"
+                    className="pl-10"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
@@ -163,7 +163,7 @@ export default function Badges({ user, onLogout }: BadgesProps) {
                     value={selectedCategoryId} 
                     onValueChange={setSelectedCategoryId}
                   >
-                    <SelectTrigger className="w-[180px] bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700">
+                    <SelectTrigger className="w-[180px]">
                       <SelectValue placeholder="All Categories" />
                     </SelectTrigger>
                     <SelectContent>
@@ -176,13 +176,12 @@ export default function Badges({ user, onLogout }: BadgesProps) {
                     </SelectContent>
                   </Select>
                   
-                  <button
-                    type="button"
+                  <Button 
+                    variant="default"
                     onClick={handleCreateBadge}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-500 hover:bg-primary-600 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-900 focus:ring-primary-500 dark:focus:ring-primary-400"
                   >
                     Create Badge
-                  </button>
+                  </Button>
                 </div>
               </div>
               
