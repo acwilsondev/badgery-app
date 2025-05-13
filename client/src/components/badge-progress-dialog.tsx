@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Badge } from '@shared/schema';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/queryClient';
+import { apiRequest, apiPrefix } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { generateBadgeIcon } from '@/lib/badge-icons';
 
@@ -129,7 +129,7 @@ export function BadgeProgressDialog({
         completedItems: data.completedItems,
       };
       
-      return apiRequest('POST', `/api/badges/${badge.id}/progress/${userId}`, {
+      return apiRequest('POST', `${apiPrefix}/badges/${badge.id}/progress/${userId}`, {
         progress: data.progress,
         progressData,
         notes: data.notes,
@@ -140,8 +140,8 @@ export function BadgeProgressDialog({
         title: 'Progress updated',
         description: 'Badge progress has been updated successfully',
       });
-      queryClient.invalidateQueries({ queryKey: [`/api/users/${userId}/progress`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/organizations/${organizationId}/progress`] });
+      queryClient.invalidateQueries({ queryKey: [`${apiPrefix}/users/${userId}/progress`] });
+      queryClient.invalidateQueries({ queryKey: [`${apiPrefix}/organizations/${organizationId}/progress`] });
       onOpenChange(false);
     },
     onError: (error: any) => {

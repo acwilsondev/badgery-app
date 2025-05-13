@@ -44,7 +44,7 @@ export function AwardBadgeDialog({ open, onOpenChange, badge, organizationId }: 
   const queryClient = useQueryClient();
 
   const { data: users = [] } = useQuery({
-    queryKey: [`/api/organizations/${organizationId}/users`],
+    queryKey: [`${apiPrefix}/organizations/${organizationId}/users`],
     enabled: !!organizationId && open,
   });
 
