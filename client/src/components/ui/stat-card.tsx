@@ -13,13 +13,15 @@ interface StatCardProps {
 
 export function StatCard({ title, value, icon, color, linkText, linkHref }: StatCardProps) {
   const bgClass = {
-    "primary": "bg-primary-500 dark:bg-primary-600",
-    "secondary": "bg-secondary-500 dark:bg-secondary-600",
-    "accent": "bg-accent-500 dark:bg-accent-600",
-  }[color] || "bg-primary-500 dark:bg-primary-600";
+    "primary": "bg-brand-purple",
+    "secondary": "bg-brand-lilac",
+    "accent": "bg-brand-orange",
+    "brand-purple": "bg-brand-purple",
+    "brand-lilac": "bg-brand-lilac",
+  }[color] || "bg-brand-purple";
 
   return (
-    <Card className="bg-white dark:bg-gray-800 overflow-hidden shadow dark:shadow-gray-700/20 rounded-lg">
+    <Card bordered className="overflow-hidden shadow-sm hover:shadow transition-all duration-200">
       <CardContent className="px-4 py-5 sm:p-6">
         <div className="flex items-center">
           <div className={cn("flex-shrink-0 rounded-md p-3", bgClass)}>
@@ -29,20 +31,20 @@ export function StatCard({ title, value, icon, color, linkText, linkHref }: Stat
           </div>
           <div className="ml-5 w-0 flex-1">
             <dl>
-              <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">{title}</dt>
+              <dt className="text-sm font-medium text-muted-foreground truncate">{title}</dt>
               <dd>
-                <div className="text-lg font-semibold text-gray-900 dark:text-white">{value}</div>
+                <div className="text-2xl font-bold">{value}</div>
               </dd>
             </dl>
           </div>
         </div>
       </CardContent>
       {linkText && linkHref && (
-        <CardFooter className="bg-gray-50 dark:bg-gray-800/50 px-4 py-4 sm:px-6 border-t dark:border-gray-700">
+        <CardFooter className="bg-accent/10 px-4 py-3 sm:px-6 border-t">
           <div className="text-sm">
             <Link 
               to={linkHref}
-              className="font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300"
+              className="font-medium text-brand-purple hover:text-brand-lilac transition-colors"
             >
               {linkText}<span className="sr-only"> {title}</span>
             </Link>

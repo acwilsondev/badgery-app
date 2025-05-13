@@ -115,7 +115,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
   };
 
   return (
-    <div className="h-screen flex overflow-hidden bg-gray-50 dark:bg-gray-900">
+    <div className="h-screen flex overflow-hidden bg-background">
       {/* Sidebar */}
       <Sidebar 
         user={user} 
@@ -127,10 +127,10 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
       {/* Main content */}
       <div className="flex flex-col w-0 flex-1 overflow-hidden">
         {/* Top navigation */}
-        <div className="relative z-10 flex-shrink-0 flex h-16 bg-white dark:bg-gray-800 shadow dark:shadow-gray-700/20">
+        <div className="relative z-10 flex-shrink-0 flex h-16 bg-background border-b">
           <button
             type="button"
-            className="lg:hidden px-4 border-r border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500"
+            className="lg:hidden px-4 border-r border-border text-brand-purple hover:text-brand-purple/80 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-brand-purple/50 transition-colors"
             onClick={() => setMobileMenuOpen(true)}
           >
             <span className="sr-only">Open sidebar</span>
@@ -224,9 +224,9 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
               </div>
               
               {/* Recent Activity Section */}
-              <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Recent Activity</h2>
-              <div className="bg-white dark:bg-gray-800 shadow dark:shadow-gray-700/20 overflow-hidden sm:rounded-md mb-8">
-                <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+              <h2 className="text-xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-brand-purple to-brand-lilac mb-6">Recent Activity</h2>
+              <div className="bg-card border-border shadow-sm overflow-hidden rounded-lg mb-8">
+                <ul className="divide-y divide-border">
                   {recentActivity.length > 0 ? (
                     recentActivity.slice(0, 3).map((activity: any) => (
                       <ActivityItem
@@ -238,11 +238,12 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                         icon={generateBadgeIcon(activity.badgeName, activity.badgeColor)}
                         iconColor={activity.badgeColor === "#4F46E5" ? "primary" : 
                                    activity.badgeColor === "#10B981" ? "secondary" : 
-                                   activity.badgeColor === "#F59E0B" ? "accent" : "primary"}
+                                   activity.badgeColor === "#F59E0B" ? "accent" : 
+                                   activity.badgeColor === "#8A63D2" ? "brand-purple" : "brand-lilac"}
                       />
                     ))
                   ) : (
-                    <li className="px-4 py-6 text-center text-gray-500 dark:text-gray-400">
+                    <li className="px-6 py-6 text-center text-muted-foreground">
                       No recent activity found.
                     </li>
                   )}
