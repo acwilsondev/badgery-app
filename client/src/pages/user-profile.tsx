@@ -28,7 +28,7 @@ export default function UserProfile({ id, user, onLogout }: UserProfileProps) {
   const organizationId = user.organizationId || 1;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [awardDialogOpen, setAwardDialogOpen] = useState(false);
-  const [selectedBadge, setSelectedBadge] = useState<any>(null);
+  const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
 
   // Define types for the API responses
   interface ProfileUser {
@@ -59,6 +59,11 @@ export default function UserProfile({ id, user, onLogout }: UserProfileProps) {
     awardedBy: number;
     awardedAt: string;
     status: string;
+    badgeColor: string;
+    badgeName: string;
+    badgeDescription: string;
+    badgeImageUrl: string | null;
+    awardedByName: string;
     badge: {
       name: string;
       description: string;
@@ -85,7 +90,7 @@ export default function UserProfile({ id, user, onLogout }: UserProfileProps) {
     queryKey: [`/api/organizations/${organizationId}/badges`],
   });
 
-  const handleAwardBadge = (badge: any) => {
+  const handleAwardBadge = (badge: Badge) => {
     setSelectedBadge(badge);
     setAwardDialogOpen(true);
   };
@@ -214,9 +219,9 @@ export default function UserProfile({ id, user, onLogout }: UserProfileProps) {
                       <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-brand-purple mx-auto"></div>
                       <p className="mt-2 text-muted-foreground">Loading badges...</p>
                     </div>
-                  ) : awardedBadges && awardedBadges.length > 0 ? (
+                  ) : Array.isArray(awardedBadges) && awardedBadges.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                      {awardedBadges.map((award: any) => (
+                      {awardedBadges.map((award) => (
                         <Card key={award.id} bordered className="overflow-hidden shadow-sm hover:shadow transition-all duration-200">
                           <CardContent className="p-0">
                             <div className="px-4 py-5 sm:p-6 flex flex-col items-center text-center">
@@ -292,10 +297,10 @@ export default function UserProfile({ id, user, onLogout }: UserProfileProps) {
                       <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-brand-purple mx-auto"></div>
                       <p className="mt-2 text-muted-foreground">Loading activity...</p>
                     </div>
-                  ) : awardedBadges && awardedBadges.length > 0 ? (
+                  ) : Array.isArray(awardedBadges) && awardedBadges.length > 0 ? (
                     <div className="bg-card border-border shadow-sm overflow-hidden rounded-lg">
                       <ul className="divide-y divide-border">
-                        {awardedBadges.map((award: any) => (
+                        {awardedBadges.map((award) => (
                           <li key={award.id}>
                             <div className="px-6 py-4 sm:px-6">
                               <div className="flex items-center justify-between">
