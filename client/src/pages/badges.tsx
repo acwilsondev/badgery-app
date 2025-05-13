@@ -5,6 +5,7 @@ import { BadgeCard, NewBadgeCard } from "@/components/ui/badge-card";
 import { BadgeDialog } from "@/components/badge-dialog";
 import { AwardBadgeDialog } from "@/components/award-badge-dialog";
 import { Badge as BaseBadge } from "@shared/schema";
+import { apiPrefix } from "@/lib/queryClient";
 
 // Extended Badge type with criteriaSections and category
 type Badge = BaseBadge & {
@@ -73,11 +74,11 @@ export default function Badges({ user, onLogout }: BadgesProps) {
   };
 
   const { data: categories = [] } = useQuery<CategoryData[]>({
-    queryKey: [`/api/organizations/${organizationId}/categories`],
+    queryKey: [`${apiPrefix}/organizations/${organizationId}/categories`],
   });
 
   const { data: badges = [] } = useQuery({
-    queryKey: [`/api/organizations/${organizationId}/badges`, selectedCategoryId],
+    queryKey: [`${apiPrefix}/organizations/${organizationId}/badges`, selectedCategoryId],
     queryFn: async ({ queryKey }) => {
       const [base, categoryId] = queryKey;
       const url = categoryId && categoryId !== "all" 

@@ -10,7 +10,7 @@ import UserProfile from "@/pages/user-profile";
 import ProgressTracker from "@/pages/progress";
 import Branding from "@/pages/branding";
 import { useState, useEffect } from "react";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, apiPrefix } from "@/lib/queryClient";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
 
@@ -22,7 +22,7 @@ function Router() {
   useEffect(() => {
     const fetchCurrentUser = async () => {
       try {
-        const res = await fetch('/api/auth/me', {
+        const res = await fetch(`${apiPrefix}/auth/me`, {
           credentials: 'include'
         });
         
@@ -42,7 +42,7 @@ function Router() {
 
   const handleLogin = async (username: string, password: string) => {
     try {
-      const res = await apiRequest('POST', '/api/auth/login', { username, password });
+      const res = await apiRequest('POST', `${apiPrefix}/auth/login`, { username, password });
       const user = await res.json();
       setCurrentUser(user);
       setLocation('/dashboard');
@@ -55,7 +55,7 @@ function Router() {
 
   const handleLogout = async () => {
     try {
-      await apiRequest('POST', '/api/auth/logout', {});
+      await apiRequest('POST', `${apiPrefix}/auth/logout`, {});
       setCurrentUser(null);
       setLocation('/');
     } catch (error) {
