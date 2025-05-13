@@ -121,10 +121,10 @@ export default function Badges({ user, onLogout }: BadgesProps) {
       {/* Main content */}
       <div className="flex flex-col w-0 flex-1 overflow-hidden">
         {/* Top navigation */}
-        <div className="relative z-10 flex-shrink-0 flex h-16 bg-white dark:bg-gray-800 shadow dark:shadow-gray-700/20">
+        <div className="relative z-10 flex-shrink-0 flex h-16 bg-background shadow-sm border-b border-border">
           <button
             type="button"
-            className="lg:hidden px-4 border-r border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500 dark:focus:ring-primary-400"
+            className="lg:hidden px-4 border-r border-border text-muted-foreground hover:text-foreground focus:outline-none focus:ring-2 focus:ring-inset focus:ring-brand-purple/30"
             onClick={() => setMobileMenuOpen(true)}
           >
             <span className="sr-only">Open sidebar</span>
@@ -133,15 +133,15 @@ export default function Badges({ user, onLogout }: BadgesProps) {
         </div>
         
         {/* Page header */}
-        <header className="bg-white dark:bg-gray-800 shadow-sm">
-          <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
-            <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-brand-purple to-brand-lilac">Badges</h1>
+        <header className="bg-background shadow-sm border-b border-border">
+          <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-brand-purple to-brand-lilac">Badges</h1>
             <p className="mt-1 text-sm text-muted-foreground">Manage and award badges to users</p>
           </div>
         </header>
         
         {/* Main content */}
-        <main className="flex-1 relative overflow-y-auto focus:outline-none dark:bg-gray-900">
+        <main className="flex-1 relative overflow-y-auto focus:outline-none bg-background">
           <div className="py-6">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
               {/* Search and filter section */}
@@ -178,9 +178,11 @@ export default function Badges({ user, onLogout }: BadgesProps) {
                   </Select>
                   
                   <Button 
-                    variant="default"
+                    variant="purple"
                     onClick={handleCreateBadge}
+                    className="bg-brand-purple hover:bg-brand-purple/90 text-white"
                   >
+                    <Plus className="h-4 w-4 mr-1" />
                     Create Badge
                   </Button>
                 </div>
@@ -188,12 +190,37 @@ export default function Badges({ user, onLogout }: BadgesProps) {
               
               {/* Tabs for category filtering */}
               <Tabs defaultValue="all" value={currentTab} onValueChange={setCurrentTab} className="mb-6">
-                <TabsList className="bg-accent/10 dark:bg-accent/5">
-                  <TabsTrigger value="all" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:text-primary">All</TabsTrigger>
-                  <TabsTrigger value="technical" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:text-primary">Technical</TabsTrigger>
-                  <TabsTrigger value="leadership" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:text-primary">Leadership</TabsTrigger>
-                  <TabsTrigger value="professional" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:text-primary">Professional</TabsTrigger>
-                  <TabsTrigger value="special" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:text-primary">Special</TabsTrigger>
+                <TabsList className="bg-muted/50 border border-border">
+                  <TabsTrigger 
+                    value="all" 
+                    className="data-[state=active]:bg-brand-purple/10 data-[state=active]:text-brand-purple data-[state=active]:border-b-2 data-[state=active]:border-brand-purple"
+                  >
+                    All
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="technical" 
+                    className="data-[state=active]:bg-brand-purple/10 data-[state=active]:text-brand-purple data-[state=active]:border-b-2 data-[state=active]:border-brand-purple"
+                  >
+                    Technical
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="leadership" 
+                    className="data-[state=active]:bg-brand-purple/10 data-[state=active]:text-brand-purple data-[state=active]:border-b-2 data-[state=active]:border-brand-purple"
+                  >
+                    Leadership
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="professional" 
+                    className="data-[state=active]:bg-brand-purple/10 data-[state=active]:text-brand-purple data-[state=active]:border-b-2 data-[state=active]:border-brand-purple"
+                  >
+                    Professional
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="special" 
+                    className="data-[state=active]:bg-brand-purple/10 data-[state=active]:text-brand-purple data-[state=active]:border-b-2 data-[state=active]:border-brand-purple"
+                  >
+                    Special
+                  </TabsTrigger>
                 </TabsList>
               </Tabs>
               

@@ -111,19 +111,40 @@ export default function ProgressTracker({ user, onLogout }: ProgressProps) {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="flex h-screen bg-background">
       <Sidebar user={user} onLogout={onLogout} />
       
-      <div className="flex-1 overflow-auto p-6">
-        <h1 className="text-3xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-brand-purple to-brand-lilac">Progress Tracking</h1>
+      <div className="flex-1 overflow-auto">
+        {/* Page header */}
+        <header className="bg-background shadow-sm border-b border-border">
+          <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-brand-purple to-brand-lilac">
+              Progress Tracking
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Track your progress towards badge achievements
+            </p>
+          </div>
+        </header>
         
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="mb-4 bg-accent/10 dark:bg-accent/5">
-            <TabsTrigger value="my-progress" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:text-primary">My Progress</TabsTrigger>
-            {(user.role === 'admin' || user.role === 'manager') && (
-              <TabsTrigger value="organization-progress" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:text-primary">Organization Progress</TabsTrigger>
-            )}
-          </TabsList>
+        <div className="p-6">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="mb-6 bg-muted/50 border border-border">
+              <TabsTrigger 
+                value="my-progress" 
+                className="data-[state=active]:bg-brand-purple/10 data-[state=active]:text-brand-purple data-[state=active]:border-b-2 data-[state=active]:border-brand-purple"
+              >
+                My Progress
+              </TabsTrigger>
+              {(user.role === 'admin' || user.role === 'manager') && (
+                <TabsTrigger 
+                  value="organization-progress" 
+                  className="data-[state=active]:bg-brand-purple/10 data-[state=active]:text-brand-purple data-[state=active]:border-b-2 data-[state=active]:border-brand-purple"
+                >
+                  Organization Progress
+                </TabsTrigger>
+              )}
+            </TabsList>
           
           <TabsContent value="my-progress" className="space-y-6">
             {/* In Progress Badges */}
@@ -394,6 +415,7 @@ export default function ProgressTracker({ user, onLogout }: ProgressProps) {
             </TabsContent>
           )}
         </Tabs>
+      </div>
       </div>
       
       {progressDialogOpen && selectedBadge && selectedUserId && (
