@@ -39,17 +39,17 @@ export default function Users({ user, onLogout }: UsersProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const { data: users = [], isLoading } = useQuery({
+  const { data: users = [], isLoading } = useQuery<any[]>({
     queryKey: [`/api/organizations/${organizationId}/users`],
   });
 
-  const filteredUsers = users.filter((user: any) => {
+  const filteredUsers = Array.isArray(users) ? users.filter((user: any) => {
     return searchQuery
       ? user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
         user.username.toLowerCase().includes(searchQuery.toLowerCase())
       : true;
-  });
+  }) : [];
 
   return (
     <div className="h-screen flex overflow-hidden bg-gray-50 dark:bg-gray-900">
@@ -64,10 +64,10 @@ export default function Users({ user, onLogout }: UsersProps) {
       {/* Main content */}
       <div className="flex flex-col w-0 flex-1 overflow-hidden">
         {/* Top navigation */}
-        <div className="relative z-10 flex-shrink-0 flex h-16 bg-white dark:bg-gray-800 shadow dark:shadow-gray-700/20">
+        <div className="relative z-10 flex-shrink-0 flex h-16 bg-background border-b">
           <button
             type="button"
-            className="lg:hidden px-4 border-r border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500 dark:focus:ring-primary-400"
+            className="lg:hidden px-4 border-r border-border text-brand-purple hover:text-brand-purple/80 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-brand-purple/50 transition-colors"
             onClick={() => setMobileMenuOpen(true)}
           >
             <span className="sr-only">Open sidebar</span>
@@ -76,85 +76,92 @@ export default function Users({ user, onLogout }: UsersProps) {
         </div>
         
         {/* Page header */}
-        <header className="bg-white dark:bg-gray-800 shadow-sm dark:shadow-gray-700/20">
+        <header className="bg-white dark:bg-gray-800 shadow-sm">
           <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
-            <h1 className="text-lg font-semibold text-gray-900 dark:text-white">Users</h1>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Manage users and assign badges</p>
+            <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-brand-purple to-brand-lilac">Users</h1>
+            <p className="mt-1 text-sm text-muted-foreground">Manage users and assign badges</p>
           </div>
         </header>
         
         {/* Main content */}
-        <main className="flex-1 relative overflow-y-auto focus:outline-none dark:bg-gray-900">
+        <main className="flex-1 relative overflow-y-auto focus:outline-none bg-background">
           <div className="py-6">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
               {/* Search and actions section */}
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0">
                 <div className="relative w-full sm:w-64">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Search className="h-5 w-5 text-gray-400 dark:text-gray-500" />
+                    <Search className="h-5 w-5 text-muted-foreground" />
                   </div>
                   <Input
                     type="search"
                     placeholder="Search users..."
-                    className="pl-10 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700"
+                    className="pl-10 bg-card border-border"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
                 </div>
                 
-                <Button className="bg-primary-500 hover:bg-primary-600 dark:bg-primary-600 dark:hover:bg-primary-700">
+                <Button 
+                  className="bg-gradient-to-r from-brand-purple to-brand-lilac hover:opacity-90 text-white shadow-md"
+                >
                   <Plus className="h-4 w-4 mr-2" />
                   Add User
                 </Button>
               </div>
               
               {/* Users table */}
-              <div className="bg-white dark:bg-gray-800 shadow dark:shadow-gray-700/20 overflow-hidden rounded-lg">
+              <div className="bg-card border border-border shadow-sm overflow-hidden rounded-lg">
                 {isLoading ? (
-                  <div className="p-6 text-center dark:text-gray-300">Loading users...</div>
+                  <div className="p-8 text-center">
+                    <div className="flex justify-center mb-4">
+                      <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-purple/20 border-t-brand-purple" />
+                    </div>
+                    <p className="text-muted-foreground">Loading users...</p>
+                  </div>
                 ) : filteredUsers.length > 0 ? (
                   <Table>
-                    <TableHeader className="bg-gray-50 dark:bg-gray-900">
-                      <TableRow className="border-b border-gray-200 dark:border-gray-700">
-                        <TableHead className="text-gray-900 dark:text-gray-300">Name</TableHead>
-                        <TableHead className="text-gray-900 dark:text-gray-300">Username</TableHead>
-                        <TableHead className="text-gray-900 dark:text-gray-300">Email</TableHead>
-                        <TableHead className="text-gray-900 dark:text-gray-300">Role</TableHead>
-                        <TableHead className="text-gray-900 dark:text-gray-300 text-right">Actions</TableHead>
+                    <TableHeader className="bg-muted/50">
+                      <TableRow className="border-b border-border hover:bg-transparent">
+                        <TableHead>Name</TableHead>
+                        <TableHead>Username</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Role</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {filteredUsers.map((user: any) => (
-                        <TableRow key={user.id} className="border-b border-gray-200 dark:border-gray-700">
-                          <TableCell className="flex items-center space-x-3 text-gray-900 dark:text-gray-300">
+                        <TableRow key={user.id} className="border-b border-border hover:bg-muted/30 cursor-pointer transition-colors">
+                          <TableCell className="flex items-center space-x-3">
                             <Avatar>
-                              <AvatarFallback className="bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-300">{getInitials(user.name)}</AvatarFallback>
+                              <AvatarFallback className="bg-brand-purple/10 text-brand-purple">{getInitials(user.name)}</AvatarFallback>
                             </Avatar>
                             <span className="font-medium">{user.name}</span>
                           </TableCell>
-                          <TableCell className="text-gray-900 dark:text-gray-300">{user.username}</TableCell>
-                          <TableCell className="text-gray-900 dark:text-gray-300">{user.email}</TableCell>
+                          <TableCell>{user.username}</TableCell>
+                          <TableCell>{user.email}</TableCell>
                           <TableCell>
-                            <Badge variant="outline" className="capitalize text-gray-800 dark:text-gray-300 border-gray-300 dark:border-gray-600">
+                            <Badge variant="outline" className="capitalize border-brand-purple/30 text-brand-purple">
                               {user.role}
                             </Badge>
                           </TableCell>
                           <TableCell className="text-right">
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+                                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
                                   <MoreHorizontal className="h-4 w-4" />
                                   <span className="sr-only">Actions</span>
                                 </Button>
                               </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="dark:bg-gray-800 dark:border-gray-700">
-                                <DropdownMenuItem asChild className="dark:text-gray-300 dark:focus:bg-gray-700">
-                                  <Link to={`/users/${user.id}`}>
+                              <DropdownMenuContent align="end" className="border-border">
+                                <DropdownMenuItem asChild>
+                                  <Link to={`/users/${user.id}`} className="cursor-pointer">
                                     View Profile
                                   </Link>
                                 </DropdownMenuItem>
-                                <DropdownMenuItem className="dark:text-gray-300 dark:focus:bg-gray-700">Award Badge</DropdownMenuItem>
-                                <DropdownMenuItem className="dark:text-gray-300 dark:focus:bg-gray-700">Edit User</DropdownMenuItem>
+                                <DropdownMenuItem className="cursor-pointer">Award Badge</DropdownMenuItem>
+                                <DropdownMenuItem className="cursor-pointer">Edit User</DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
                           </TableCell>
@@ -163,8 +170,14 @@ export default function Users({ user, onLogout }: UsersProps) {
                     </TableBody>
                   </Table>
                 ) : (
-                  <div className="p-6 text-center text-gray-500 dark:text-gray-400">
-                    No users found. Try adjusting your search or add a new user.
+                  <div className="p-8 text-center">
+                    <div className="mb-4">
+                      <div className="h-16 w-16 mx-auto bg-brand-purple/10 rounded-full flex items-center justify-center">
+                        <Search className="h-8 w-8 text-brand-purple" />
+                      </div>
+                    </div>
+                    <h3 className="text-lg font-semibold">No users found</h3>
+                    <p className="text-sm text-muted-foreground mt-2">Try adjusting your search or add a new user.</p>
                   </div>
                 )}
               </div>
