@@ -48,7 +48,24 @@ export default function Badges({ user, onLogout }: BadgesProps) {
     },
   });
 
-  const filteredBadges = badges.filter((badge: Badge) => {
+  // Enhance badges with category information
+  const badgesWithCategories = Array.isArray(badges) ? badges.map((badge: Badge) => {
+    // Find the category that matches this badge's categoryId
+    const category = Array.isArray(categories) 
+      ? categories.find((cat: any) => cat.id === badge.categoryId) 
+      : null;
+      
+    // Return badge with added category property
+    return {
+      ...badge,
+      category: category ? { 
+        id: category.id, 
+        name: category.name 
+      } : null
+    };
+  }) : [];
+  
+  const filteredBadges = badgesWithCategories.filter((badge: any) => {
     const matchesSearch = searchQuery
       ? badge.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         badge.description.toLowerCase().includes(searchQuery.toLowerCase())

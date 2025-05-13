@@ -40,11 +40,25 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
   const [awardDialogOpen, setAwardDialogOpen] = useState(false);
   const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
 
-  const { data: stats = { totalBadges: 0, totalUsers: 0, totalAwarded: 0 } } = useQuery({
+  type StatsData = {
+    totalBadges: number;
+    totalUsers: number;
+    totalAwarded: number;
+    inProgress: number;
+  };
+
+  const { data: stats = { totalBadges: 0, totalUsers: 0, totalAwarded: 0, inProgress: 0 } } = useQuery<StatsData>({
     queryKey: [`/api/organizations/${organizationId}/stats`],
   });
 
-  const { data: categories = [] } = useQuery({
+  type CategoryData = {
+    id: number;
+    name: string;
+    organizationId: number;
+    createdAt: string;
+  };
+
+  const { data: categories = [] } = useQuery<CategoryData[]>({
     queryKey: [`/api/organizations/${organizationId}/categories`],
   });
 
@@ -61,7 +75,27 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
     },
   });
 
-  const { data: recentActivity = [] } = useQuery({
+  type ActivityData = {
+    id: number;
+    badgeId: number;
+    userId: number;
+    awardedBy: number;
+    awardedAt: string;
+    badge: {
+      name: string;
+      description: string;
+      color: string;
+      imageUrl: string | null;
+    };
+    user: {
+      name: string;
+    };
+    awardedByUser: {
+      name: string;
+    };
+  };
+
+  const { data: recentActivity = [] } = useQuery<ActivityData[]>({
     queryKey: [`/api/organizations/${organizationId}/awarded-badges`],
   });
 
