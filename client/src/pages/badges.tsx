@@ -13,6 +13,13 @@ import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { generateBadgeIcon } from "@/lib/badge-icons";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface BadgesProps {
   user: {
@@ -30,6 +37,7 @@ export default function Badges({ user, onLogout }: BadgesProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [badgeDialogOpen, setBadgeDialogOpen] = useState(false);
   const [awardDialogOpen, setAwardDialogOpen] = useState(false);
+  const [viewDetailsDialogOpen, setViewDetailsDialogOpen] = useState(false);
   const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("all");
@@ -113,10 +121,9 @@ export default function Badges({ user, onLogout }: BadgesProps) {
   };
 
   const handleViewBadge = (badge: Badge) => {
-    // This would show a badge details view in a real app
     console.log("View badge:", badge);
-    // Simple view functionality - could be enhanced later
-    // For now we're just logging the badge details
+    setSelectedBadge(badge);
+    setViewDetailsDialogOpen(true);
   };
 
   return (
@@ -388,6 +395,86 @@ export default function Badges({ user, onLogout }: BadgesProps) {
           badge={selectedBadge}
           organizationId={organizationId}
         />
+      )}
+      
+      {/* Badge Details Dialog */}
+      {viewDetailsDialogOpen && selectedBadge && (
+        <Dialog open={viewDetailsDialogOpen} onOpenChange={setViewDetailsDialogOpen}>
+          <DialogContent className="sm:max-w-[600px]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <div 
+                  className="w-8 h-8 rounded flex items-center justify-center text-white" 
+                  style={{ backgroundColor: selectedBadge.color || '#6941C6' }}
+                >
+                  {generateBadgeIcon(selectedBadge.name, selectedBadge.color || '#6941C6')}
+                </div>
+                <span>{selectedBadge.name}</span>
+              </DialogTitle>
+              <DialogDescription>
+                {selectedBadge.description}
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4 py-4">
+              {/* Badge Image if available */}
+              {selectedBadge.imageUrl && (
+                <div className="flex justify-center">
+                  <div className="rounded-lg overflow-hidden shadow-md w-40 h-40">
+                    <img 
+                      src={selectedBadge.imageUrl} 
+                      alt={selectedBadge.name} 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                </div>
+              )}
+              
+              {/* Badge details */}
+              <div className="space-y-4">
+                <div className="grid grid-cols-4 gap-4">
+                  <div className="col-span-1 text-sm font-medium">Category:</div>
+                  <div className="col-span-3 text-sm">
+                    {selectedBadge.categoryId 
+                      ? categories.find(c => c.id === selectedBadge.categoryId)?.name || 'Uncategorized' 
+                      : 'Uncategorized'}
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-4 gap-4">
+                  <div className="col-span-1 text-sm font-medium">Progress:</div>
+                  <div className="col-span-3 text-sm">
+                    {selectedBadge.requiresProgress ? 'Yes' : 'No'}
+                  </div>
+                </div>
+                
+                {/* Criteria sections if available */}
+                {selectedBadge.criteriaSections && (
+                  <div className="mt-4">
+                    <h3 className="text-sm font-semibold mb-2">Badge Criteria</h3>
+                    <div className="space-y-4">
+                      {Array.isArray(selectedBadge.criteriaSections) && selectedBadge.criteriaSections.map((section: any, index: number) => (
+                        <div key={index} className="border rounded-md p-3">
+                          <h4 className="font-medium text-sm mb-2">{section.title}</h4>
+                          <ul className="space-y-1">
+                            {section.criteria.map((criterion: any, cIndex: number) => (
+                              <li key={cIndex} className="text-sm">
+                                • {criterion.name}
+                                {criterion.description && (
+                                  <span className="text-muted-foreground block ml-3 text-xs">{criterion.description}</span>
+                                )}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );
