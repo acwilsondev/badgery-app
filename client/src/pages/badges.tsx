@@ -97,29 +97,19 @@ export default function Badges({ user, onLogout }: BadgesProps) {
     setBadgeDialogOpen(true);
   };
 
-  // Enhanced handler functions with better state management
+  // Simplified handler functions
   const handleEditBadge = (badge: Badge) => {
     console.log("Edit badge:", badge.id);
-    // Set the badge first, then open the dialog
     setSelectedBadge(badge);
-    // Make sure to close other dialogs
     setAwardDialogOpen(false);
-    // Open the edit dialog
-    setTimeout(() => {
-      setBadgeDialogOpen(true);
-    }, 50);
+    setBadgeDialogOpen(true);
   };
 
   const handleAwardBadge = (badge: Badge) => {
     console.log("Award badge:", badge.id);
-    // Set the badge first, then open the dialog
     setSelectedBadge(badge);
-    // Make sure to close other dialogs
     setBadgeDialogOpen(false);
-    // Open the award dialog
-    setTimeout(() => {
-      setAwardDialogOpen(true);
-    }, 50);
+    setAwardDialogOpen(true);
   };
 
   const handleViewBadge = (badge: Badge) => {
@@ -380,20 +370,25 @@ export default function Badges({ user, onLogout }: BadgesProps) {
         </main>
       </div>
       
-      {/* Badge and Award Badge Dialogs - always render them but control visibility with 'open' prop */}
-      <BadgeDialog
-        open={badgeDialogOpen}
-        onOpenChange={setBadgeDialogOpen}
-        badge={selectedBadge || undefined}
-        organizationId={organizationId}
-      />
+      {/* Badge Dialog - only render when needed */}
+      {badgeDialogOpen && (
+        <BadgeDialog
+          open={badgeDialogOpen}
+          onOpenChange={setBadgeDialogOpen}
+          badge={selectedBadge || undefined}
+          organizationId={organizationId}
+        />
+      )}
       
-      <AwardBadgeDialog
-        open={awardDialogOpen}
-        onOpenChange={setAwardDialogOpen}
-        badge={selectedBadge || undefined}
-        organizationId={organizationId}
-      />
+      {/* Award Badge Dialog - only render when we have a selected badge */}
+      {awardDialogOpen && selectedBadge && (
+        <AwardBadgeDialog
+          open={awardDialogOpen}
+          onOpenChange={setAwardDialogOpen}
+          badge={selectedBadge}
+          organizationId={organizationId}
+        />
+      )}
     </div>
   );
 }
