@@ -15,7 +15,10 @@ interface BadgeCardProps {
 
 export function BadgeCard({ badge, onEdit, onAward, onClick }: BadgeCardProps) {
   return (
-    <Card className="overflow-hidden shadow hover:shadow-md transition-all duration-200 border border-gray-200 dark:border-gray-700 dark:bg-gray-800">
+    <Card 
+      bordered 
+      className="overflow-hidden shadow hover:shadow-md transition-all duration-200"
+    >
       <CardContent 
         className="p-0 cursor-pointer"
         onClick={() => onClick && onClick(badge)}
@@ -24,8 +27,8 @@ export function BadgeCard({ badge, onEdit, onAward, onClick }: BadgeCardProps) {
           <div 
             className="badge-circle w-20 h-20 mb-4 flex items-center justify-center"
             style={{ 
-              backgroundColor: `${badge.color}10`,
-              color: badge.color || "#4F46E5" 
+              backgroundColor: `${badge.color}20`,
+              color: badge.color || "#5E2B97" 
             }}
           >
             {badge.imageUrl ? (
@@ -35,26 +38,25 @@ export function BadgeCard({ badge, onEdit, onAward, onClick }: BadgeCardProps) {
                 className="w-full h-full object-cover"
               />
             ) : (
-              generateBadgeIcon(badge.name, badge.color || "#4F46E5")
+              generateBadgeIcon(badge.name, badge.color || "#5E2B97")
             )}
           </div>
           
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-1">{badge.name}</h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{badge.description}</p>
+          <h3 className="text-lg font-medium text-foreground mb-1">{badge.name}</h3>
+          <p className="text-sm text-muted-foreground mb-4">{badge.description}</p>
           
-          <div className="flex justify-between w-full mt-auto pt-2 border-t border-gray-100 dark:border-gray-700">
-            <span className="text-xs text-gray-500 dark:text-gray-400">{badge.category?.name || "Uncategorized"}</span>
-            <span className="text-xs text-gray-500 dark:text-gray-400">{badge.awarded || 0} awarded</span>
+          <div className="flex justify-between w-full mt-auto pt-2 border-t border-brand-lilac/20 dark:border-brand-lilac/10">
+            <span className="text-xs text-muted-foreground">{badge.category?.name || "Uncategorized"}</span>
+            <span className="text-xs text-muted-foreground">{badge.awarded || 0} awarded</span>
           </div>
         </div>
       </CardContent>
       
       {(onEdit || onAward) && (
-        <CardFooter className="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 px-4 py-3 sm:px-6 flex justify-between items-center">
+        <CardFooter className="border-t border-brand-lilac/20 dark:border-brand-lilac/10 bg-accent/5 px-4 py-3 sm:px-6 flex justify-between items-center">
           {onEdit && (
             <Button 
               variant="ghost" 
-              className="text-sm font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300"
               onClick={() => onEdit(badge)}
             >
               Edit
@@ -64,7 +66,6 @@ export function BadgeCard({ badge, onEdit, onAward, onClick }: BadgeCardProps) {
           {onAward && (
             <Button 
               variant="ghost" 
-              className="text-sm font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300"
               onClick={() => onAward(badge)}
             >
               Award

@@ -4,12 +4,14 @@ import { cn } from "@/lib/utils"
 
 const Card = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
+  React.HTMLAttributes<HTMLDivElement> & { bordered?: boolean, gradient?: boolean }
+>(({ className, bordered = false, gradient = false, ...props }, ref) => (
   <div
     ref={ref}
     className={cn(
       "rounded-lg border bg-card text-card-foreground shadow-sm",
+      bordered && "border-brand-lilac/30 dark:border-brand-lilac/20",
+      gradient && "bg-gradient-to-br from-card to-white dark:from-card dark:to-gray-700",
       className
     )}
     {...props}
@@ -31,12 +33,13 @@ CardHeader.displayName = "CardHeader"
 
 const CardTitle = React.forwardRef<
   HTMLParagraphElement,
-  React.HTMLAttributes<HTMLHeadingElement>
->(({ className, ...props }, ref) => (
+  React.HTMLAttributes<HTMLHeadingElement> & { gradient?: boolean }
+>(({ className, gradient = false, ...props }, ref) => (
   <h3
     ref={ref}
     className={cn(
       "text-2xl font-semibold leading-none tracking-tight",
+      gradient && "text-transparent bg-clip-text bg-gradient-to-r from-brand-purple to-brand-lilac",
       className
     )}
     {...props}
