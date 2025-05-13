@@ -307,18 +307,18 @@ export default function ProgressTracker({ user, onLogout }: ProgressProps) {
                 </CardHeader>
                 <CardContent>
                   {loadingOrgProgress ? (
-                    <div className="flex justify-center py-6 text-gray-600 dark:text-gray-400">Loading organization progress...</div>
+                    <div className="flex justify-center py-6 text-muted-foreground">Loading organization progress...</div>
                   ) : orgProgress && orgProgress.length > 0 ? (
-                    <div className="rounded-md border border-gray-200 dark:border-gray-700">
+                    <div className="rounded-md border">
                       <Table>
-                        <TableHeader className="bg-gray-50 dark:bg-gray-900">
-                          <TableRow className="border-b border-gray-200 dark:border-gray-700">
-                            <TableHead className="text-gray-900 dark:text-gray-300">User</TableHead>
-                            <TableHead className="text-gray-900 dark:text-gray-300">Badge</TableHead>
-                            <TableHead className="text-gray-900 dark:text-gray-300">Progress</TableHead>
-                            <TableHead className="text-gray-900 dark:text-gray-300">Last Updated</TableHead>
-                            <TableHead className="text-gray-900 dark:text-gray-300">Status</TableHead>
-                            <TableHead className="text-gray-900 dark:text-gray-300">Actions</TableHead>
+                        <TableHeader className="bg-muted/50">
+                          <TableRow>
+                            <TableHead>User</TableHead>
+                            <TableHead>Badge</TableHead>
+                            <TableHead>Progress</TableHead>
+                            <TableHead>Last Updated</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Actions</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -355,7 +355,6 @@ export default function ProgressTracker({ user, onLogout }: ProgressProps) {
                                 <Button
                                   variant="outline" 
                                   size="sm"
-                                  className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
                                   onClick={() => {
                                     // Find the full badge from badges array
                                     const badge = badges?.find((b: Badge) => b.id === item.badgeId);
