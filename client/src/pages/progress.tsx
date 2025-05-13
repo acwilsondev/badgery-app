@@ -111,45 +111,46 @@ export default function ProgressTracker({ user, onLogout }: ProgressProps) {
   };
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
       <Sidebar user={user} onLogout={onLogout} />
       
       <div className="flex-1 overflow-auto p-6">
-        <h1 className="text-3xl font-bold mb-6">Progress Tracking</h1>
+        <h1 className="text-3xl font-bold mb-6 text-gray-900 dark:text-white">Progress Tracking</h1>
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="mb-4">
-            <TabsTrigger value="my-progress">My Progress</TabsTrigger>
+          <TabsList className="mb-4 bg-gray-100 dark:bg-gray-800">
+            <TabsTrigger value="my-progress" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:text-primary-600 dark:data-[state=active]:text-primary-400">My Progress</TabsTrigger>
             {(user.role === 'admin' || user.role === 'manager') && (
-              <TabsTrigger value="organization-progress">Organization Progress</TabsTrigger>
+              <TabsTrigger value="organization-progress" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:text-primary-600 dark:data-[state=active]:text-primary-400">Organization Progress</TabsTrigger>
             )}
           </TabsList>
           
           <TabsContent value="my-progress" className="space-y-6">
             {/* In Progress Badges */}
-            <Card>
+            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
               <CardHeader>
-                <CardTitle>In Progress Badges</CardTitle>
-                <CardDescription>Badges you are currently working towards</CardDescription>
+                <CardTitle className="text-gray-900 dark:text-white">In Progress Badges</CardTitle>
+                <CardDescription className="text-gray-500 dark:text-gray-400">Badges you are currently working towards</CardDescription>
               </CardHeader>
               <CardContent>
                 {loadingUserProgress ? (
-                  <div className="flex justify-center py-6">Loading progress data...</div>
+                  <div className="flex justify-center py-6 text-gray-600 dark:text-gray-400">Loading progress data...</div>
                 ) : userProgress && userProgress.length > 0 ? (
                   <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {userProgress.filter((item: any) => item.status === 'in_progress').map((item: any) => (
-                      <Card key={item.id} className="overflow-hidden">
+                      <Card key={item.id} className="overflow-hidden bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                         <CardHeader className="pb-2 pt-4">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-2">
                               <div className="w-8 h-8">
                                 {generateBadgeIcon(item.badgeName, item.badgeColor)}
                               </div>
-                              <CardTitle className="text-lg">{item.badgeName}</CardTitle>
+                              <CardTitle className="text-lg text-gray-900 dark:text-white">{item.badgeName}</CardTitle>
                             </div>
                             <Button 
                               variant="ghost" 
                               size="sm" 
+                              className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
                               onClick={() => handleUpdateProgress(
                                 {
                                   id: item.badgeId,
@@ -171,12 +172,12 @@ export default function ProgressTracker({ user, onLogout }: ProgressProps) {
                         </CardHeader>
                         <CardContent>
                           <div className="space-y-2">
-                            <div className="flex justify-between text-sm">
+                            <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
                               <span>Progress</span>
                               <span>{Number(item.progress).toFixed(0)}%</span>
                             </div>
-                            <Progress value={Number(item.progress)} className="h-2" />
-                            <div className="text-xs text-muted-foreground">
+                            <Progress value={Number(item.progress)} className="h-2 bg-gray-200 dark:bg-gray-700" />
+                            <div className="text-xs text-gray-500 dark:text-gray-400">
                               Last updated: {formatDate(item.lastUpdated)}
                             </div>
                           </div>
@@ -185,7 +186,7 @@ export default function ProgressTracker({ user, onLogout }: ProgressProps) {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-6 text-muted-foreground">
+                  <div className="text-center py-6 text-gray-500 dark:text-gray-400">
                     You don't have any badges in progress
                   </div>
                 )}
@@ -194,30 +195,30 @@ export default function ProgressTracker({ user, onLogout }: ProgressProps) {
             
             {/* Ready to Start Badges */}
             {badgesWithoutProgress.length > 0 && (
-              <Card>
+              <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                 <CardHeader>
-                  <CardTitle>Ready to Start</CardTitle>
-                  <CardDescription>Badges you can work towards</CardDescription>
+                  <CardTitle className="text-gray-900 dark:text-white">Ready to Start</CardTitle>
+                  <CardDescription className="text-gray-500 dark:text-gray-400">Badges you can work towards</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {badgesWithoutProgress.map((badge: Badge) => (
-                      <Card key={badge.id} className="overflow-hidden">
+                      <Card key={badge.id} className="overflow-hidden bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                         <CardHeader className="pb-2 pt-4">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-2">
                               <div className="w-8 h-8">
                                 {generateBadgeIcon(badge.name, badge.color || '#4F46E5')}
                               </div>
-                              <CardTitle className="text-lg">{badge.name}</CardTitle>
+                              <CardTitle className="text-lg text-gray-900 dark:text-white">{badge.name}</CardTitle>
                             </div>
                           </div>
                         </CardHeader>
                         <CardContent>
-                          <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{badge.description}</p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 line-clamp-2">{badge.description}</p>
                           <Button 
                             variant="outline" 
-                            className="w-full"
+                            className="w-full bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
                             onClick={() => handleStartProgress(badge)}
                           >
                             Start Progress
