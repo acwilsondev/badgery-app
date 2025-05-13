@@ -4,97 +4,101 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Light mode - based on brand colors */
+    --background: 240 12% 95%; /* Light Cool Gray #F2F2F5 */
+    --foreground: 0 0% 18%; /* Charcoal Gray #2E2E2E */
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 0 0% 18%; /* Charcoal Gray #2E2E2E */
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 0 0% 18%; /* Charcoal Gray #2E2E2E */
 
-    --primary: 246 84% 59%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 273 57% 38%; /* Deep Purple #5E2B97 */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 160 84% 39%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 18 100% 72%; /* Bright Coral #FF9C6E */
+    --secondary-foreground: 0 0% 18%; /* Charcoal Gray #2E2E2E */
 
-    --accent: 35 92% 50%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 22 93% 55%; /* Vibrant Orange #F76C1F */
+    --accent-foreground: 0 0% 100%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 240 12% 90%; /* Lighter version of Light Cool Gray */
+    --muted-foreground: 0 0% 40%; /* Medium gray */
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 246 84% 59%;
+    --border: 268 20% 85%; /* Very light lilac */
+    --input: 268 20% 85%; /* Very light lilac */
+    --ring: 273 57% 38%; /* Deep Purple #5E2B97 */
 
     --radius: 0.5rem;
 
-    --sidebar-background: 246 84% 59%;
+    /* Sidebar colors */
+    --sidebar-background: 273 57% 38%; /* Deep Purple #5E2B97 */
     --sidebar-foreground: 0 0% 100%;
     --sidebar-primary: 0 0% 100%;
-    --sidebar-primary-foreground: 246 84% 59%;
-    --sidebar-accent: 214.3 31.8% 91.4%;
-    --sidebar-accent-foreground: 246 84% 59%;
-    --sidebar-border: 246 70% 65%;
+    --sidebar-primary-foreground: 273 57% 38%; /* Deep Purple #5E2B97 */
+    --sidebar-accent: 268 55% 76%; /* Soft Lilac #BFA5E0 */
+    --sidebar-accent-foreground: 273 57% 38%; /* Deep Purple #5E2B97 */
+    --sidebar-border: 273 50% 50%; /* Medium purple */
     --sidebar-ring: 0 0% 100%;
 
-    --chart-1: 246 84% 59%;
-    --chart-2: 160 84% 39%;
-    --chart-3: 35 92% 50%;
-    --chart-4: 217 91% 60%;
-    --chart-5: 358 75% 59%;
+    /* Chart colors */
+    --chart-1: 273 57% 38%; /* Deep Purple #5E2B97 */
+    --chart-2: 22 93% 55%; /* Vibrant Orange #F76C1F */
+    --chart-3: 268 55% 76%; /* Soft Lilac #BFA5E0 */
+    --chart-4: 18 100% 72%; /* Bright Coral #FF9C6E */
+    --chart-5: 273 40% 55%; /* Medium purple */
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    /* Dark mode - based on brand colors */
+    --background: 0 0% 12%; /* Darker version of Charcoal Gray */
+    --foreground: 240 12% 95%; /* Light Cool Gray #F2F2F5 */
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 0 0% 18%; /* Charcoal Gray #2E2E2E */
+    --card-foreground: 240 12% 95%; /* Light Cool Gray #F2F2F5 */
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 0 0% 18%; /* Charcoal Gray #2E2E2E */
+    --popover-foreground: 240 12% 95%; /* Light Cool Gray #F2F2F5 */
 
-    --primary: 246 84% 59%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 273 57% 48%; /* Brighter Deep Purple for dark mode */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 160 84% 39%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 18 100% 72%; /* Bright Coral #FF9C6E */
+    --secondary-foreground: 0 0% 18%; /* Charcoal Gray #2E2E2E */
 
-    --accent: 35 92% 50%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 22 93% 60%; /* Slightly brighter Vibrant Orange for dark mode */
+    --accent-foreground: 0 0% 100%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 0 0% 25%; /* Dark gray */
+    --muted-foreground: 240 12% 80%; /* Light gray */
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 84% 50%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 246 84% 59%;
+    --border: 0 0% 25%; /* Dark gray border */
+    --input: 0 0% 25%; /* Dark gray input */
+    --ring: 273 57% 48%; /* Brighter Deep Purple for dark mode */
     
     /* Dark sidebar colors */
-    --sidebar-background: 246 60% 40%;
+    --sidebar-background: 273 50% 28%; /* Darker Deep Purple */
     --sidebar-foreground: 0 0% 100%;
     --sidebar-primary: 0 0% 100%;
-    --sidebar-primary-foreground: 246 60% 40%;
-    --sidebar-accent: 217.2 32.6% 17.5%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 246 45% 50%;
+    --sidebar-primary-foreground: 273 50% 28%; /* Darker Deep Purple */
+    --sidebar-accent: 268 40% 50%; /* Darker Soft Lilac */
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 273 40% 35%; /* Even darker purple */
     --sidebar-ring: 0 0% 100%;
     
-    /* Dark chart colors - slightly adjusted for better visibility */
-    --chart-1: 246 75% 65%;
-    --chart-2: 160 75% 45%;
-    --chart-3: 35 85% 55%;
-    --chart-4: 217 85% 65%;
-    --chart-5: 358 70% 65%;
+    /* Dark chart colors - adjusted for better visibility on dark backgrounds */
+    --chart-1: 273 60% 55%; /* Brighter Deep Purple */
+    --chart-2: 22 93% 65%; /* Brighter Vibrant Orange */
+    --chart-3: 268 55% 76%; /* Soft Lilac #BFA5E0 */
+    --chart-4: 18 100% 72%; /* Bright Coral #FF9C6E */
+    --chart-5: 273 50% 65%; /* Brighter Medium Purple */
   }
 
   * {
