@@ -30,15 +30,58 @@ export default function UserProfile({ id, user, onLogout }: UserProfileProps) {
   const [awardDialogOpen, setAwardDialogOpen] = useState(false);
   const [selectedBadge, setSelectedBadge] = useState<any>(null);
 
-  const { data: profileUser, isLoading: isLoadingUser } = useQuery({
+  // Define types for the API responses
+  interface ProfileUser {
+    id: number;
+    name: string;
+    email: string;
+    role: string;
+    organizationId?: number;
+    username: string;
+  }
+
+  interface Badge {
+    id: number;
+    name: string;
+    description: string;
+    imageUrl: string | null;
+    color: string;
+    categoryId?: number;
+    organizationId: number;
+    createdAt: string;
+    criteriaSections?: any;
+  }
+
+  interface AwardedBadge {
+    id: number;
+    badgeId: number;
+    userId: number;
+    awardedBy: number;
+    awardedAt: string;
+    status: string;
+    badge: {
+      name: string;
+      description: string;
+      color: string;
+      imageUrl: string | null;
+    };
+    user: {
+      name: string;
+    };
+    awardedByUser: {
+      name: string;
+    };
+  }
+
+  const { data: profileUser, isLoading: isLoadingUser } = useQuery<ProfileUser>({
     queryKey: [`/api/users/${id}`],
   });
 
-  const { data: awardedBadges = [], isLoading: isLoadingBadges } = useQuery({
+  const { data: awardedBadges = [], isLoading: isLoadingBadges } = useQuery<AwardedBadge[]>({
     queryKey: [`/api/users/${id}/awarded-badges`],
   });
 
-  const { data: availableBadges = [] } = useQuery({
+  const { data: availableBadges = [] } = useQuery<Badge[]>({
     queryKey: [`/api/organizations/${organizationId}/badges`],
   });
 
@@ -49,17 +92,28 @@ export default function UserProfile({ id, user, onLogout }: UserProfileProps) {
 
   if (isLoadingUser) {
     return (
-      <div className="h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+      <div className="h-screen flex items-center justify-center bg-background">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary-500 dark:border-primary-400 mx-auto"></div>
-          <p className="mt-3 text-gray-600 dark:text-gray-400">Loading user profile...</p>
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-brand-purple/20 border-t-brand-purple mx-auto"></div>
+          <p className="mt-3 text-muted-foreground">Loading user profile...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  // Ensure we have the profile data before rendering
+  if (!profileUser) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <p className="text-muted-foreground">User not found</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="h-screen flex overflow-hidden bg-gray-50 dark:bg-gray-900">
+    <div className="h-screen flex overflow-hidden bg-background">
       {/* Sidebar */}
       <Sidebar 
         user={user} 
@@ -119,10 +173,11 @@ export default function UserProfile({ id, user, onLogout }: UserProfileProps) {
                   </div>
                   <Button
                     variant="default"
-                    className="gap-2"
+                    className="gap-2 bg-brand-purple hover:bg-brand-purple/90 text-white"
                     onClick={() => {
-                      if (availableBadges && availableBadges.length > 0) {
-                        handleAwardBadge(availableBadges[0]);
+                      const badgeList = Array.isArray(availableBadges) ? availableBadges : [];
+                      if (badgeList.length > 0) {
+                        handleAwardBadge(badgeList[0]);
                       }
                     }}
                   >
