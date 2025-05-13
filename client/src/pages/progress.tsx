@@ -323,25 +323,31 @@ export default function ProgressTracker({ user, onLogout }: ProgressProps) {
                         </TableHeader>
                         <TableBody>
                           {orgProgress.map((item: any) => (
-                            <TableRow key={item.id} className="border-b border-gray-200 dark:border-gray-700">
-                              <TableCell className="text-gray-900 dark:text-gray-300">{item.userName}</TableCell>
-                              <TableCell className="text-gray-900 dark:text-gray-300">
+                            <TableRow key={item.id}>
+                              <TableCell>{item.userName}</TableCell>
+                              <TableCell>
                                 <div className="flex items-center space-x-2">
-                                  <div className="w-6 h-6">
-                                    {generateBadgeIcon(item.badgeName, '#4F46E5')}
+                                  <div 
+                                    className="w-6 h-6 flex items-center justify-center rounded-full"
+                                    style={{ 
+                                      backgroundColor: `${item.badgeColor}20` || 'rgba(94, 43, 151, 0.1)',
+                                      color: item.badgeColor || "#5E2B97"
+                                    }}
+                                  >
+                                    {generateBadgeIcon(item.badgeName, item.badgeColor || '#5E2B97')}
                                   </div>
                                   <span>{item.badgeName}</span>
                                 </div>
                               </TableCell>
-                              <TableCell className="text-gray-900 dark:text-gray-300">
+                              <TableCell>
                                 <div className="w-24">
-                                  <Progress value={Number(item.progress)} className="h-2 bg-gray-200 dark:bg-gray-700" />
+                                  <Progress value={Number(item.progress)} gradient className="h-2" />
                                 </div>
-                                <div className="text-xs mt-1">{Number(item.progress).toFixed(0)}%</div>
+                                <div className="text-xs mt-1 text-muted-foreground">{Number(item.progress).toFixed(0)}%</div>
                               </TableCell>
-                              <TableCell className="text-gray-900 dark:text-gray-300">
+                              <TableCell>
                                 <div className="text-sm">{formatDate(item.lastUpdated)}</div>
-                                <div className="text-xs text-gray-500 dark:text-gray-400">by {item.updatedByName}</div>
+                                <div className="text-xs text-muted-foreground">by {item.updatedByName}</div>
                               </TableCell>
                               <TableCell>
                                 <div className={`rounded-full px-2 py-1 text-xs font-medium inline-block
