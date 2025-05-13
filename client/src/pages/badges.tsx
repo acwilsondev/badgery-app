@@ -4,8 +4,20 @@ import { Sidebar } from "@/components/sidebar";
 import { BadgeCard, NewBadgeCard } from "@/components/ui/badge-card";
 import { BadgeDialog } from "@/components/badge-dialog";
 import { AwardBadgeDialog } from "@/components/award-badge-dialog";
-import { Badge } from "@shared/schema";
-import { Menu, Search, Plus, LayoutGrid, List } from "lucide-react";
+import { Badge as BaseBadge } from "@shared/schema";
+
+// Extended Badge type with criteriaSections
+type Badge = BaseBadge & {
+  criteriaSections?: Array<{
+    title: string;
+    criteria: Array<{
+      id: number;
+      name: string;
+      description?: string;
+    }>;
+  }>;
+};
+import { Menu, Search, Plus, LayoutGrid, List, Eye, Edit, Award, MoreHorizontal } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -13,6 +25,11 @@ import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { generateBadgeIcon } from "@/lib/badge-icons";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Dialog,
   DialogContent,
@@ -38,7 +55,16 @@ export default function Badges({ user, onLogout }: BadgesProps) {
   const [badgeDialogOpen, setBadgeDialogOpen] = useState(false);
   const [awardDialogOpen, setAwardDialogOpen] = useState(false);
   const [viewDetailsDialogOpen, setViewDetailsDialogOpen] = useState(false);
-  const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
+  const [selectedBadge, setSelectedBadge] = useState<Badge & {
+    criteriaSections?: Array<{
+      title: string;
+      criteria: Array<{
+        id: number;
+        name: string;
+        description?: string;
+      }>;
+    }>;
+  } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("all");
   const [currentTab, setCurrentTab] = useState("all");
@@ -108,21 +134,51 @@ export default function Badges({ user, onLogout }: BadgesProps) {
   // Simplified handler functions
   const handleEditBadge = (badge: Badge) => {
     console.log("Edit badge:", badge.id);
-    setSelectedBadge(badge);
+    // Use the same cast for type consistency
+    setSelectedBadge(badge as Badge & {
+      criteriaSections?: Array<{
+        title: string;
+        criteria: Array<{
+          id: number;
+          name: string;
+          description?: string;
+        }>;
+      }>;
+    });
     setAwardDialogOpen(false);
     setBadgeDialogOpen(true);
   };
 
   const handleAwardBadge = (badge: Badge) => {
     console.log("Award badge:", badge.id);
-    setSelectedBadge(badge);
+    // Use the same cast for type consistency
+    setSelectedBadge(badge as Badge & {
+      criteriaSections?: Array<{
+        title: string;
+        criteria: Array<{
+          id: number;
+          name: string;
+          description?: string;
+        }>;
+      }>;
+    });
     setBadgeDialogOpen(false);
     setAwardDialogOpen(true);
   };
 
   const handleViewBadge = (badge: Badge) => {
     console.log("View badge:", badge);
-    setSelectedBadge(badge);
+    // Cast the badge to include criteriaSections for TypeScript
+    setSelectedBadge(badge as Badge & {
+      criteriaSections?: Array<{
+        title: string;
+        criteria: Array<{
+          id: number;
+          name: string;
+          description?: string;
+        }>;
+      }>;
+    });
     setViewDetailsDialogOpen(true);
   };
 
@@ -314,46 +370,53 @@ export default function Badges({ user, onLogout }: BadgesProps) {
                         {badge.description}
                       </div>
                       <div className="col-span-2 sm:col-span-3 flex justify-end gap-2">
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={() => handleViewBadge(badge)}
-                          className="h-8 w-8 p-0"
-                          title="View badge details"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye">
-                            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
-                            <circle cx="12" cy="12" r="3" />
-                          </svg>
-                        </Button>
-                        {user.role === 'admin' && (
-                          <>
+                        <Popover>
+                          <PopoverTrigger asChild>
                             <Button 
                               variant="ghost" 
                               size="sm" 
-                              onClick={() => handleEditBadge(badge)}
                               className="h-8 w-8 p-0"
-                              title="Edit badge"
+                              title="Actions"
                             >
-                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-pencil">
-                                <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                                <path d="m15 5 4 4" />
-                              </svg>
+                              <MoreHorizontal className="h-4 w-4" />
                             </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              onClick={() => handleAwardBadge(badge)}
-                              className="h-8 w-8 p-0"
-                              title="Award badge"
-                            >
-                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-award">
-                                <circle cx="12" cy="8" r="6" />
-                                <path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11" />
-                              </svg>
-                            </Button>
-                          </>
-                        )}
+                          </PopoverTrigger>
+                          <PopoverContent className="w-48 p-2" align="end">
+                            <div className="grid gap-1">
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={() => handleViewBadge(badge)}
+                                className="w-full justify-start text-sm"
+                              >
+                                <Eye className="h-4 w-4 mr-2" />
+                                View Details
+                              </Button>
+                              {user.role === 'admin' && (
+                                <>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    onClick={() => handleEditBadge(badge)}
+                                    className="w-full justify-start text-sm"
+                                  >
+                                    <Edit className="h-4 w-4 mr-2" />
+                                    Edit Badge
+                                  </Button>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    onClick={() => handleAwardBadge(badge)}
+                                    className="w-full justify-start text-sm"
+                                  >
+                                    <Award className="h-4 w-4 mr-2" />
+                                    Award Badge
+                                  </Button>
+                                </>
+                              )}
+                            </div>
+                          </PopoverContent>
+                        </Popover>
                       </div>
                     </div>
                   ))}
@@ -453,11 +516,11 @@ export default function Badges({ user, onLogout }: BadgesProps) {
                   <div className="mt-4">
                     <h3 className="text-sm font-semibold mb-2">Badge Criteria</h3>
                     <div className="space-y-4">
-                      {Array.isArray(selectedBadge.criteriaSections) && selectedBadge.criteriaSections.map((section: any, index: number) => (
+                      {selectedBadge.criteriaSections.map((section, index) => (
                         <div key={index} className="border rounded-md p-3">
                           <h4 className="font-medium text-sm mb-2">{section.title}</h4>
                           <ul className="space-y-1">
-                            {section.criteria.map((criterion: any, cIndex: number) => (
+                            {section.criteria.map((criterion, cIndex) => (
                               <li key={cIndex} className="text-sm">
                                 • {criterion.name}
                                 {criterion.description && (
