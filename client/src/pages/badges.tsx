@@ -84,7 +84,7 @@ export default function Badges({ user, onLogout }: BadgesProps) {
   };
 
   return (
-    <div className="h-screen flex overflow-hidden bg-gray-50">
+    <div className="h-screen flex overflow-hidden bg-gray-50 dark:bg-gray-900">
       {/* Sidebar */}
       <Sidebar 
         user={user} 
@@ -96,10 +96,10 @@ export default function Badges({ user, onLogout }: BadgesProps) {
       {/* Main content */}
       <div className="flex flex-col w-0 flex-1 overflow-hidden">
         {/* Top navigation */}
-        <div className="relative z-10 flex-shrink-0 flex h-16 bg-white shadow">
+        <div className="relative z-10 flex-shrink-0 flex h-16 bg-white dark:bg-gray-800 shadow dark:shadow-gray-700/20">
           <button
             type="button"
-            className="lg:hidden px-4 border-r border-gray-200 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500"
+            className="lg:hidden px-4 border-r border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500 dark:focus:ring-primary-400"
             onClick={() => setMobileMenuOpen(true)}
           >
             <span className="sr-only">Open sidebar</span>
@@ -108,27 +108,27 @@ export default function Badges({ user, onLogout }: BadgesProps) {
         </div>
         
         {/* Page header */}
-        <header className="bg-white shadow-sm">
+        <header className="bg-white dark:bg-gray-800 shadow-sm dark:shadow-gray-700/20">
           <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
-            <h1 className="text-lg font-semibold text-gray-900">Badges</h1>
-            <p className="mt-1 text-sm text-gray-500">Manage and award badges to users</p>
+            <h1 className="text-lg font-semibold text-gray-900 dark:text-white">Badges</h1>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Manage and award badges to users</p>
           </div>
         </header>
         
         {/* Main content */}
-        <main className="flex-1 relative overflow-y-auto focus:outline-none">
+        <main className="flex-1 relative overflow-y-auto focus:outline-none dark:bg-gray-900">
           <div className="py-6">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
               {/* Search and filter section */}
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 space-y-4 md:space-y-0">
                 <div className="relative w-full md:w-64">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Search className="h-5 w-5 text-gray-400" />
+                    <Search className="h-5 w-5 text-gray-400 dark:text-gray-500" />
                   </div>
                   <Input
                     type="search"
                     placeholder="Search badges..."
-                    className="pl-10"
+                    className="pl-10 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
@@ -139,7 +139,7 @@ export default function Badges({ user, onLogout }: BadgesProps) {
                     value={selectedCategoryId} 
                     onValueChange={setSelectedCategoryId}
                   >
-                    <SelectTrigger className="w-[180px]">
+                    <SelectTrigger className="w-[180px] bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700">
                       <SelectValue placeholder="All Categories" />
                     </SelectTrigger>
                     <SelectContent>
@@ -155,7 +155,7 @@ export default function Badges({ user, onLogout }: BadgesProps) {
                   <button
                     type="button"
                     onClick={handleCreateBadge}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-500 hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-500 hover:bg-primary-600 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-900 focus:ring-primary-500 dark:focus:ring-primary-400"
                   >
                     Create Badge
                   </button>
@@ -164,12 +164,12 @@ export default function Badges({ user, onLogout }: BadgesProps) {
               
               {/* Tabs for category filtering */}
               <Tabs defaultValue="all" value={currentTab} onValueChange={setCurrentTab} className="mb-6">
-                <TabsList>
-                  <TabsTrigger value="all">All</TabsTrigger>
-                  <TabsTrigger value="technical">Technical</TabsTrigger>
-                  <TabsTrigger value="leadership">Leadership</TabsTrigger>
-                  <TabsTrigger value="professional">Professional</TabsTrigger>
-                  <TabsTrigger value="special">Special</TabsTrigger>
+                <TabsList className="bg-gray-100 dark:bg-gray-800">
+                  <TabsTrigger value="all" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:text-primary-600 dark:data-[state=active]:text-primary-400">All</TabsTrigger>
+                  <TabsTrigger value="technical" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:text-primary-600 dark:data-[state=active]:text-primary-400">Technical</TabsTrigger>
+                  <TabsTrigger value="leadership" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:text-primary-600 dark:data-[state=active]:text-primary-400">Leadership</TabsTrigger>
+                  <TabsTrigger value="professional" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:text-primary-600 dark:data-[state=active]:text-primary-400">Professional</TabsTrigger>
+                  <TabsTrigger value="special" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:text-primary-600 dark:data-[state=active]:text-primary-400">Special</TabsTrigger>
                 </TabsList>
               </Tabs>
               
@@ -190,7 +190,7 @@ export default function Badges({ user, onLogout }: BadgesProps) {
               
               {filteredBadges.length === 0 && (
                 <div className="text-center py-10">
-                  <p className="text-gray-500">No badges found. Try adjusting your filters or create a new badge.</p>
+                  <p className="text-gray-500 dark:text-gray-400">No badges found. Try adjusting your filters or create a new badge.</p>
                 </div>
               )}
             </div>
