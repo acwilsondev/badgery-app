@@ -90,7 +90,7 @@ export default function Badges({ user, onLogout }: BadgesProps) {
   });
 
   // Enhance badges with category information
-  const badgesWithCategories = Array.isArray(badges) ? badges.map((badge: Badge) => {
+  const badgesWithCategories: Badge[] = Array.isArray(badges) ? badges.map((badge: BaseBadge) => {
     // Find the category that matches this badge's categoryId
     const category = Array.isArray(categories) 
       ? categories.find((cat: any) => cat.id === badge.categoryId) 
@@ -103,7 +103,7 @@ export default function Badges({ user, onLogout }: BadgesProps) {
         id: category.id, 
         name: category.name 
       } : null
-    };
+    } as Badge;
   }) : [];
   
   const filteredBadges = badgesWithCategories.filter((badge: Badge) => {

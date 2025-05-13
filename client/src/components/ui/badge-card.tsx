@@ -21,10 +21,7 @@ import { Button } from "@/components/ui/button";
 import { generateBadgeIcon } from "@/lib/badge-icons";
 
 interface BadgeCardProps {
-  badge: Badge & { 
-    category?: { name: string } | null;
-    awarded?: number;
-  };
+  badge: Badge;
   onEdit?: (badge: Badge) => void;
   onAward?: (badge: Badge) => void;
   onClick?: (badge: Badge) => void;
