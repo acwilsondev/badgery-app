@@ -6,7 +6,7 @@ import { BadgeDialog } from "@/components/badge-dialog";
 import { AwardBadgeDialog } from "@/components/award-badge-dialog";
 import { Badge as BaseBadge } from "@shared/schema";
 
-// Extended Badge type with criteriaSections
+// Extended Badge type with criteriaSections and category
 type Badge = BaseBadge & {
   criteriaSections?: Array<{
     title: string;
@@ -16,6 +16,10 @@ type Badge = BaseBadge & {
       description?: string;
     }>;
   }>;
+  category?: {
+    id: number;
+    name: string;
+  } | null;
 };
 import { Menu, Search, Plus, LayoutGrid, List, Eye, Edit, Award, MoreHorizontal } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -55,16 +59,7 @@ export default function Badges({ user, onLogout }: BadgesProps) {
   const [badgeDialogOpen, setBadgeDialogOpen] = useState(false);
   const [awardDialogOpen, setAwardDialogOpen] = useState(false);
   const [viewDetailsDialogOpen, setViewDetailsDialogOpen] = useState(false);
-  const [selectedBadge, setSelectedBadge] = useState<Badge & {
-    criteriaSections?: Array<{
-      title: string;
-      criteria: Array<{
-        id: number;
-        name: string;
-        description?: string;
-      }>;
-    }>;
-  } | null>(null);
+  const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("all");
   const [currentTab, setCurrentTab] = useState("all");
@@ -111,7 +106,7 @@ export default function Badges({ user, onLogout }: BadgesProps) {
     };
   }) : [];
   
-  const filteredBadges = badgesWithCategories.filter((badge: any) => {
+  const filteredBadges = badgesWithCategories.filter((badge: Badge) => {
     const matchesSearch = searchQuery
       ? badge.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         badge.description.toLowerCase().includes(searchQuery.toLowerCase())
@@ -134,51 +129,21 @@ export default function Badges({ user, onLogout }: BadgesProps) {
   // Simplified handler functions
   const handleEditBadge = (badge: Badge) => {
     console.log("Edit badge:", badge.id);
-    // Use the same cast for type consistency
-    setSelectedBadge(badge as Badge & {
-      criteriaSections?: Array<{
-        title: string;
-        criteria: Array<{
-          id: number;
-          name: string;
-          description?: string;
-        }>;
-      }>;
-    });
+    setSelectedBadge(badge);
     setAwardDialogOpen(false);
     setBadgeDialogOpen(true);
   };
 
   const handleAwardBadge = (badge: Badge) => {
     console.log("Award badge:", badge.id);
-    // Use the same cast for type consistency
-    setSelectedBadge(badge as Badge & {
-      criteriaSections?: Array<{
-        title: string;
-        criteria: Array<{
-          id: number;
-          name: string;
-          description?: string;
-        }>;
-      }>;
-    });
+    setSelectedBadge(badge);
     setBadgeDialogOpen(false);
     setAwardDialogOpen(true);
   };
 
   const handleViewBadge = (badge: Badge) => {
     console.log("View badge:", badge);
-    // Cast the badge to include criteriaSections for TypeScript
-    setSelectedBadge(badge as Badge & {
-      criteriaSections?: Array<{
-        title: string;
-        criteria: Array<{
-          id: number;
-          name: string;
-          description?: string;
-        }>;
-      }>;
-    });
+    setSelectedBadge(badge);
     setViewDetailsDialogOpen(true);
   };
 
