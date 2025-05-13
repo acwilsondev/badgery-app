@@ -5,6 +5,7 @@ import { Link } from "wouter";
 import { Menu, Search, Plus, MoreHorizontal } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/page-header";
 import {
   Table,
   TableBody,
@@ -65,52 +66,36 @@ export default function Users({ user, onLogout }: UsersProps) {
       
       {/* Main content */}
       <div className="flex flex-col w-0 flex-1 overflow-hidden">
-        {/* Top navigation */}
-        <div className="relative z-10 flex-shrink-0 flex h-16 bg-background border-b">
-          <button
-            type="button"
-            className="lg:hidden px-4 border-r border-border text-brand-purple hover:text-brand-purple/80 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-brand-purple/50 transition-colors"
-            onClick={() => setMobileMenuOpen(true)}
-          >
-            <span className="sr-only">Open sidebar</span>
-            <Menu className="h-6 w-6" />
-          </button>
-        </div>
+        {/* Mobile menu button - only visible on mobile */}
+        <button
+          type="button"
+          className="lg:hidden absolute left-0 top-0 z-50 px-4 h-16 border-r border-border text-brand-purple hover:text-brand-purple/80 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-brand-purple/50 transition-colors"
+          onClick={() => setMobileMenuOpen(true)}
+        >
+          <span className="sr-only">Open sidebar</span>
+          <Menu className="h-6 w-6" />
+        </button>
         
-        {/* Page header */}
-        <header className="bg-background shadow-sm border-b border-border">
-          <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-            <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-brand-purple to-brand-lilac">Users</h1>
-            <p className="mt-1 text-sm text-muted-foreground">Manage users and assign badges</p>
-          </div>
-        </header>
+        {/* Standardized Page Header */}
+        <PageHeader
+          title="Users"
+          description="Manage users and assign badges"
+          showSearch={true}
+          searchPlaceholder="Search users..."
+          onSearchChange={setSearchQuery}
+          actionButton={{
+            label: "Add User",
+            onClick: () => console.log("Add user clicked"),
+            icon: <Plus className="h-4 w-4 mr-1" />
+          }}
+        />
         
         {/* Main content */}
         <main className="flex-1 relative overflow-y-auto focus:outline-none bg-background">
           <div className="py-6">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-              {/* Search and actions section */}
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0">
-                <div className="relative w-full sm:w-64">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Search className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                  <Input
-                    type="search"
-                    placeholder="Search users..."
-                    className="pl-10 bg-card border-border"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </div>
-                
-                <Button 
-                  className="bg-gradient-to-r from-brand-purple to-brand-lilac hover:opacity-90 text-white shadow-md"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add User
-                </Button>
-              </div>
+              {/* Spacer to replace the search and action buttons (now in header) */}
+              <div className="mb-6"></div>
               
               {/* Users table */}
               <div className="bg-card border border-border shadow-sm overflow-hidden rounded-lg">
