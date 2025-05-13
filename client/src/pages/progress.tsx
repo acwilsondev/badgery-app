@@ -115,22 +115,22 @@ export default function ProgressTracker({ user, onLogout }: ProgressProps) {
       <Sidebar user={user} onLogout={onLogout} />
       
       <div className="flex-1 overflow-auto p-6">
-        <h1 className="text-3xl font-bold mb-6 text-gray-900 dark:text-white">Progress Tracking</h1>
+        <h1 className="text-3xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-brand-purple to-brand-lilac">Progress Tracking</h1>
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="mb-4 bg-gray-100 dark:bg-gray-800">
-            <TabsTrigger value="my-progress" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:text-primary-600 dark:data-[state=active]:text-primary-400">My Progress</TabsTrigger>
+          <TabsList className="mb-4 bg-accent/10 dark:bg-accent/5">
+            <TabsTrigger value="my-progress" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:text-primary">My Progress</TabsTrigger>
             {(user.role === 'admin' || user.role === 'manager') && (
-              <TabsTrigger value="organization-progress" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:text-primary-600 dark:data-[state=active]:text-primary-400">Organization Progress</TabsTrigger>
+              <TabsTrigger value="organization-progress" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:text-primary">Organization Progress</TabsTrigger>
             )}
           </TabsList>
           
           <TabsContent value="my-progress" className="space-y-6">
             {/* In Progress Badges */}
-            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+            <Card bordered>
               <CardHeader>
-                <CardTitle className="text-gray-900 dark:text-white">In Progress Badges</CardTitle>
-                <CardDescription className="text-gray-500 dark:text-gray-400">Badges you are currently working towards</CardDescription>
+                <CardTitle gradient>In Progress Badges</CardTitle>
+                <CardDescription>Badges you are currently working towards</CardDescription>
               </CardHeader>
               <CardContent>
                 {loadingUserProgress ? (
@@ -200,30 +200,36 @@ export default function ProgressTracker({ user, onLogout }: ProgressProps) {
             
             {/* Ready to Start Badges */}
             {badgesWithoutProgress.length > 0 && (
-              <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+              <Card bordered>
                 <CardHeader>
-                  <CardTitle className="text-gray-900 dark:text-white">Ready to Start</CardTitle>
-                  <CardDescription className="text-gray-500 dark:text-gray-400">Badges you can work towards</CardDescription>
+                  <CardTitle gradient>Ready to Start</CardTitle>
+                  <CardDescription>Badges you can work towards</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {badgesWithoutProgress.map((badge: Badge) => (
-                      <Card key={badge.id} className="overflow-hidden bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                      <Card key={badge.id} bordered className="overflow-hidden">
                         <CardHeader className="pb-2 pt-4">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-2">
-                              <div className="w-8 h-8">
-                                {generateBadgeIcon(badge.name, badge.color || '#4F46E5')}
+                              <div 
+                                className="w-8 h-8 flex items-center justify-center rounded-full"
+                                style={{ 
+                                  backgroundColor: `${badge.color}20` || 'rgba(94, 43, 151, 0.1)',
+                                  color: badge.color || "#5E2B97" 
+                                }}
+                              >
+                                {generateBadgeIcon(badge.name, badge.color || '#5E2B97')}
                               </div>
-                              <CardTitle className="text-lg text-gray-900 dark:text-white">{badge.name}</CardTitle>
+                              <CardTitle className="text-lg">{badge.name}</CardTitle>
                             </div>
                           </div>
                         </CardHeader>
                         <CardContent>
-                          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 line-clamp-2">{badge.description}</p>
+                          <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{badge.description}</p>
                           <Button 
                             variant="outline" 
-                            className="w-full bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
+                            className="w-full"
                             onClick={() => handleStartProgress(badge)}
                           >
                             Start Progress
@@ -238,37 +244,43 @@ export default function ProgressTracker({ user, onLogout }: ProgressProps) {
             )}
             
             {/* Completed Badges */}
-            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+            <Card bordered>
               <CardHeader>
-                <CardTitle className="text-gray-900 dark:text-white">Completed Badges</CardTitle>
-                <CardDescription className="text-gray-500 dark:text-gray-400">Badges you have earned</CardDescription>
+                <CardTitle gradient>Completed Badges</CardTitle>
+                <CardDescription>Badges you have earned</CardDescription>
               </CardHeader>
               <CardContent>
                 {loadingUserProgress ? (
-                  <div className="flex justify-center py-6 text-gray-600 dark:text-gray-400">Loading completed badges...</div>
+                  <div className="flex justify-center py-6 text-muted-foreground">Loading completed badges...</div>
                 ) : userProgress && userProgress.filter((item: any) => item.status === 'completed').length > 0 ? (
                   <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {userProgress.filter((item: any) => item.status === 'completed').map((item: any) => (
-                      <Card key={item.id} className="overflow-hidden border-green-200 dark:border-green-800 bg-white dark:bg-gray-800">
-                        <CardHeader className="pb-2 pt-4 bg-green-50 dark:bg-green-950/20">
+                      <Card key={item.id} className="overflow-hidden border-brand-orange/30 dark:border-brand-orange/20">
+                        <CardHeader className="pb-2 pt-4 bg-brand-orange/10 dark:bg-brand-orange/5">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-2">
-                              <div className="w-8 h-8">
+                              <div 
+                                className="w-8 h-8 flex items-center justify-center rounded-full"
+                                style={{ 
+                                  backgroundColor: `${item.badgeColor}20`,
+                                  color: item.badgeColor || "#5E2B97" 
+                                }}
+                              >
                                 {generateBadgeIcon(item.badgeName, item.badgeColor)}
                               </div>
-                              <CardTitle className="text-lg text-gray-900 dark:text-white">{item.badgeName}</CardTitle>
+                              <CardTitle className="text-lg">{item.badgeName}</CardTitle>
                             </div>
-                            <Award className="h-5 w-5 text-green-500 dark:text-green-400" />
+                            <Award className="h-5 w-5 text-brand-orange" />
                           </div>
                         </CardHeader>
                         <CardContent className="pt-4">
                           <div className="space-y-2">
-                            <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
+                            <div className="flex justify-between text-sm text-muted-foreground">
                               <span>Completed</span>
                               <span>100%</span>
                             </div>
                             <Progress value={100} gradient color="accent" className="h-2" />
-                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                            <div className="text-xs text-muted-foreground">
                               Completed on: {formatDate(item.lastUpdated)}
                             </div>
                           </div>
@@ -288,10 +300,10 @@ export default function ProgressTracker({ user, onLogout }: ProgressProps) {
           {/* Organization Progress (Admin/Manager View) */}
           {(user.role === 'admin' || user.role === 'manager') && (
             <TabsContent value="organization-progress">
-              <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+              <Card bordered>
                 <CardHeader>
-                  <CardTitle className="text-gray-900 dark:text-white">Organization Progress</CardTitle>
-                  <CardDescription className="text-gray-500 dark:text-gray-400">Track progress of all users in your organization</CardDescription>
+                  <CardTitle gradient>Organization Progress</CardTitle>
+                  <CardDescription>Track progress of all users in your organization</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {loadingOrgProgress ? (
