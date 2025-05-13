@@ -20,8 +20,11 @@ import {
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // API version prefix
+  const apiPrefix = '/api/v1';
+  
   // Authentication endpoints
-  app.post('/api/auth/login', async (req, res) => {
+  app.post(`${apiPrefix}/auth/login`, async (req, res) => {
     try {
       const { username, password } = req.body;
       if (!username || !password) {
@@ -51,7 +54,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/auth/register', async (req, res) => {
+  app.post(`${apiPrefix}/auth/register`, async (req, res) => {
     try {
       const userData = insertUserSchema.parse(req.body);
       const existingUser = await storage.getUserByUsername(userData.username);
@@ -79,7 +82,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/auth/me', async (req, res) => {
+  app.get(`${apiPrefix}/auth/me`, async (req, res) => {
     try {
       if (!req.session.userId) {
         return res.status(401).json({ message: "Not authenticated" });
@@ -104,14 +107,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/auth/logout', (req, res) => {
+  app.post(`${apiPrefix}/auth/logout`, (req, res) => {
     req.session.destroy(() => {
       res.status(200).json({ message: "Logged out successfully" });
     });
   });
 
   // Organization endpoints
-  app.get('/api/organizations', async (req, res) => {
+  app.get(`${apiPrefix}/organizations`, async (req, res) => {
     try {
       const organizations = await storage.getOrganizations();
       return res.status(200).json(organizations);
