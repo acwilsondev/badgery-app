@@ -289,12 +289,12 @@ export default function Badges({ user, onLogout }: BadgesProps) {
                         <div>
                           <div className="font-medium">{badge.name}</div>
                           <div className="text-xs text-muted-foreground truncate max-w-[200px]">
-                            {badge.category?.name || 'Uncategorized'}
+                            {badge.categoryId ? categories.find(c => c.id === badge.categoryId)?.name || 'Uncategorized' : 'Uncategorized'}
                           </div>
                         </div>
                       </div>
                       <div className="hidden sm:block sm:col-span-3 text-sm text-muted-foreground">
-                        {badge.category?.name || 'Uncategorized'}
+                        {badge.categoryId ? categories.find(c => c.id === badge.categoryId)?.name || 'Uncategorized' : 'Uncategorized'}
                       </div>
                       <div className="col-span-4 sm:col-span-3 text-sm text-muted-foreground truncate max-w-[250px]">
                         {badge.description}
@@ -303,8 +303,15 @@ export default function Badges({ user, onLogout }: BadgesProps) {
                         <Button 
                           variant="ghost" 
                           size="sm" 
-                          onClick={() => handleViewBadge(badge)}
+                          onClick={() => {
+                            setSelectedBadge(badge);
+                            setAwardDialogOpen(false);
+                            setBadgeDialogOpen(false);
+                            // Use console log to debug
+                            console.log("View badge:", badge);
+                          }}
                           className="h-8 w-8 p-0"
+                          title="View badge details"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye">
                             <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
@@ -316,8 +323,12 @@ export default function Badges({ user, onLogout }: BadgesProps) {
                             <Button 
                               variant="ghost" 
                               size="sm" 
-                              onClick={() => handleEditBadge(badge)}
+                              onClick={() => {
+                                setSelectedBadge(badge);
+                                setBadgeDialogOpen(true);
+                              }}
                               className="h-8 w-8 p-0"
+                              title="Edit badge"
                             >
                               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-pencil">
                                 <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
@@ -327,8 +338,12 @@ export default function Badges({ user, onLogout }: BadgesProps) {
                             <Button 
                               variant="ghost" 
                               size="sm" 
-                              onClick={() => handleAwardBadge(badge)}
+                              onClick={() => {
+                                setSelectedBadge(badge);
+                                setAwardDialogOpen(true);
+                              }}
                               className="h-8 w-8 p-0"
+                              title="Award badge"
                             >
                               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-award">
                                 <circle cx="12" cy="8" r="6" />
