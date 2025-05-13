@@ -406,7 +406,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/organizations/:orgId/progress', async (req, res) => {
+  app.get(`${apiPrefix}/organizations/:orgId/progress`, async (req, res) => {
     try {
       const orgId = parseInt(req.params.orgId);
       const progress = await storage.getBadgeProgressForOrganization(orgId);
@@ -418,7 +418,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/badges/:badgeId/progress/:userId', async (req, res) => {
+  app.post(`${apiPrefix}/badges/:badgeId/progress/:userId`, async (req, res) => {
     try {
       const badgeId = parseInt(req.params.badgeId);
       const userId = parseInt(req.params.userId);
@@ -458,7 +458,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Stats endpoints
-  app.get('/api/organizations/:orgId/stats', async (req, res) => {
+  app.get(`${apiPrefix}/organizations/:orgId/stats`, async (req, res) => {
     try {
       const orgId = parseInt(req.params.orgId);
       const stats = await storage.getOrganizationStats(orgId);
