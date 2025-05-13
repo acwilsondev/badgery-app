@@ -81,7 +81,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
   };
 
   return (
-    <div className="h-screen flex overflow-hidden bg-gray-50">
+    <div className="h-screen flex overflow-hidden bg-gray-50 dark:bg-gray-900">
       {/* Sidebar */}
       <Sidebar 
         user={user} 
@@ -93,10 +93,10 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
       {/* Main content */}
       <div className="flex flex-col w-0 flex-1 overflow-hidden">
         {/* Top navigation */}
-        <div className="relative z-10 flex-shrink-0 flex h-16 bg-white shadow">
+        <div className="relative z-10 flex-shrink-0 flex h-16 bg-white dark:bg-gray-800 shadow dark:shadow-gray-700/20">
           <button
             type="button"
-            className="lg:hidden px-4 border-r border-gray-200 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500"
+            className="lg:hidden px-4 border-r border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500"
             onClick={() => setMobileMenuOpen(true)}
           >
             <span className="sr-only">Open sidebar</span>
@@ -107,13 +107,13 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
             <div className="flex-1 flex">
               <form className="w-full flex md:ml-0" action="#" method="GET">
                 <label htmlFor="search-field" className="sr-only">Search</label>
-                <div className="relative w-full text-gray-400 focus-within:text-gray-600">
+                <div className="relative w-full text-gray-400 dark:text-gray-500 focus-within:text-gray-600 dark:focus-within:text-gray-400">
                   <div className="absolute inset-y-0 left-0 flex items-center pointer-events-none">
                     <Search className="h-5 w-5" />
                   </div>
                   <input
                     id="search-field"
-                    className="block w-full h-full pl-8 pr-3 py-2 border-transparent text-gray-900 placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-0 focus:border-transparent sm:text-sm"
+                    className="block w-full h-full pl-8 pr-3 py-2 border-transparent text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 dark:focus:placeholder-gray-400 focus:ring-0 focus:border-transparent bg-transparent sm:text-sm"
                     placeholder="Search badges, users..."
                     type="search"
                   />
@@ -124,7 +124,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
             <div className="ml-4 flex items-center md:ml-6">
               <button
                 type="button"
-                className="bg-white p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                className="bg-white dark:bg-gray-700 p-1 rounded-full text-gray-400 dark:text-gray-300 hover:text-gray-500 dark:hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 focus:ring-primary-500"
               >
                 <span className="sr-only">View notifications</span>
                 <Bell className="h-6 w-6" />
@@ -134,16 +134,16 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
         </div>
         
         {/* Page header */}
-        <header className="bg-white shadow-sm">
+        <header className="bg-white dark:bg-gray-800 shadow-sm dark:shadow-gray-700/20">
           <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
             <div>
-              <h1 className="text-lg font-semibold text-gray-900">Organization Dashboard</h1>
-              <p className="mt-1 text-sm text-gray-500">Manage your badge system and user achievements</p>
+              <h1 className="text-lg font-semibold text-gray-900 dark:text-white">Organization Dashboard</h1>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Manage your badge system and user achievements</p>
             </div>
             <div>
               <Button
                 onClick={handleCreateBadge}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-500 hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-500 hover:bg-primary-600 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 focus:ring-primary-500"
               >
                 <svg className="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -155,7 +155,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
         </header>
         
         {/* Main content */}
-        <main className="flex-1 relative overflow-y-auto focus:outline-none">
+        <main className="flex-1 relative overflow-y-auto focus:outline-none dark:bg-gray-900">
           <div className="py-6">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
               {/* Stats section */}
@@ -189,9 +189,9 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
               </div>
               
               {/* Recent Activity Section */}
-              <h2 className="text-lg font-medium text-gray-900 mb-4">Recent Activity</h2>
-              <div className="bg-white shadow overflow-hidden sm:rounded-md mb-8">
-                <ul className="divide-y divide-gray-200">
+              <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Recent Activity</h2>
+              <div className="bg-white dark:bg-gray-800 shadow dark:shadow-gray-700/20 overflow-hidden sm:rounded-md mb-8">
+                <ul className="divide-y divide-gray-200 dark:divide-gray-700">
                   {recentActivity.length > 0 ? (
                     recentActivity.slice(0, 3).map((activity: any) => (
                       <ActivityItem
@@ -207,7 +207,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                       />
                     ))
                   ) : (
-                    <li className="px-4 py-6 text-center text-gray-500">
+                    <li className="px-4 py-6 text-center text-gray-500 dark:text-gray-400">
                       No recent activity found.
                     </li>
                   )}
@@ -216,13 +216,13 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
               
               {/* Badge Management Section */}
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-medium text-gray-900">Badge Management</h2>
+                <h2 className="text-lg font-medium text-gray-900 dark:text-white">Badge Management</h2>
                 <div className="relative">
                   <Select 
                     value={selectedCategoryId} 
                     onValueChange={setSelectedCategoryId}
                   >
-                    <SelectTrigger className="w-[180px]">
+                    <SelectTrigger className="w-[180px] bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
                       <SelectValue placeholder="All Categories" />
                     </SelectTrigger>
                     <SelectContent>
