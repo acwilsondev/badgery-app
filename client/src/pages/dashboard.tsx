@@ -14,11 +14,13 @@ import {
   Search,
   Menu,
   Bell,
+  Plus
 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@shared/schema";
 import { generateBadgeIcon } from "@/lib/badge-icons";
 import { useMobile } from "@/hooks/use-mobile";
+import { PageHeader } from "@/components/page-header";
 
 interface DashboardProps {
   user: {
