@@ -233,37 +233,37 @@ export default function ProgressTracker({ user, onLogout }: ProgressProps) {
             )}
             
             {/* Completed Badges */}
-            <Card>
+            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
               <CardHeader>
-                <CardTitle>Completed Badges</CardTitle>
-                <CardDescription>Badges you have earned</CardDescription>
+                <CardTitle className="text-gray-900 dark:text-white">Completed Badges</CardTitle>
+                <CardDescription className="text-gray-500 dark:text-gray-400">Badges you have earned</CardDescription>
               </CardHeader>
               <CardContent>
                 {loadingUserProgress ? (
-                  <div className="flex justify-center py-6">Loading completed badges...</div>
+                  <div className="flex justify-center py-6 text-gray-600 dark:text-gray-400">Loading completed badges...</div>
                 ) : userProgress && userProgress.filter((item: any) => item.status === 'completed').length > 0 ? (
                   <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {userProgress.filter((item: any) => item.status === 'completed').map((item: any) => (
-                      <Card key={item.id} className="overflow-hidden border-green-200">
+                      <Card key={item.id} className="overflow-hidden border-green-200 dark:border-green-800 bg-white dark:bg-gray-800">
                         <CardHeader className="pb-2 pt-4 bg-green-50 dark:bg-green-950/20">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-2">
                               <div className="w-8 h-8">
                                 {generateBadgeIcon(item.badgeName, item.badgeColor)}
                               </div>
-                              <CardTitle className="text-lg">{item.badgeName}</CardTitle>
+                              <CardTitle className="text-lg text-gray-900 dark:text-white">{item.badgeName}</CardTitle>
                             </div>
-                            <Award className="h-5 w-5 text-green-500" />
+                            <Award className="h-5 w-5 text-green-500 dark:text-green-400" />
                           </div>
                         </CardHeader>
                         <CardContent className="pt-4">
                           <div className="space-y-2">
-                            <div className="flex justify-between text-sm">
+                            <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
                               <span>Completed</span>
                               <span>100%</span>
                             </div>
                             <Progress value={100} className="h-2 bg-green-100 dark:bg-green-950/50" />
-                            <div className="text-xs text-muted-foreground">
+                            <div className="text-xs text-gray-500 dark:text-gray-400">
                               Completed on: {formatDate(item.lastUpdated)}
                             </div>
                           </div>
@@ -272,7 +272,7 @@ export default function ProgressTracker({ user, onLogout }: ProgressProps) {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-6 text-muted-foreground">
+                  <div className="text-center py-6 text-gray-500 dark:text-gray-400">
                     You haven't completed any badges yet
                   </div>
                 )}
@@ -283,32 +283,32 @@ export default function ProgressTracker({ user, onLogout }: ProgressProps) {
           {/* Organization Progress (Admin/Manager View) */}
           {(user.role === 'admin' || user.role === 'manager') && (
             <TabsContent value="organization-progress">
-              <Card>
+              <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                 <CardHeader>
-                  <CardTitle>Organization Progress</CardTitle>
-                  <CardDescription>Track progress of all users in your organization</CardDescription>
+                  <CardTitle className="text-gray-900 dark:text-white">Organization Progress</CardTitle>
+                  <CardDescription className="text-gray-500 dark:text-gray-400">Track progress of all users in your organization</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {loadingOrgProgress ? (
-                    <div className="flex justify-center py-6">Loading organization progress...</div>
+                    <div className="flex justify-center py-6 text-gray-600 dark:text-gray-400">Loading organization progress...</div>
                   ) : orgProgress && orgProgress.length > 0 ? (
-                    <div className="rounded-md border">
+                    <div className="rounded-md border border-gray-200 dark:border-gray-700">
                       <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>User</TableHead>
-                            <TableHead>Badge</TableHead>
-                            <TableHead>Progress</TableHead>
-                            <TableHead>Last Updated</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Actions</TableHead>
+                        <TableHeader className="bg-gray-50 dark:bg-gray-900">
+                          <TableRow className="border-b border-gray-200 dark:border-gray-700">
+                            <TableHead className="text-gray-900 dark:text-gray-300">User</TableHead>
+                            <TableHead className="text-gray-900 dark:text-gray-300">Badge</TableHead>
+                            <TableHead className="text-gray-900 dark:text-gray-300">Progress</TableHead>
+                            <TableHead className="text-gray-900 dark:text-gray-300">Last Updated</TableHead>
+                            <TableHead className="text-gray-900 dark:text-gray-300">Status</TableHead>
+                            <TableHead className="text-gray-900 dark:text-gray-300">Actions</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
                           {orgProgress.map((item: any) => (
-                            <TableRow key={item.id}>
-                              <TableCell>{item.userName}</TableCell>
-                              <TableCell>
+                            <TableRow key={item.id} className="border-b border-gray-200 dark:border-gray-700">
+                              <TableCell className="text-gray-900 dark:text-gray-300">{item.userName}</TableCell>
+                              <TableCell className="text-gray-900 dark:text-gray-300">
                                 <div className="flex items-center space-x-2">
                                   <div className="w-6 h-6">
                                     {generateBadgeIcon(item.badgeName, '#4F46E5')}
@@ -316,15 +316,15 @@ export default function ProgressTracker({ user, onLogout }: ProgressProps) {
                                   <span>{item.badgeName}</span>
                                 </div>
                               </TableCell>
-                              <TableCell>
+                              <TableCell className="text-gray-900 dark:text-gray-300">
                                 <div className="w-24">
-                                  <Progress value={Number(item.progress)} className="h-2" />
+                                  <Progress value={Number(item.progress)} className="h-2 bg-gray-200 dark:bg-gray-700" />
                                 </div>
                                 <div className="text-xs mt-1">{Number(item.progress).toFixed(0)}%</div>
                               </TableCell>
-                              <TableCell>
+                              <TableCell className="text-gray-900 dark:text-gray-300">
                                 <div className="text-sm">{formatDate(item.lastUpdated)}</div>
-                                <div className="text-xs text-muted-foreground">by {item.updatedByName}</div>
+                                <div className="text-xs text-gray-500 dark:text-gray-400">by {item.updatedByName}</div>
                               </TableCell>
                               <TableCell>
                                 <div className={`rounded-full px-2 py-1 text-xs font-medium inline-block
@@ -337,7 +337,8 @@ export default function ProgressTracker({ user, onLogout }: ProgressProps) {
                               <TableCell>
                                 <Button
                                   variant="outline" 
-                                  size="sm" 
+                                  size="sm"
+                                  className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
                                   onClick={() => {
                                     // Find the full badge from badges array
                                     const badge = badges?.find((b: Badge) => b.id === item.badgeId);
@@ -362,7 +363,7 @@ export default function ProgressTracker({ user, onLogout }: ProgressProps) {
                       </Table>
                     </div>
                   ) : (
-                    <div className="text-center py-6 text-muted-foreground">
+                    <div className="text-center py-6 text-gray-500 dark:text-gray-400">
                       No badge progress data found for your organization
                     </div>
                   )}
