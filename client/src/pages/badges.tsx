@@ -31,7 +31,14 @@ export default function Badges({ user, onLogout }: BadgesProps) {
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("all");
   const [currentTab, setCurrentTab] = useState("all");
 
-  const { data: categories = [] } = useQuery({
+  type CategoryData = {
+    id: number;
+    name: string;
+    organizationId: number;
+    createdAt: string;
+  };
+
+  const { data: categories = [] } = useQuery<CategoryData[]>({
     queryKey: [`/api/organizations/${organizationId}/categories`],
   });
 
