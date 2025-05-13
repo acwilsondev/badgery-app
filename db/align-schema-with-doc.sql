@@ -119,9 +119,10 @@ CREATE TABLE IF NOT EXISTS progress (
   user_id INTEGER NOT NULL REFERENCES users(id),
   metric_id INTEGER NOT NULL REFERENCES metrics(id),
   value TEXT NOT NULL,
-  updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  last_updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
   created_at TIMESTAMP NOT NULL DEFAULT NOW(),
   created_by INTEGER,
+  updated_at TIMESTAMP,
   updated_by INTEGER,
   active BOOLEAN NOT NULL DEFAULT TRUE
 );
@@ -203,7 +204,7 @@ ON CONFLICT DO NOTHING;
 
 -- 5. Migrate badge_progress to progress
 INSERT INTO progress (
-  id, user_id, metric_id, value, updated_at,
+  id, user_id, metric_id, value, last_updated_at,
   created_at, created_by, updated_by
 )
 SELECT 

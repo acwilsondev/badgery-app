@@ -40,6 +40,7 @@ export const users = pgTable("users", {
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
   role: text("role").default("user").notNull(),
+  organizationId: integer("organization_id").references(() => organizations.id),
   ...createAuditFields(),
 });
 
@@ -126,19 +127,30 @@ export const badges = pgTable("badges", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   description: text("description").notNull(),
+  criteria: text("criteria"),
   imageUrl: text("image_url"),
   color: text("color").default("#4F46E5"),
   categoryId: integer("category_id").references(() => badgeCategories.id),
   organizationId: integer("organization_id").references(() => organizations.id).notNull(),
+  requiresProgress: boolean("requires_progress").default(false).notNull(),
+  criteriaSections: jsonb("criteria_sections"), // JSON array of criteria sections
+  criteriaType: text("criteria_type").default("binary").notNull(), // "binary" or "numeric"
   ...createAuditFields(),
 });
 
 export const badgesInsertSchema = createInsertSchema(badges, {
   name: (schema) => schema.min(2, "Name must be at least 2 characters"),
   description: (schema) => schema.min(5, "Description must be at least 5 characters"),
+  criteria: (schema) => schema.optional(),
   imageUrl: (schema) => schema.optional(),
   color: (schema) => schema.optional(),
   categoryId: (schema) => schema.optional(),
+  requiresProgress: (schema) => schema.optional(),
+  criteriaSections: (schema) => schema.optional(),
+  criteriaType: (schema) => schema.optional().refine(
+    val => !val || ['binary', 'numeric'].includes(val), 
+    { message: "Criteria type must be either 'binary' or 'numeric'" }
+  ),
   active: (schema) => schema.optional(),
   createdBy: (schema) => schema.optional(),
   updatedBy: (schema) => schema.optional(),
@@ -155,7 +167,7 @@ export const badgePrerequisites = pgTable("badge_prerequisites", {
   ...createAuditFields(),
 }, (table) => {
   return {
-    pk: z.array([table.badgeId, table.prerequisiteBadgeId]),
+    pk: { columns: [table.badgeId, table.prerequisiteBadgeId] },
   };
 });
 
@@ -202,7 +214,7 @@ export const badgeMetrics = pgTable("badge_metrics", {
   ...createAuditFields(),
 }, (table) => {
   return {
-    pk: z.array([table.badgeId, table.metricId]),
+    pk: { columns: [table.badgeId, table.metricId] },
   };
 });
 
@@ -249,7 +261,7 @@ export const progress = pgTable("progress", {
   userId: integer("user_id").references(() => users.id).notNull(),
   metricId: integer("metric_id").references(() => metrics.id).notNull(),
   value: text("value").notNull(), // Stored as text to handle both boolean and numeric types
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  lastUpdatedAt: timestamp("last_updated_at").defaultNow().notNull(),
   ...createAuditFields(),
 });
 
