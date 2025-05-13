@@ -134,23 +134,28 @@ export default function ProgressTracker({ user, onLogout }: ProgressProps) {
               </CardHeader>
               <CardContent>
                 {loadingUserProgress ? (
-                  <div className="flex justify-center py-6 text-gray-600 dark:text-gray-400">Loading progress data...</div>
+                  <div className="flex justify-center py-6 text-muted-foreground">Loading progress data...</div>
                 ) : userProgress && userProgress.length > 0 ? (
                   <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {userProgress.filter((item: any) => item.status === 'in_progress').map((item: any) => (
-                      <Card key={item.id} className="overflow-hidden bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                      <Card key={item.id} bordered className="overflow-hidden">
                         <CardHeader className="pb-2 pt-4">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-2">
-                              <div className="w-8 h-8">
+                              <div 
+                                className="w-8 h-8 flex items-center justify-center rounded-full"
+                                style={{ 
+                                  backgroundColor: `${item.badgeColor}20`,
+                                  color: item.badgeColor || "#5E2B97" 
+                                }}
+                              >
                                 {generateBadgeIcon(item.badgeName, item.badgeColor)}
                               </div>
-                              <CardTitle className="text-lg text-gray-900 dark:text-white">{item.badgeName}</CardTitle>
+                              <CardTitle className="text-lg">{item.badgeName}</CardTitle>
                             </div>
                             <Button 
                               variant="ghost" 
                               size="sm" 
-                              className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
                               onClick={() => handleUpdateProgress(
                                 {
                                   id: item.badgeId,
@@ -172,12 +177,12 @@ export default function ProgressTracker({ user, onLogout }: ProgressProps) {
                         </CardHeader>
                         <CardContent>
                           <div className="space-y-2">
-                            <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
+                            <div className="flex justify-between text-sm text-muted-foreground">
                               <span>Progress</span>
                               <span>{Number(item.progress).toFixed(0)}%</span>
                             </div>
-                            <Progress value={Number(item.progress)} className="h-2 bg-gray-200 dark:bg-gray-700" />
-                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                            <Progress value={Number(item.progress)} gradient className="h-2" />
+                            <div className="text-xs text-muted-foreground">
                               Last updated: {formatDate(item.lastUpdated)}
                             </div>
                           </div>
@@ -262,7 +267,7 @@ export default function ProgressTracker({ user, onLogout }: ProgressProps) {
                               <span>Completed</span>
                               <span>100%</span>
                             </div>
-                            <Progress value={100} className="h-2 bg-green-100 dark:bg-green-950/50" />
+                            <Progress value={100} gradient color="accent" className="h-2" />
                             <div className="text-xs text-gray-500 dark:text-gray-400">
                               Completed on: {formatDate(item.lastUpdated)}
                             </div>
