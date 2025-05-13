@@ -8,6 +8,7 @@ import {
   BrandCard,
   BrandBadge
 } from '@/components/ui/brand-elements';
+import TestColors from '@/components/test-colors';
 import { 
   Award, 
   CheckCircle, 
@@ -56,6 +57,12 @@ export default function Branding({ user, onLogout }: BrandingProps) {
                 <p className="text-muted-foreground mt-2">
                   A showcase of our design system components using the new color palette.
                 </p>
+              </div>
+
+              {/* Test Colors Component */}
+              <div className="mb-8 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+                <h2 className="text-xl font-bold mb-4">Color Test Component</h2>
+                <TestColors />
               </div>
 
               {/* Color palette section */}

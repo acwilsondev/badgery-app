@@ -35,8 +35,8 @@
 
     --radius: 0.5rem;
 
-    /* Sidebar colors */
-    --sidebar-background: 273 57% 38%; /* Deep Purple #5E2B97 */
+    /* Sidebar colors - UPDATED PURPLE */
+    --sidebar-background: 22 93% 55%; /* Vibrant Orange #F76C1F - CLEARLY VISIBLE CHANGE */
     --sidebar-foreground: 0 0% 100%;
     --sidebar-primary: 0 0% 100%;
     --sidebar-primary-foreground: 273 57% 38%; /* Deep Purple #5E2B97 */
