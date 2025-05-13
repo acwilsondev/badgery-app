@@ -380,25 +380,20 @@ export default function Badges({ user, onLogout }: BadgesProps) {
         </main>
       </div>
       
-      {/* Badge Dialog */}
-      {badgeDialogOpen && (
-        <BadgeDialog
-          open={badgeDialogOpen}
-          onOpenChange={setBadgeDialogOpen}
-          badge={selectedBadge || undefined}
-          organizationId={organizationId}
-        />
-      )}
+      {/* Badge and Award Badge Dialogs - always render them but control visibility with 'open' prop */}
+      <BadgeDialog
+        open={badgeDialogOpen}
+        onOpenChange={setBadgeDialogOpen}
+        badge={selectedBadge || undefined}
+        organizationId={organizationId}
+      />
       
-      {/* Award Badge Dialog */}
-      {awardDialogOpen && selectedBadge && (
-        <AwardBadgeDialog
-          open={awardDialogOpen}
-          onOpenChange={setAwardDialogOpen}
-          badge={selectedBadge}
-          organizationId={organizationId}
-        />
-      )}
+      <AwardBadgeDialog
+        open={awardDialogOpen}
+        onOpenChange={setAwardDialogOpen}
+        badge={selectedBadge || undefined}
+        organizationId={organizationId}
+      />
     </div>
   );
 }
