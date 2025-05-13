@@ -190,8 +190,8 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
         </header>
         
         {/* Main content */}
-        <main className="flex-1 relative overflow-y-auto focus:outline-none dark:bg-gray-900">
-          <div className="py-6">
+        <main className="flex-1 relative overflow-y-auto focus:outline-none bg-background">
+          <div className="py-8">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
               {/* Stats section */}
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 mb-8">
@@ -275,16 +275,33 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
               
               {/* Badge grid */}
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {badges.map((badge: any) => (
-                  <BadgeCard
-                    key={badge.id}
-                    badge={badge}
-                    onEdit={handleEditBadge}
-                    onAward={handleAwardBadge}
-                  />
-                ))}
-                
-                <NewBadgeCard onClick={handleCreateBadge} />
+                {badges && badges.length > 0 ? (
+                  <>
+                    {badges.map((badge: any) => (
+                      <BadgeCard
+                        key={badge.id}
+                        badge={badge}
+                        onEdit={handleEditBadge}
+                        onAward={handleAwardBadge}
+                      />
+                    ))}
+                    <NewBadgeCard onClick={handleCreateBadge} />
+                  </>
+                ) : (
+                  <div className="col-span-full py-10 text-center">
+                    <div className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-brand-purple/10 mb-4">
+                      <Tag className="h-10 w-10 text-brand-purple" />
+                    </div>
+                    <h3 className="mt-2 text-lg font-semibold">No badges found</h3>
+                    <p className="mt-1 text-sm text-muted-foreground mb-4">Get started by creating your first badge.</p>
+                    <Button onClick={handleCreateBadge} variant="default" className="gap-2">
+                      <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                      </svg>
+                      Create New Badge
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
