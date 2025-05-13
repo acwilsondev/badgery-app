@@ -5,7 +5,7 @@ import { BadgeCard, NewBadgeCard } from "@/components/ui/badge-card";
 import { BadgeDialog } from "@/components/badge-dialog";
 import { AwardBadgeDialog } from "@/components/award-badge-dialog";
 import { Badge } from "@shared/schema";
-import { Menu, Search } from "lucide-react";
+import { Menu, Search, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -178,7 +178,7 @@ export default function Badges({ user, onLogout }: BadgesProps) {
                   </Select>
                   
                   <Button 
-                    variant="purple"
+                    variant="default"
                     onClick={handleCreateBadge}
                     className="bg-brand-purple hover:bg-brand-purple/90 text-white"
                   >

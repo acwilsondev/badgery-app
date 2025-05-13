@@ -78,9 +78,9 @@ export default function Users({ user, onLogout }: UsersProps) {
         </div>
         
         {/* Page header */}
-        <header className="bg-white dark:bg-gray-800 shadow-sm">
-          <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
-            <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-brand-purple to-brand-lilac">Users</h1>
+        <header className="bg-background shadow-sm border-b border-border">
+          <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-brand-purple to-brand-lilac">Users</h1>
             <p className="mt-1 text-sm text-muted-foreground">Manage users and assign badges</p>
           </div>
         </header>
