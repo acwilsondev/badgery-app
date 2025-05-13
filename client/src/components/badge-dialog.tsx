@@ -138,8 +138,7 @@ export function BadgeDialog({ open, onOpenChange, badge, organizationId }: Badge
   const [showProgressOptions, setShowProgressOptions] = useState(true); // Always show progress options
 
   const { data: categories = [] } = useQuery<BadgeCategory[]>({
-    queryKey: ["/api/badge-categories", organizationId],
-    queryFn: () => apiRequest(`/api/badge-categories?organizationId=${organizationId}`),
+    queryKey: [`/api/badge-categories?organizationId=${organizationId}`],
   });
 
   // Mutation for creating a new badge
@@ -150,13 +149,8 @@ export function BadgeDialog({ open, onOpenChange, badge, organizationId }: Badge
         ...data,
         criteriaSectionsJson: data.criteriaSections ? JSON.stringify(data.criteriaSections) : undefined,
       };
-      return apiRequest("/api/badges", {
-        method: "POST",
-        body: JSON.stringify(payload),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const result = await apiRequest("POST", "/api/badges", payload);
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/badges"] });
@@ -175,13 +169,7 @@ export function BadgeDialog({ open, onOpenChange, badge, organizationId }: Badge
         ...data,
         criteriaSectionsJson: data.criteriaSections ? JSON.stringify(data.criteriaSections) : undefined,
       };
-      return apiRequest(`/api/badges/${badge?.id}`, {
-        method: "PATCH",
-        body: JSON.stringify(payload),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      return apiRequest("PATCH", `/api/badges/${badge?.id}`, payload);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/badges"] });
@@ -261,8 +249,8 @@ export function BadgeDialog({ open, onOpenChange, badge, organizationId }: Badge
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="">No Category</SelectItem>
-                      {categories.map((category) => (
+                      <SelectItem value="no_category">No Category</SelectItem>
+                      {Array.isArray(categories) && categories.map((category: BadgeCategory) => (
                         <SelectItem key={category.id} value={category.id.toString()}>
                           {category.name}
                         </SelectItem>
