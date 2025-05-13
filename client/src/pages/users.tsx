@@ -43,16 +43,18 @@ export default function Users({ user, onLogout }: UsersProps) {
     queryKey: [`/api/organizations/${organizationId}/users`],
   });
 
-  const filteredUsers = Array.isArray(users) ? users.filter((user: any) => {
-    return searchQuery
-      ? user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        user.username.toLowerCase().includes(searchQuery.toLowerCase())
-      : true;
-  }) : [];
+  const filteredUsers = Array.isArray(users) 
+    ? users.filter((user: any) => {
+        return searchQuery
+          ? user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            user.username.toLowerCase().includes(searchQuery.toLowerCase())
+          : true;
+      }) 
+    : [];
 
   return (
-    <div className="h-screen flex overflow-hidden bg-gray-50 dark:bg-gray-900">
+    <div className="h-screen flex overflow-hidden bg-background">
       {/* Sidebar */}
       <Sidebar 
         user={user} 
