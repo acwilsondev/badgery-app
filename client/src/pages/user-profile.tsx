@@ -87,45 +87,46 @@ export default function UserProfile({ id, user, onLogout }: UserProfileProps) {
           <div className="py-6">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
               {/* Back button */}
-              <div className="mb-4">
+              <div className="mb-6">
                 <Link to="/users">
-                  <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300">
-                    <ArrowLeft className="mr-2 h-4 w-4" />
+                  <Button variant="outline" size="sm" className="text-brand-purple hover:text-brand-lilac hover:bg-accent/10 transition-colors gap-2">
+                    <ArrowLeft className="h-4 w-4" />
                     Back to Users
                   </Button>
                 </Link>
               </div>
               
               {/* User profile header */}
-              <div className="bg-white dark:bg-gray-800 shadow dark:shadow-gray-700/20 overflow-hidden sm:rounded-lg mb-6">
-                <div className="px-4 py-5 sm:px-6 flex items-center justify-between">
+              <div className="bg-card border-border shadow-sm overflow-hidden rounded-lg mb-8">
+                <div className="px-6 py-6 sm:px-8 flex items-center justify-between">
                   <div className="flex items-center">
-                    <Avatar className="h-16 w-16">
-                      <AvatarFallback className="text-xl bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-300">
+                    <Avatar className="h-20 w-20 border-2 border-brand-purple/20">
+                      <AvatarFallback className="text-2xl font-bold bg-brand-purple/10 text-brand-purple">
                         {profileUser && getInitials(profileUser.name)}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="ml-4">
-                      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                    <div className="ml-6">
+                      <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-brand-purple to-brand-lilac">
                         {profileUser?.name}
                       </h1>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">{profileUser?.email}</p>
-                      <div className="mt-1">
-                        <Badge variant="outline" className="capitalize text-gray-800 dark:text-gray-300 border-gray-300 dark:border-gray-600">
+                      <p className="text-sm text-muted-foreground mt-1">{profileUser?.email}</p>
+                      <div className="mt-2">
+                        <Badge variant="secondary" className="capitalize text-brand-purple bg-brand-purple/10 hover:bg-brand-purple/20">
                           {profileUser?.role}
                         </Badge>
                       </div>
                     </div>
                   </div>
                   <Button
-                    className="bg-primary-500 hover:bg-primary-600 dark:bg-primary-600 dark:hover:bg-primary-700"
+                    variant="default"
+                    className="gap-2"
                     onClick={() => {
-                      if (availableBadges.length > 0) {
+                      if (availableBadges && availableBadges.length > 0) {
                         handleAwardBadge(availableBadges[0]);
                       }
                     }}
                   >
-                    <Award className="mr-2 h-4 w-4" />
+                    <Award className="h-4 w-4" />
                     Award Badge
                   </Button>
                 </div>
@@ -133,36 +134,44 @@ export default function UserProfile({ id, user, onLogout }: UserProfileProps) {
               
               {/* Tabs for different sections */}
               <Tabs defaultValue="badges" className="mb-6">
-                <TabsList className="bg-gray-100 dark:bg-gray-800">
-                  <TabsTrigger value="badges" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:text-primary-600 dark:data-[state=active]:text-primary-400">
-                    <Award className="h-4 w-4 mr-2" />
+                <TabsList className="bg-accent/10 p-1">
+                  <TabsTrigger 
+                    value="badges" 
+                    className="data-[state=active]:bg-background data-[state=active]:text-brand-purple data-[state=active]:shadow-sm gap-2"
+                  >
+                    <Award className="h-4 w-4" />
                     Badges
                   </TabsTrigger>
-                  <TabsTrigger value="activity" className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700 data-[state=active]:text-primary-600 dark:data-[state=active]:text-primary-400">
-                    <Calendar className="h-4 w-4 mr-2" />
+                  <TabsTrigger 
+                    value="activity" 
+                    className="data-[state=active]:bg-background data-[state=active]:text-brand-purple data-[state=active]:shadow-sm gap-2"
+                  >
+                    <Calendar className="h-4 w-4" />
                     Activity
                   </TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="badges" className="mt-6">
-                  <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Earned Badges</h2>
+                  <h2 className="text-xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-brand-purple to-brand-lilac mb-6">Earned Badges</h2>
                   
                   {isLoadingBadges ? (
                     <div className="text-center py-10">
-                      <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-primary-500 dark:border-primary-400 mx-auto"></div>
-                      <p className="mt-2 text-gray-600 dark:text-gray-400">Loading badges...</p>
+                      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-brand-purple mx-auto"></div>
+                      <p className="mt-2 text-muted-foreground">Loading badges...</p>
                     </div>
-                  ) : awardedBadges.length > 0 ? (
+                  ) : awardedBadges && awardedBadges.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                       {awardedBadges.map((award: any) => (
-                        <Card key={award.id} className="overflow-hidden bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+                        <Card key={award.id} bordered className="overflow-hidden shadow-sm hover:shadow transition-all duration-200">
                           <CardContent className="p-0">
                             <div className="px-4 py-5 sm:p-6 flex flex-col items-center text-center">
                               <div 
-                                className="badge-circle w-20 h-20 mb-4 flex items-center justify-center badge-earned"
+                                className="badge-circle w-20 h-20 mb-4 flex items-center justify-center badge-earned rounded-lg"
                                 style={{ 
-                                  backgroundColor: `${award.badgeColor}10`,
-                                  color: award.badgeColor || "#4F46E5" 
+                                  backgroundColor: award.badgeColor === "#8A63D2" || award.badgeColor === "#4F46E5" 
+                                    ? "rgba(138, 99, 210, 0.1)" 
+                                    : `${award.badgeColor}15`,
+                                  color: award.badgeColor === "#4F46E5" ? "#8A63D2" : (award.badgeColor || "#8A63D2")
                                 }}
                               >
                                 {award.badgeImageUrl ? (
