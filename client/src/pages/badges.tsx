@@ -150,28 +150,7 @@ export default function Badges({ user, onLogout }: BadgesProps) {
         <main className="flex-1 relative overflow-y-auto focus:outline-none bg-background">
           <div className="py-6">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-              {/* Filter section */}
-              <div className="flex justify-end mb-6">
-                <div className="relative">
-                  <select 
-                    value={selectedCategoryId}
-                    onChange={(e) => setSelectedCategoryId(e.target.value)}
-                    className="border border-border rounded-md py-2 px-4 pr-8 bg-white dark:bg-card text-foreground appearance-none"
-                  >
-                    <option value="all">All Categories</option>
-                    {categories.map((category: any) => (
-                      <option key={category.id} value={category.id.toString()}>
-                        {category.name}
-                      </option>
-                    ))}
-                  </select>
-                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                    <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-                    </svg>
-                  </div>
-                </div>
-              </div>
+              {/* Remove filter dropdown as requested */}
               
               {/* Tabs for category filtering */}
               <div className="mb-6">
