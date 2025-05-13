@@ -21,6 +21,7 @@ import { Badge } from "@shared/schema";
 import { generateBadgeIcon } from "@/lib/badge-icons";
 import { useMobile } from "@/hooks/use-mobile";
 import { PageHeader } from "@/components/page-header";
+import { apiPrefix } from "@/lib/queryClient";
 
 interface DashboardProps {
   user: {
@@ -50,7 +51,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
   };
 
   const { data: stats = { totalBadges: 0, totalUsers: 0, totalAwarded: 0, inProgress: 0 } } = useQuery<StatsData>({
-    queryKey: [`/api/organizations/${organizationId}/stats`],
+    queryKey: [`${apiPrefix}/organizations/${organizationId}/stats`],
   });
 
   type CategoryData = {
@@ -61,11 +62,11 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
   };
 
   const { data: categories = [] } = useQuery<CategoryData[]>({
-    queryKey: [`/api/organizations/${organizationId}/categories`],
+    queryKey: [`${apiPrefix}/organizations/${organizationId}/categories`],
   });
 
   const { data: badges = [] } = useQuery({
-    queryKey: [`/api/organizations/${organizationId}/badges`, selectedCategoryId],
+    queryKey: [`${apiPrefix}/organizations/${organizationId}/badges`, selectedCategoryId],
     queryFn: async ({ queryKey }) => {
       const [base, categoryId] = queryKey;
       const url = categoryId && categoryId !== "all" 
@@ -98,7 +99,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
   };
 
   const { data: recentActivity = [] } = useQuery<ActivityData[]>({
-    queryKey: [`/api/organizations/${organizationId}/awarded-badges`],
+    queryKey: [`${apiPrefix}/organizations/${organizationId}/awarded-badges`],
   });
 
   const handleCreateBadge = () => {
