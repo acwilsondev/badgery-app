@@ -38,7 +38,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // In a real-world application, you would use a proper authentication system with hashed passwords
       req.session.userId = user.id;
-      req.session.organizationId = user.organizationId;
+      if (user.organizationId) {
+        req.session.organizationId = user.organizationId;
+      }
       
       return res.status(200).json({
         id: user.id,

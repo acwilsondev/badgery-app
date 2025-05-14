@@ -49,6 +49,7 @@ export const insertUserSchema = createInsertSchema(users, {
   password: (schema) => schema.min(6, "Password must be at least 6 characters"),
   name: (schema) => schema.min(2, "Name must be at least 2 characters"),
   email: (schema) => schema.email("Must provide a valid email"),
+  organizationId: (schema) => schema.optional(),
   role: (schema) => schema.optional(),
   active: (schema) => schema.optional(),
   createdBy: (schema) => schema.optional(),
