@@ -48,7 +48,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         name: user.name,
         email: user.email,
         role: user.role,
-        organizationId: user.organizationId,
+        organizationId: user.organizationId || null,
       });
     } catch (error) {
       console.error('Error during login:', error);
@@ -73,7 +73,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         name: newUser.name,
         email: newUser.email,
         role: newUser.role,
-        organizationId: newUser.organizationId,
+        organizationId: newUser.organizationId || null,
       });
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -101,7 +101,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         name: user.name,
         email: user.email,
         role: user.role,
-        organizationId: user.organizationId,
+        organizationId: user.organizationId || null,
       });
     } catch (error) {
       console.error('Error fetching current user:', error);
@@ -317,7 +317,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         name: user.name,
         email: user.email,
         role: user.role,
-        organizationId: user.organizationId,
+        organizationId: user.organizationId || null,
       });
     } catch (error) {
       console.error('Error fetching user:', error);
