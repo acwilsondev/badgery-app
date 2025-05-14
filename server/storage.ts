@@ -1,10 +1,10 @@
 import { db, pool } from "@db";
 import { eq, and, desc, sql, count, asc, inArray } from "drizzle-orm";
-import { 
-  organizations, 
-  users, 
-  badges, 
-  badgeCategories, 
+import {
+  organizations,
+  users,
+  badges,
+  badgeCategories,
   userOrganization,
   userOrganizationScope,
   metrics,
@@ -25,7 +25,7 @@ import {
   awardedBadges,
   badgeProgress,
   type AwardedBadge,
-  type BadgeProgress
+  type BadgeProgress,
 } from "@shared/schema";
 
 // Organizations
@@ -37,7 +37,7 @@ export async function getOrganizations() {
       FROM organizations
       ORDER BY name ASC
     `;
-    
+
     const result = await pool.query(sql);
     return result.rows;
   } catch (error) {
@@ -52,15 +52,22 @@ export async function getOrganizationById(id: number) {
   });
 }
 
-export async function createOrganization(organization: Omit<Organization, "id" | "createdAt">) {
-  const [newOrganization] = await db.insert(organizations)
+export async function createOrganization(
+  organization: Omit<Organization, "id" | "createdAt">,
+) {
+  const [newOrganization] = await db
+    .insert(organizations)
     .values(organization)
     .returning();
   return newOrganization;
 }
 
-export async function updateOrganization(id: number, data: Partial<Organization>) {
-  const [updatedOrganization] = await db.update(organizations)
+export async function updateOrganization(
+  id: number,
+  data: Partial<Organization>,
+) {
+  const [updatedOrganization] = await db
+    .update(organizations)
     .set(data)
     .where(eq(organizations.id, id))
     .returning();
@@ -81,11 +88,11 @@ export async function getUsers() {
       GROUP BY u.id
       ORDER BY u.name ASC
     `;
-    
+
     const result = await pool.query(sql);
-    
+
     // Format the results to include the organizations array
-    return result.rows.map(row => ({
+    return result.rows.map((row) => ({
       id: row.id,
       username: row.username,
       name: row.name,
@@ -93,12 +100,13 @@ export async function getUsers() {
       role: row.role,
       createdAt: row.created_at,
       // Add organizations array from the joined data
-      organizations: row.organization_ids && row.organization_ids[0] !== null 
-        ? row.organization_ids.map((id: number, index: number) => ({
-            id,
-            name: row.organization_names[index]
-          }))
-        : []
+      organizations:
+        row.organization_ids && row.organization_ids[0] !== null
+          ? row.organization_ids.map((id: number, index: number) => ({
+              id,
+              name: row.organization_names[index],
+            }))
+          : [],
     }));
   } catch (error) {
     console.error("Error in getUsers:", error);
@@ -120,11 +128,11 @@ export async function getUsersByOrganization(organizationId: number) {
       GROUP BY u.id
       ORDER BY u.name ASC
     `;
-    
+
     const result = await pool.query(sql, [organizationId]);
-    
+
     // Format the results to include the organizations array
-    return result.rows.map(row => ({
+    return result.rows.map((row) => ({
       id: row.id,
       username: row.username,
       name: row.name,
@@ -132,12 +140,13 @@ export async function getUsersByOrganization(organizationId: number) {
       role: row.role,
       createdAt: row.created_at,
       // Add organizations array from the joined data
-      organizations: row.organization_ids && row.organization_ids[0] !== null 
-        ? row.organization_ids.map((id: number, index: number) => ({
-            id,
-            name: row.organization_names[index]
-          }))
-        : []
+      organizations:
+        row.organization_ids && row.organization_ids[0] !== null
+          ? row.organization_ids.map((id: number, index: number) => ({
+              id,
+              name: row.organization_names[index],
+            }))
+          : [],
     }));
   } catch (error) {
     console.error("Error in getUsersByOrganization:", error);
@@ -158,13 +167,13 @@ export async function getUserById(id: number) {
       WHERE u.id = $1
       GROUP BY u.id
     `;
-    
+
     const result = await pool.query(sql, [id]);
-    
+
     if (result.rows.length === 0) {
       return null;
     }
-    
+
     const row = result.rows[0];
     return {
       id: row.id,
@@ -176,12 +185,13 @@ export async function getUserById(id: number) {
       organizationId: row.organization_id,
       createdAt: row.created_at,
       // Add organizations array from the joined data
-      organizations: row.organization_ids && row.organization_ids[0] !== null 
-        ? row.organization_ids.map((id: number, index: number) => ({
-            id,
-            name: row.organization_names[index]
-          }))
-        : []
+      organizations:
+        row.organization_ids && row.organization_ids[0] !== null
+          ? row.organization_ids.map((id: number, index: number) => ({
+              id,
+              name: row.organization_names[index],
+            }))
+          : [],
     };
   } catch (error) {
     console.error("Error in getUserById:", error);
@@ -202,13 +212,13 @@ export async function getUserByUsername(username: string) {
       WHERE u.username = $1
       GROUP BY u.id
     `;
-    
+
     const result = await pool.query(sql, [username]);
-    
+
     if (result.rows.length === 0) {
       return null;
     }
-    
+
     const row = result.rows[0];
     return {
       id: row.id,
@@ -220,12 +230,13 @@ export async function getUserByUsername(username: string) {
       organizationId: row.organization_id,
       createdAt: row.created_at,
       // Add organizations array from the joined data
-      organizations: row.organization_ids && row.organization_ids[0] !== null 
-        ? row.organization_ids.map((id: number, index: number) => ({
-            id,
-            name: row.organization_names[index]
-          }))
-        : []
+      organizations:
+        row.organization_ids && row.organization_ids[0] !== null
+          ? row.organization_ids.map((id: number, index: number) => ({
+              id,
+              name: row.organization_names[index],
+            }))
+          : [],
     };
   } catch (error) {
     console.error("Error in getUserByUsername:", error);
@@ -233,54 +244,57 @@ export async function getUserByUsername(username: string) {
   }
 }
 
-export async function createUser(userData: Omit<User, "id" | "createdAt">, organizationIds?: number[]) {
+export async function createUser(
+  userData: Omit<User, "id" | "createdAt">,
+  organizationIds?: number[],
+) {
   try {
     // Log the exact SQL and values used for debugging
     console.log("Creating user with data:", {
       username: userData.username,
       name: userData.name,
       email: userData.email,
-      role: userData.role || 'user',
-      organizationId: userData.organizationId || null
+      role: userData.role || "user",
+      organizationId: userData.organizationId || null,
     });
-    
+
     // Use direct SQL for user creation with only columns that definitely exist
     const sql = `
       INSERT INTO users (username, password, name, email, role, organization_id)
       VALUES ($1, $2, $3, $4, $5, $6)
       RETURNING id, username, password, name, email, role, organization_id as "organizationId", created_at as "createdAt"
     `;
-    
+
     const values = [
       userData.username,
       userData.password,
       userData.name,
       userData.email,
-      userData.role || 'user',
+      userData.role || "user",
       userData.organizationId || null,
     ];
-    
+
     const result = await pool.query(sql, values);
     if (result.rows.length === 0) {
       throw new Error("Failed to create user");
     }
-    
+
     const newUser = result.rows[0];
     console.log("User created successfully:", newUser.id);
-    
+
     // Associate user with organizations if provided
     if (organizationIds && organizationIds.length > 0) {
-      const orgPromises = organizationIds.map(orgId => {
+      const orgPromises = organizationIds.map((orgId) => {
         return pool.query(
           `INSERT INTO user_organization (user_id, organization_id)
            VALUES ($1, $2)`,
-          [newUser.id, orgId]
+          [newUser.id, orgId],
         );
       });
-      
+
       await Promise.all(orgPromises);
     }
-    
+
     return newUser;
   } catch (error) {
     console.error("Error in createUser:", error);
@@ -293,43 +307,47 @@ async function getTableColumns(tableName: string): Promise<string[]> {
   try {
     const result = await pool.query(
       `SELECT column_name FROM information_schema.columns WHERE table_name = $1`,
-      [tableName]
+      [tableName],
     );
-    return result.rows.map(row => row.column_name);
+    return result.rows.map((row) => row.column_name);
   } catch (error) {
     console.error(`Error fetching columns for table ${tableName}:`, error);
     return [];
   }
 }
 
-export async function updateUser(id: number, data: Partial<User>, organizationIds?: number[]) {
+export async function updateUser(
+  id: number,
+  data: Partial<User>,
+  organizationIds?: number[],
+) {
   // Start a transaction
   return await db.transaction(async (tx) => {
     // Update the user
-    const [updatedUser] = await tx.update(users)
+    const [updatedUser] = await tx
+      .update(users)
       .set(data)
       .where(eq(users.id, id))
       .returning();
-    
+
     // Update organization associations if provided
     if (organizationIds) {
       // First delete existing associations
-      await tx.delete(userOrganization)
-        .where(eq(userOrganization.userId, id));
-      
+      await tx.delete(userOrganization).where(eq(userOrganization.userId, id));
+
       // Then create new ones
       if (organizationIds.length > 0) {
-        const userOrgData = organizationIds.map(orgId => ({
+        const userOrgData = organizationIds.map((orgId) => ({
           userId: id,
           organizationId: orgId,
           createdBy: data.updatedBy || null,
-          updatedBy: data.updatedBy || null
+          updatedBy: data.updatedBy || null,
         }));
-        
+
         await tx.insert(userOrganization).values(userOrgData);
       }
     }
-    
+
     return updatedUser;
   });
 }
@@ -345,7 +363,7 @@ export async function getBadgeCategories(organizationId: number) {
       WHERE organization_id = $1
       ORDER BY name ASC
     `;
-    
+
     const result = await pool.query(sql, [organizationId]);
     return result.rows;
   } catch (error) {
@@ -360,8 +378,11 @@ export async function getBadgeCategoryById(id: number) {
   });
 }
 
-export async function createBadgeCategory(category: Omit<BadgeCategory, "id" | "createdAt">) {
-  const [newCategory] = await db.insert(badgeCategories)
+export async function createBadgeCategory(
+  category: Omit<BadgeCategory, "id" | "createdAt">,
+) {
+  const [newCategory] = await db
+    .insert(badgeCategories)
     .values(category)
     .returning();
   return newCategory;
@@ -377,18 +398,18 @@ export async function getBadges(organizationId: number, categoryId?: number) {
       LEFT JOIN badge_categories c ON b.category_id = c.id
       WHERE b.organization_id = $1
     `;
-    
+
     const params = [organizationId];
-    
+
     if (categoryId) {
       sql += ` AND b.category_id = $2`;
       params.push(categoryId);
     }
-    
+
     sql += ` ORDER BY b.name ASC`;
-    
+
     const result = await pool.query(sql, params);
-    return result.rows.map(row => ({
+    return result.rows.map((row) => ({
       id: row.id,
       name: row.name,
       description: row.description,
@@ -400,11 +421,13 @@ export async function getBadges(organizationId: number, categoryId?: number) {
       createdAt: row.created_at,
       requiresProgress: row.requires_progress,
       criteriaSections: row.criteria_sections,
-      criteriaType: row.criteria_type || 'binary',
-      category: row.category_id ? {
-        id: row.category_id,
-        name: row.category_name
-      } : null
+      criteriaType: row.criteria_type || "binary",
+      category: row.category_id
+        ? {
+            id: row.category_id,
+            name: row.category_name,
+          }
+        : null,
     }));
   } catch (error) {
     console.error("Error in getBadges:", error);
@@ -421,13 +444,13 @@ export async function getBadgeById(id: number) {
       LEFT JOIN badge_categories c ON b.category_id = c.id
       WHERE b.id = $1
     `;
-    
+
     const result = await pool.query(sql, [id]);
-    
+
     if (result.rows.length === 0) {
       return null;
     }
-    
+
     const row = result.rows[0];
     return {
       id: row.id,
@@ -441,11 +464,13 @@ export async function getBadgeById(id: number) {
       createdAt: row.created_at,
       requiresProgress: row.requires_progress,
       criteriaSections: row.criteria_sections,
-      criteriaType: row.criteria_type || 'binary',
-      category: row.category_id ? {
-        id: row.category_id,
-        name: row.category_name
-      } : null
+      criteriaType: row.criteria_type || "binary",
+      category: row.category_id
+        ? {
+            id: row.category_id,
+            name: row.category_name,
+          }
+        : null,
     };
   } catch (error) {
     console.error("Error in getBadgeById:", error);
@@ -459,7 +484,8 @@ export async function createBadge(badge: Omit<Badge, "id" | "createdAt">) {
 }
 
 export async function updateBadge(id: number, data: Partial<Badge>) {
-  const [updatedBadge] = await db.update(badges)
+  const [updatedBadge] = await db
+    .update(badges)
     .set(data)
     .where(eq(badges.id, id))
     .returning();
@@ -472,144 +498,159 @@ export async function deleteBadge(id: number) {
 }
 
 // Badge Awarding
-export async function awardBadge(awardData: Omit<AwardedBadge, "id" | "awardedAt">) {
-  const [newAward] = await db.insert(awardedBadges)
+export async function awardBadge(
+  awardData: Omit<AwardedBadge, "id" | "awardedAt">,
+) {
+  const [newAward] = await db
+    .insert(awardedBadges)
     .values(awardData)
     .returning();
   return newAward;
 }
 
 export async function getAwardedBadges(organizationId: number) {
-  return db.select({
-    id: awardedBadges.id,
-    badgeId: awardedBadges.badgeId,
-    userId: awardedBadges.userId,
-    awardedBy: awardedBadges.awardedBy,
-    awardedAt: awardedBadges.awardedAt,
-    status: awardedBadges.status,
-    badgeName: badges.name,
-    badgeDescription: badges.description,
-    badgeColor: badges.color,
-    badgeImageUrl: badges.imageUrl,
-    userName: users.name,
-    awardedByName: sql<string>`awarded_by_user.name`,
-  })
-  .from(awardedBadges)
-  .innerJoin(badges, eq(awardedBadges.badgeId, badges.id))
-  .innerJoin(users, eq(awardedBadges.userId, users.id))
-  .innerJoin(sql`users as awarded_by_user`, eq(awardedBadges.awardedBy, sql`awarded_by_user.id`))
-  .where(eq(badges.organizationId, organizationId))
-  .orderBy(desc(awardedBadges.awardedAt));
+  return db
+    .select({
+      id: awardedBadges.id,
+      badgeId: awardedBadges.badgeId,
+      userId: awardedBadges.userId,
+      awardedBy: awardedBadges.awardedBy,
+      awardedAt: awardedBadges.awardedAt,
+      status: awardedBadges.status,
+      badgeName: badges.name,
+      badgeDescription: badges.description,
+      badgeColor: badges.color,
+      badgeImageUrl: badges.imageUrl,
+      userName: users.name,
+      awardedByName: sql<string>`awarded_by_user.name`,
+    })
+    .from(awardedBadges)
+    .innerJoin(badges, eq(awardedBadges.badgeId, badges.id))
+    .innerJoin(users, eq(awardedBadges.userId, users.id))
+    .innerJoin(
+      sql`users as awarded_by_user`,
+      eq(awardedBadges.awardedBy, sql`awarded_by_user.id`),
+    )
+    .where(eq(badges.organizationId, organizationId))
+    .orderBy(desc(awardedBadges.awardedAt));
 }
 
 export async function getUserAwardedBadges(userId: number) {
-  return db.select({
-    id: awardedBadges.id,
-    badgeId: awardedBadges.badgeId,
-    userId: awardedBadges.userId,
-    awardedBy: awardedBadges.awardedBy,
-    awardedAt: awardedBadges.awardedAt,
-    status: awardedBadges.status,
-    badgeName: badges.name,
-    badgeDescription: badges.description,
-    badgeColor: badges.color,
-    badgeImageUrl: badges.imageUrl,
-    awardedByName: sql<string>`awarded_by_user.name`,
-  })
-  .from(awardedBadges)
-  .innerJoin(badges, eq(awardedBadges.badgeId, badges.id))
-  .innerJoin(sql`users as awarded_by_user`, eq(awardedBadges.awardedBy, sql`awarded_by_user.id`))
-  .where(eq(awardedBadges.userId, userId))
-  .orderBy(desc(awardedBadges.awardedAt));
+  return db
+    .select({
+      id: awardedBadges.id,
+      badgeId: awardedBadges.badgeId,
+      userId: awardedBadges.userId,
+      awardedBy: awardedBadges.awardedBy,
+      awardedAt: awardedBadges.awardedAt,
+      status: awardedBadges.status,
+      badgeName: badges.name,
+      badgeDescription: badges.description,
+      badgeColor: badges.color,
+      badgeImageUrl: badges.imageUrl,
+      awardedByName: sql<string>`awarded_by_user.name`,
+    })
+    .from(awardedBadges)
+    .innerJoin(badges, eq(awardedBadges.badgeId, badges.id))
+    .innerJoin(
+      sql`users as awarded_by_user`,
+      eq(awardedBadges.awardedBy, sql`awarded_by_user.id`),
+    )
+    .where(eq(awardedBadges.userId, userId))
+    .orderBy(desc(awardedBadges.awardedAt));
 }
 
 // Badge Progress - These functions now use the updated progress/metrics model
 export async function getBadgeProgress(badgeId: number, userId: number) {
   try {
     // Get metrics associated with the badge
-    const badgeMetricsResult = await db.select({
-      metricId: badgeMetrics.metricId
-    })
-    .from(badgeMetrics)
-    .where(eq(badgeMetrics.badgeId, badgeId));
-    
+    const badgeMetricsResult = await db
+      .select({
+        metricId: badgeMetrics.metricId,
+      })
+      .from(badgeMetrics)
+      .where(eq(badgeMetrics.badgeId, badgeId));
+
     if (badgeMetricsResult.length === 0) {
       return null; // No metrics for this badge
     }
-    
-    const metricIds = badgeMetricsResult.map(bm => bm.metricId);
-    
+
+    const metricIds = badgeMetricsResult.map((bm) => bm.metricId);
+
     // Get progress for these metrics and user
-    const progressItems = await db.select({
-      id: progress.id,
-      userId: progress.userId,
-      metricId: progress.metricId,
-      value: progress.value,
-      lastUpdatedAt: progress.lastUpdatedAt,
-      updatedBy: progress.updatedBy,
-      metricName: metrics.name,
-      metricDescription: metrics.description,
-      metricType: metrics.type,
-      targetValue: metrics.targetValue
-    })
-    .from(progress)
-    .innerJoin(metrics, eq(progress.metricId, metrics.id))
-    .where(and(
-      inArray(progress.metricId, metricIds),
-      eq(progress.userId, userId)
-    ));
-    
+    const progressItems = await db
+      .select({
+        id: progress.id,
+        userId: progress.userId,
+        metricId: progress.metricId,
+        value: progress.value,
+        lastUpdatedAt: progress.lastUpdatedAt,
+        updatedBy: progress.updatedBy,
+        metricName: metrics.name,
+        metricDescription: metrics.description,
+        metricType: metrics.type,
+        targetValue: metrics.targetValue,
+      })
+      .from(progress)
+      .innerJoin(metrics, eq(progress.metricId, metrics.id))
+      .where(
+        and(inArray(progress.metricId, metricIds), eq(progress.userId, userId)),
+      );
+
     // Get badge details
     const badgeDetails = await getBadgeById(badgeId);
-    
+
     if (!badgeDetails) {
       return null;
     }
-    
+
     // Calculate overall progress percentage
     const totalMetrics = metricIds.length;
     let completedValue = 0;
-    
-    progressItems.forEach(item => {
-      if (item.metricType === 'boolean' && item.value === 'true') {
+
+    progressItems.forEach((item) => {
+      if (item.metricType === "boolean" && item.value === "true") {
         completedValue += 1;
-      } else if (item.metricType === 'numeric') {
+      } else if (item.metricType === "numeric") {
         const currentValue = parseInt(item.value);
         const targetValue = item.targetValue;
         if (currentValue >= targetValue) {
           completedValue += 1;
         } else {
-          completedValue += (currentValue / targetValue);
+          completedValue += currentValue / targetValue;
         }
       }
     });
-    
-    const progressPercentage = totalMetrics > 0 
-      ? Math.round((completedValue / totalMetrics) * 100) 
-      : 0;
-    
-    const status = progressPercentage >= 100 ? 'completed' : 'in_progress';
-    
+
+    const progressPercentage =
+      totalMetrics > 0 ? Math.round((completedValue / totalMetrics) * 100) : 0;
+
+    const status = progressPercentage >= 100 ? "completed" : "in_progress";
+
     // Construct the response in a format compatible with the old API
     return {
       id: progressItems.length > 0 ? progressItems[0].id : 0,
       userId: userId,
       badgeId: badgeId,
       progress: progressPercentage,
-      progressData: progressItems.reduce((acc, item) => {
-        acc[item.metricId] = {
-          value: item.value,
-          name: item.metricName,
-          description: item.metricDescription,
-          type: item.metricType,
-          targetValue: item.targetValue
-        };
-        return acc;
-      }, {} as Record<number, any>),
-      lastUpdated: progressItems.length > 0 ? progressItems[0].lastUpdatedAt : new Date(),
+      progressData: progressItems.reduce(
+        (acc, item) => {
+          acc[item.metricId] = {
+            value: item.value,
+            name: item.metricName,
+            description: item.metricDescription,
+            type: item.metricType,
+            targetValue: item.targetValue,
+          };
+          return acc;
+        },
+        {} as Record<number, any>,
+      ),
+      lastUpdated:
+        progressItems.length > 0 ? progressItems[0].lastUpdatedAt : new Date(),
       status: status,
       badge: badgeDetails,
-      metrics: progressItems
+      metrics: progressItems,
     };
   } catch (error) {
     console.error("Error in getBadgeProgress:", error);
@@ -620,48 +661,54 @@ export async function getBadgeProgress(badgeId: number, userId: number) {
 export async function getUserProgressForAllBadges(userId: number) {
   try {
     // Get all badges that have metrics
-    const badgesWithMetrics = await db.select({
-      badgeId: badgeMetrics.badgeId
-    })
-    .from(badgeMetrics)
-    .groupBy(badgeMetrics.badgeId);
-    
-    const badgeIds = badgesWithMetrics.map(b => b.badgeId);
-    
+    const badgesWithMetrics = await db
+      .select({
+        badgeId: badgeMetrics.badgeId,
+      })
+      .from(badgeMetrics)
+      .groupBy(badgeMetrics.badgeId);
+
+    const badgeIds = badgesWithMetrics.map((b) => b.badgeId);
+
     // No badges with metrics
     if (badgeIds.length === 0) {
       return [];
     }
-    
+
     // Get progress for all metrics for this user
-    const userProgress = await db.select({
-      id: progress.id,
-      userId: progress.userId,
-      metricId: progress.metricId,
-      value: progress.value,
-      lastUpdatedAt: progress.lastUpdatedAt,
-      updatedBy: progress.updatedBy,
-      metricName: metrics.name,
-      metricDescription: metrics.description,
-      metricType: metrics.type,
-      targetValue: metrics.targetValue,
-      updatedByName: sql<string>`updated_by_user.name`,
-    })
-    .from(progress)
-    .innerJoin(metrics, eq(progress.metricId, metrics.id))
-    .innerJoin(badgeMetrics, eq(metrics.id, badgeMetrics.metricId))
-    .innerJoin(sql`users as updated_by_user`, eq(progress.updatedBy, sql`updated_by_user.id`))
-    .where(eq(progress.userId, userId));
-    
+    const userProgress = await db
+      .select({
+        id: progress.id,
+        userId: progress.userId,
+        metricId: progress.metricId,
+        value: progress.value,
+        lastUpdatedAt: progress.lastUpdatedAt,
+        updatedBy: progress.updatedBy,
+        metricName: metrics.name,
+        metricDescription: metrics.description,
+        metricType: metrics.type,
+        targetValue: metrics.targetValue,
+        updatedByName: sql<string>`updated_by_user.name`,
+      })
+      .from(progress)
+      .innerJoin(metrics, eq(progress.metricId, metrics.id))
+      .innerJoin(badgeMetrics, eq(metrics.id, badgeMetrics.metricId))
+      .innerJoin(
+        sql`users as updated_by_user`,
+        eq(progress.updatedBy, sql`updated_by_user.id`),
+      )
+      .where(eq(progress.userId, userId));
+
     // Group progress by badge
     const progressByBadge: Record<number, any[]> = {};
     for (const item of userProgress) {
       // Get badge_id from badgeMetrics
-      const badgeMetricItem = await db.select()
+      const badgeMetricItem = await db
+        .select()
         .from(badgeMetrics)
         .where(eq(badgeMetrics.metricId, item.metricId))
         .limit(1);
-        
+
       if (badgeMetricItem.length > 0) {
         const badgeId = badgeMetricItem[0].badgeId;
         if (!progressByBadge[badgeId]) {
@@ -670,53 +717,57 @@ export async function getUserProgressForAllBadges(userId: number) {
         progressByBadge[badgeId].push(item);
       }
     }
-    
+
     // Create combined progress objects
     const result = [];
     for (const [badgeId, items] of Object.entries(progressByBadge)) {
       const badgeDetails = await getBadgeById(parseInt(badgeId));
       if (!badgeDetails) continue;
-      
+
       // Calculate overall progress
       const totalMetrics = items.length;
       let completedValue = 0;
-      
-      items.forEach(item => {
-        if (item.metricType === 'boolean' && item.value === 'true') {
+
+      items.forEach((item) => {
+        if (item.metricType === "boolean" && item.value === "true") {
           completedValue += 1;
-        } else if (item.metricType === 'numeric') {
+        } else if (item.metricType === "numeric") {
           const currentValue = parseInt(item.value);
           const targetValue = item.targetValue;
           if (currentValue >= targetValue) {
             completedValue += 1;
           } else {
-            completedValue += (currentValue / targetValue);
+            completedValue += currentValue / targetValue;
           }
         }
       });
-      
-      const progressPercentage = totalMetrics > 0 
-        ? Math.round((completedValue / totalMetrics) * 100) 
-        : 0;
-      
-      const status = progressPercentage >= 100 ? 'completed' : 'in_progress';
-      
+
+      const progressPercentage =
+        totalMetrics > 0
+          ? Math.round((completedValue / totalMetrics) * 100)
+          : 0;
+
+      const status = progressPercentage >= 100 ? "completed" : "in_progress";
+
       // Create a compatible response format
       result.push({
         id: items[0].id,
         badgeId: parseInt(badgeId),
         userId: userId,
         progress: progressPercentage,
-        progressData: items.reduce((acc, item) => {
-          acc[item.metricId] = {
-            value: item.value,
-            name: item.metricName,
-            description: item.metricDescription,
-            type: item.metricType,
-            targetValue: item.targetValue
-          };
-          return acc;
-        }, {} as Record<number, any>),
+        progressData: items.reduce(
+          (acc, item) => {
+            acc[item.metricId] = {
+              value: item.value,
+              name: item.metricName,
+              description: item.metricDescription,
+              type: item.metricType,
+              targetValue: item.targetValue,
+            };
+            return acc;
+          },
+          {} as Record<number, any>,
+        ),
         lastUpdated: items[0].lastUpdatedAt,
         updatedBy: items[0].updatedBy,
         status: status,
@@ -726,12 +777,13 @@ export async function getUserProgressForAllBadges(userId: number) {
         badgeImageUrl: badgeDetails.imageUrl,
         requiresProgress: true,
         criteriaSections: badgeDetails.criteriaSections,
-        updatedByName: items[0].updatedByName
+        updatedByName: items[0].updatedByName,
       });
     }
-    
-    return result.sort((a, b) => 
-      new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime()
+
+    return result.sort(
+      (a, b) =>
+        new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime(),
     );
   } catch (error) {
     console.error("Error in getUserProgressForAllBadges:", error);
@@ -742,78 +794,86 @@ export async function getUserProgressForAllBadges(userId: number) {
 export async function getBadgeProgressForOrganization(organizationId: number) {
   try {
     // Get all badges in the organization that have metrics
-    const badgesInOrg = await db.select({
-      id: badges.id,
-      name: badges.name
-    })
-    .from(badges)
-    .innerJoin(badgeMetrics, eq(badges.id, badgeMetrics.badgeId))
-    .where(eq(badges.organizationId, organizationId))
-    .groupBy(badges.id);
-    
+    const badgesInOrg = await db
+      .select({
+        id: badges.id,
+        name: badges.name,
+      })
+      .from(badges)
+      .innerJoin(badgeMetrics, eq(badges.id, badgeMetrics.badgeId))
+      .where(eq(badges.organizationId, organizationId))
+      .groupBy(badges.id);
+
     if (badgesInOrg.length === 0) {
       return [];
     }
-    
-    const badgeIds = badgesInOrg.map(b => b.id);
-    
+
+    const badgeIds = badgesInOrg.map((b) => b.id);
+
     // Get all metrics for these badges
-    const badgeMetricsItems = await db.select({
-      badgeId: badgeMetrics.badgeId,
-      metricId: badgeMetrics.metricId
-    })
-    .from(badgeMetrics)
-    .where(inArray(badgeMetrics.badgeId, badgeIds));
-    
-    const metricIds = badgeMetricsItems.map(bm => bm.metricId);
-    
+    const badgeMetricsItems = await db
+      .select({
+        badgeId: badgeMetrics.badgeId,
+        metricId: badgeMetrics.metricId,
+      })
+      .from(badgeMetrics)
+      .where(inArray(badgeMetrics.badgeId, badgeIds));
+
+    const metricIds = badgeMetricsItems.map((bm) => bm.metricId);
+
     // Get progress for these metrics
-    const progressItems = await db.select({
-      id: progress.id,
-      userId: progress.userId,
-      metricId: progress.metricId,
-      value: progress.value,
-      lastUpdatedAt: progress.lastUpdatedAt,
-      updatedBy: progress.updatedBy,
-      userName: users.name,
-      updatedByName: sql<string>`updated_by_user.name`,
-      metricName: metrics.name
-    })
-    .from(progress)
-    .innerJoin(users, eq(progress.userId, users.id))
-    .innerJoin(metrics, eq(progress.metricId, metrics.id))
-    .innerJoin(sql`users as updated_by_user`, eq(progress.updatedBy, sql`updated_by_user.id`))
-    .where(inArray(progress.metricId, metricIds))
-    .orderBy(desc(progress.lastUpdatedAt));
-    
+    const progressItems = await db
+      .select({
+        id: progress.id,
+        userId: progress.userId,
+        metricId: progress.metricId,
+        value: progress.value,
+        lastUpdatedAt: progress.lastUpdatedAt,
+        updatedBy: progress.updatedBy,
+        userName: users.name,
+        updatedByName: sql<string>`updated_by_user.name`,
+        metricName: metrics.name,
+      })
+      .from(progress)
+      .innerJoin(users, eq(progress.userId, users.id))
+      .innerJoin(metrics, eq(progress.metricId, metrics.id))
+      .innerJoin(
+        sql`users as updated_by_user`,
+        eq(progress.updatedBy, sql`updated_by_user.id`),
+      )
+      .where(inArray(progress.metricId, metricIds))
+      .orderBy(desc(progress.lastUpdatedAt));
+
     // Group progress by user and badge
     const groupedProgress: Record<string, any[]> = {};
     for (const item of progressItems) {
       // Find which badge this metric belongs to
-      const badgeMetric = badgeMetricsItems.find(bm => bm.metricId === item.metricId);
+      const badgeMetric = badgeMetricsItems.find(
+        (bm) => bm.metricId === item.metricId,
+      );
       if (!badgeMetric) continue;
-      
+
       const key = `${item.userId}-${badgeMetric.badgeId}`;
       if (!groupedProgress[key]) {
         groupedProgress[key] = [];
       }
       groupedProgress[key].push({
         ...item,
-        badgeId: badgeMetric.badgeId
+        badgeId: badgeMetric.badgeId,
       });
     }
-    
+
     // Format the response
     const result = [];
     for (const [key, items] of Object.entries(groupedProgress)) {
       if (items.length === 0) continue;
-      
+
       const badgeId = items[0].badgeId;
-      const badgeName = badgesInOrg.find(b => b.id === badgeId)?.name || '';
-      
+      const badgeName = badgesInOrg.find((b) => b.id === badgeId)?.name || "";
+
       // Get the first item for common fields
       const firstItem = items[0];
-      
+
       result.push({
         id: firstItem.id,
         badgeId: badgeId,
@@ -825,10 +885,10 @@ export async function getBadgeProgressForOrganization(organizationId: number) {
         updatedByName: firstItem.updatedByName,
         // These are placeholders to maintain API compatibility
         progress: 0, // Will be calculated properly in the client
-        status: 'in_progress'
+        status: "in_progress",
       });
     }
-    
+
     return result;
   } catch (error) {
     console.error("Error in getBadgeProgressForOrganization:", error);
@@ -842,68 +902,74 @@ export async function createOrUpdateBadgeProgress(progressData: any) {
     return await db.transaction(async (tx) => {
       // Extract badge and metric ids
       const { badgeId, userId, metrics: metricsData } = progressData;
-      
+
       // Get all metrics for this badge
-      const badgeMetricsItems = await tx.select({
-        metricId: badgeMetrics.metricId
-      })
-      .from(badgeMetrics)
-      .where(eq(badgeMetrics.badgeId, badgeId));
-      
-      const metricIds = badgeMetricsItems.map(bm => bm.metricId);
-      
+      const badgeMetricsItems = await tx
+        .select({
+          metricId: badgeMetrics.metricId,
+        })
+        .from(badgeMetrics)
+        .where(eq(badgeMetrics.badgeId, badgeId));
+
+      const metricIds = badgeMetricsItems.map((bm) => bm.metricId);
+
       // Process each metric
       const updatedProgress = [];
       for (const metricId of metricIds) {
-        const metricValue = metricsData && metricsData[metricId] ? metricsData[metricId].value : '0';
-        
+        const metricValue =
+          metricsData && metricsData[metricId]
+            ? metricsData[metricId].value
+            : "0";
+
         // Check if progress exists
-        const existingProgress = await tx.select()
+        const existingProgress = await tx
+          .select()
           .from(progress)
-          .where(and(
-            eq(progress.metricId, metricId),
-            eq(progress.userId, userId)
-          ))
+          .where(
+            and(eq(progress.metricId, metricId), eq(progress.userId, userId)),
+          )
           .limit(1);
-          
+
         if (existingProgress.length > 0) {
           // Update existing
-          const [updated] = await tx.update(progress)
+          const [updated] = await tx
+            .update(progress)
             .set({
               value: metricValue,
               lastUpdatedAt: new Date(),
-              updatedBy: progressData.updatedBy
+              updatedBy: progressData.updatedBy,
             })
             .where(eq(progress.id, existingProgress[0].id))
             .returning();
-            
+
           updatedProgress.push(updated);
         } else {
           // Create new
-          const [newProgress] = await tx.insert(progress)
+          const [newProgress] = await tx
+            .insert(progress)
             .values({
               userId: userId,
               metricId: metricId,
               value: metricValue,
               updatedBy: progressData.updatedBy,
-              createdBy: progressData.updatedBy
+              createdBy: progressData.updatedBy,
             })
             .returning();
-            
+
           updatedProgress.push(newProgress);
         }
       }
-      
+
       // Check if all metrics are complete and award the badge if needed
       const badgeProgress = await getBadgeProgress(badgeId, userId);
       if (badgeProgress && badgeProgress.progress >= 100) {
         await autoAwardBadgeIfComplete({
           badgeId,
           userId,
-          updatedBy: progressData.updatedBy
+          updatedBy: progressData.updatedBy,
         });
       }
-      
+
       return badgeProgress;
     });
   } catch (error) {
@@ -913,13 +979,17 @@ export async function createOrUpdateBadgeProgress(progressData: any) {
 }
 
 // Auto-award badge when progress reaches 100%
-export async function autoAwardBadgeIfComplete(data: { badgeId: number, userId: number, updatedBy: number }) {
+export async function autoAwardBadgeIfComplete(data: {
+  badgeId: number;
+  userId: number;
+  updatedBy: number;
+}) {
   // Check if the badge has already been awarded
   const existingAward = await db.query.achievements.findFirst({
     where: and(
       eq(achievements.badgeId, data.badgeId),
-      eq(achievements.userId, data.userId)
-    )
+      eq(achievements.userId, data.userId),
+    ),
   });
 
   if (!existingAward) {
@@ -928,14 +998,14 @@ export async function autoAwardBadgeIfComplete(data: { badgeId: number, userId: 
       badgeId: data.badgeId,
       userId: data.userId,
       awardedBy: data.updatedBy,
-      status: 'completed',
+      status: "completed",
       awardedAt: new Date(),
-      createdBy: data.updatedBy
+      createdBy: data.updatedBy,
     });
 
     return true;
   }
-  
+
   return false;
 }
 

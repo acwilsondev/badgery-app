@@ -1,7 +1,7 @@
-import React from 'react';
-import { Search, Bell, Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import React from "react";
+import { Search, Bell, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface PageHeaderProps {
   title: string;
@@ -24,7 +24,7 @@ export function PageHeader({
   searchPlaceholder = "Search...",
   onSearchChange,
   actionButton,
-  children
+  children,
 }: PageHeaderProps) {
   return (
     <>
@@ -34,7 +34,9 @@ export function PageHeader({
           <div className="flex-1 flex">
             {showSearch && (
               <form className="w-full flex md:ml-0" action="#" method="GET">
-                <label htmlFor="search-field" className="sr-only">Search</label>
+                <label htmlFor="search-field" className="sr-only">
+                  Search
+                </label>
                 <div className="relative w-full focus-within:text-primary">
                   <div className="absolute inset-y-0 left-0 flex items-center pointer-events-none pl-3">
                     <Search className="h-5 w-5 text-muted-foreground" />
@@ -44,13 +46,13 @@ export function PageHeader({
                     className="block w-full h-full pl-10 border-transparent bg-muted/50 focus:ring-1 focus:ring-brand-purple/30"
                     placeholder={searchPlaceholder}
                     type="search"
-                    onChange={e => onSearchChange?.(e.target.value)}
+                    onChange={(e) => onSearchChange?.(e.target.value)}
                   />
                 </div>
               </form>
             )}
           </div>
-          
+
           <div className="ml-4 flex items-center md:ml-6">
             <button
               type="button"
@@ -62,15 +64,21 @@ export function PageHeader({
           </div>
         </div>
       </div>
-      
+
       {/* Page header */}
       <header className="bg-background shadow-sm border-b border-border">
         <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-brand-purple to-brand-lilac">{title}</h1>
-            {description && <p className="mt-1 text-sm text-muted-foreground">{description}</p>}
+            <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-brand-purple to-brand-lilac">
+              {title}
+            </h1>
+            {description && (
+              <p className="mt-1 text-sm text-muted-foreground">
+                {description}
+              </p>
+            )}
           </div>
-          
+
           {actionButton && (
             <div className="mt-4 md:mt-0">
               <Button
@@ -82,7 +90,7 @@ export function PageHeader({
               </Button>
             </div>
           )}
-          
+
           {children}
         </div>
       </header>

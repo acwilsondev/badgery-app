@@ -14,9 +14,15 @@ import {
   Search,
   Menu,
   Bell,
-  Plus
+  Plus,
 } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@shared/schema";
 import { generateBadgeIcon } from "@/lib/badge-icons";
 import { useMobile } from "@/hooks/use-mobile";
@@ -50,7 +56,14 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
     inProgress: number;
   };
 
-  const { data: stats = { totalBadges: 0, totalUsers: 0, totalAwarded: 0, inProgress: 0 } } = useQuery<StatsData>({
+  const {
+    data: stats = {
+      totalBadges: 0,
+      totalUsers: 0,
+      totalAwarded: 0,
+      inProgress: 0,
+    },
+  } = useQuery<StatsData>({
     queryKey: [`${apiPrefix}/organizations/${organizationId}/stats`],
   });
 
@@ -66,12 +79,16 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
   });
 
   const { data: badges = [] } = useQuery({
-    queryKey: [`${apiPrefix}/organizations/${organizationId}/badges`, selectedCategoryId],
+    queryKey: [
+      `${apiPrefix}/organizations/${organizationId}/badges`,
+      selectedCategoryId,
+    ],
     queryFn: async ({ queryKey }) => {
       const [base, categoryId] = queryKey;
-      const url = categoryId && categoryId !== "all" 
-        ? `${base}?categoryId=${categoryId}` 
-        : base;
+      const url =
+        categoryId && categoryId !== "all"
+          ? `${base}?categoryId=${categoryId}`
+          : base;
       const res = await fetch(url, { credentials: "include" });
       if (!res.ok) throw new Error("Failed to fetch badges");
       return res.json();
@@ -120,13 +137,13 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
   return (
     <div className="h-screen flex overflow-hidden bg-background">
       {/* Sidebar */}
-      <Sidebar 
-        user={user} 
-        onLogout={onLogout} 
+      <Sidebar
+        user={user}
+        onLogout={onLogout}
         isMobileOpen={mobileMenuOpen}
         onMobileClose={() => setMobileMenuOpen(false)}
       />
-      
+
       {/* Main content */}
       <div className="flex flex-col w-0 flex-1 overflow-hidden">
         {/* Mobile menu button - only visible on mobile */}
@@ -138,7 +155,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
           <span className="sr-only">Open sidebar</span>
           <Menu className="h-6 w-6" />
         </button>
-        
+
         {/* Standardized Page Header */}
         <PageHeader
           title="Organization Dashboard"
@@ -148,10 +165,10 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
           actionButton={{
             label: "Create New Badge",
             onClick: handleCreateBadge,
-            icon: <Plus className="h-4 w-4 mr-1" />
+            icon: <Plus className="h-4 w-4 mr-1" />,
           }}
         />
-        
+
         {/* Main content */}
         <main className="flex-1 relative overflow-y-auto focus:outline-none bg-background">
           <div className="py-8">
@@ -166,7 +183,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                   linkText="View all badges"
                   linkHref="/badges"
                 />
-                
+
                 <StatCard
                   title="Enrolled Users"
                   value={stats.totalUsers}
@@ -175,7 +192,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                   linkText="View all users"
                   linkHref="/users"
                 />
-                
+
                 <StatCard
                   title="Badges Awarded"
                   value={stats.totalAwarded}
@@ -185,26 +202,40 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                   linkHref="/reports"
                 />
               </div>
-              
+
               {/* Recent Activity Section */}
-              <h2 className="text-xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-brand-purple to-brand-lilac mb-6">Recent Activity</h2>
+              <h2 className="text-xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-brand-purple to-brand-lilac mb-6">
+                Recent Activity
+              </h2>
               <div className="bg-card border-border shadow-sm overflow-hidden rounded-lg mb-8">
                 <ul className="divide-y divide-border">
                   {recentActivity.length > 0 ? (
-                    recentActivity.slice(0, 3).map((activity: any) => (
-                      <ActivityItem
-                        key={activity.id}
-                        title={activity.badgeName}
-                        userName={activity.userName}
-                        date={activity.awardedAt}
-                        status={activity.status}
-                        icon={generateBadgeIcon(activity.badgeName, activity.badgeColor)}
-                        iconColor={activity.badgeColor === "#4F46E5" ? "primary" : 
-                                   activity.badgeColor === "#10B981" ? "secondary" : 
-                                   activity.badgeColor === "#F59E0B" ? "accent" : 
-                                   activity.badgeColor === "#8A63D2" ? "brand-purple" : "brand-lilac"}
-                      />
-                    ))
+                    recentActivity
+                      .slice(0, 3)
+                      .map((activity: any) => (
+                        <ActivityItem
+                          key={activity.id}
+                          title={activity.badgeName}
+                          userName={activity.userName}
+                          date={activity.awardedAt}
+                          status={activity.status}
+                          icon={generateBadgeIcon(
+                            activity.badgeName,
+                            activity.badgeColor,
+                          )}
+                          iconColor={
+                            activity.badgeColor === "#4F46E5"
+                              ? "primary"
+                              : activity.badgeColor === "#10B981"
+                                ? "secondary"
+                                : activity.badgeColor === "#F59E0B"
+                                  ? "accent"
+                                  : activity.badgeColor === "#8A63D2"
+                                    ? "brand-purple"
+                                    : "brand-lilac"
+                          }
+                        />
+                      ))
                   ) : (
                     <li className="px-6 py-6 text-center text-muted-foreground">
                       No recent activity found.
@@ -212,13 +243,15 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                   )}
                 </ul>
               </div>
-              
+
               {/* Badge Management Section */}
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-brand-purple to-brand-lilac">Badge Management</h2>
+                <h2 className="text-xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-brand-purple to-brand-lilac">
+                  Badge Management
+                </h2>
                 <div className="relative">
-                  <Select 
-                    value={selectedCategoryId} 
+                  <Select
+                    value={selectedCategoryId}
                     onValueChange={setSelectedCategoryId}
                   >
                     <SelectTrigger className="w-[180px] bg-white/50 dark:bg-gray-800/50 border-brand-lilac/30 dark:border-brand-lilac/20">
@@ -227,7 +260,10 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                     <SelectContent>
                       <SelectItem value="all">All Categories</SelectItem>
                       {categories.map((category: any) => (
-                        <SelectItem key={category.id} value={category.id.toString()}>
+                        <SelectItem
+                          key={category.id}
+                          value={category.id.toString()}
+                        >
                           {category.name}
                         </SelectItem>
                       ))}
@@ -235,7 +271,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                   </Select>
                 </div>
               </div>
-              
+
               {/* Badge grid */}
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {badges && badges.length > 0 ? (
@@ -255,11 +291,30 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                     <div className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-brand-purple/10 mb-4">
                       <Tag className="h-10 w-10 text-brand-purple" />
                     </div>
-                    <h3 className="mt-2 text-lg font-semibold">No badges found</h3>
-                    <p className="mt-1 text-sm text-muted-foreground mb-4">Get started by creating your first badge.</p>
-                    <Button onClick={handleCreateBadge} variant="default" className="gap-2">
-                      <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    <h3 className="mt-2 text-lg font-semibold">
+                      No badges found
+                    </h3>
+                    <p className="mt-1 text-sm text-muted-foreground mb-4">
+                      Get started by creating your first badge.
+                    </p>
+                    <Button
+                      onClick={handleCreateBadge}
+                      variant="default"
+                      className="gap-2"
+                    >
+                      <svg
+                        className="h-5 w-5"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                        />
                       </svg>
                       Create New Badge
                     </Button>
@@ -270,7 +325,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
           </div>
         </main>
       </div>
-      
+
       {/* Badge Dialog */}
       {badgeDialogOpen && (
         <BadgeDialog
@@ -280,7 +335,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
           organizationId={organizationId}
         />
       )}
-      
+
       {/* Award Badge Dialog */}
       {awardDialogOpen && selectedBadge && (
         <AwardBadgeDialog

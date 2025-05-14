@@ -6,6 +6,7 @@
 - Active (boolean)
 
 User
+
 - id (PK)
 - name
 - email
@@ -13,44 +14,50 @@ User
 - etc.
 
 Organization
+
 - id (PK)
 - name
 - description
 
 UserOrganization (Join table)
+
 - user_id (FK → User)
 - organization_id (FK → Organization)
 
 UserOrganizationScope
+
 - id (PK)
 - user_id (FK → User)
 - organization_id (FK → Organization)
-- scope (string or enum)  -- e.g., 'grant_achievement', 'revoke_achievement', 'edit_badge', 'viewer'
-
-
+- scope (string or enum) -- e.g., 'grant_achievement', 'revoke_achievement', 'edit_badge', 'viewer'
 
 Badge
+
 - id (PK)
 - organization_id (FK → Organization)
 - name
 - description
 
 BadgePrerequisite (Join table for prerequisites)
+
 - badge_id (FK → Badge)
 - prerequisite_badge_id (FK → Badge)
 
 Metric
+
 - id (PK)
 - name
 - description
 - type ('boolean' | 'numeric')
-- target_value (int)  -- e.g., 1 for boolean true, or 100 for numeric goal
+- target_value (int) -- e.g., 1 for boolean true, or 100 for numeric goal
 
 BadgeMetric (Join table between Badges and Metrics)
+
 - badge_id (FK → Badge)
 - metric_id (FK → Metric)
 
 Achievement
+
 - id (PK)
 - user_id (FK → User)
 - badge_id (FK → Badge)
@@ -58,6 +65,7 @@ Achievement
 - awarded_at (nullable)
 
 Progress
+
 - id (PK)
 - user_id (FK → User)
 - metric_id (FK → Metric)

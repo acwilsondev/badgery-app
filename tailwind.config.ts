@@ -13,12 +13,12 @@ export default {
       colors: {
         /* Design system colors - based on color palette */
         brand: {
-          purple: "#5E2B97", /* Deep Purple - Primary color */
-          orange: "#F76C1F", /* Vibrant Orange - Accent color */
-          lilac: "#BFA5E0", /* Soft Lilac - Supportive tone */
-          coral: "#FF9C6E", /* Bright Coral - Secondary accent */
-          charcoal: "#2E2E2E", /* Charcoal Gray - Neutral foundation */
-          gray: "#F2F2F5", /* Light Cool Gray - Clean background */
+          purple: "#5E2B97" /* Deep Purple - Primary color */,
+          orange: "#F76C1F" /* Vibrant Orange - Accent color */,
+          lilac: "#BFA5E0" /* Soft Lilac - Supportive tone */,
+          coral: "#FF9C6E" /* Bright Coral - Secondary accent */,
+          charcoal: "#2E2E2E" /* Charcoal Gray - Neutral foundation */,
+          gray: "#F2F2F5" /* Light Cool Gray - Clean background */,
         },
         /* Theme colors using CSS variables */
         background: "hsl(var(--background))",

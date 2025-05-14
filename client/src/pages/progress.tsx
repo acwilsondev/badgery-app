@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { Badge } from '@shared/schema';
-import { useToast } from '@/hooks/use-toast';
-import { Sidebar } from '@/components/sidebar';
-import { apiPrefix } from '@/lib/queryClient';
-import { BadgeProgressDialog } from '@/components/badge-progress-dialog';
-import { generateBadgeIcon } from '@/lib/badge-icons';
-import { formatDate } from '@/lib/utils';
-import { PageHeader } from '@/components/page-header';
-import { Menu } from 'lucide-react';
+import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Badge } from "@shared/schema";
+import { useToast } from "@/hooks/use-toast";
+import { Sidebar } from "@/components/sidebar";
+import { apiPrefix } from "@/lib/queryClient";
+import { BadgeProgressDialog } from "@/components/badge-progress-dialog";
+import { generateBadgeIcon } from "@/lib/badge-icons";
+import { formatDate } from "@/lib/utils";
+import { PageHeader } from "@/components/page-header";
+import { Menu } from "lucide-react";
 
 import {
   Card,
@@ -16,13 +16,8 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs';
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Table,
   TableBody,
@@ -30,10 +25,10 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { Progress } from '@/components/ui/progress';
-import { Button } from '@/components/ui/button';
-import { LucideEdit, Award, ArrowRight } from 'lucide-react';
+} from "@/components/ui/table";
+import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
+import { LucideEdit, Award, ArrowRight } from "lucide-react";
 
 interface ProgressProps {
   user: {
@@ -51,9 +46,9 @@ export default function ProgressTracker({ user, onLogout }: ProgressProps) {
   const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   const [progressDialogOpen, setProgressDialogOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('my-progress');
+  const [activeTab, setActiveTab] = useState("my-progress");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  
+
   // Define types for progress data
   type ProgressItem = {
     id: number;
@@ -72,15 +67,21 @@ export default function ProgressTracker({ user, onLogout }: ProgressProps) {
   };
 
   // Fetch user progress
-  const { data: userProgress, isLoading: loadingUserProgress } = useQuery<ProgressItem[]>({
+  const { data: userProgress, isLoading: loadingUserProgress } = useQuery<
+    ProgressItem[]
+  >({
     queryKey: [`${apiPrefix}/users/${user.id}/progress`],
     enabled: !!user.id,
   });
 
   // Fetch organization progress (for admins/managers)
-  const { data: orgProgress, isLoading: loadingOrgProgress } = useQuery<ProgressItem[]>({
+  const { data: orgProgress, isLoading: loadingOrgProgress } = useQuery<
+    ProgressItem[]
+  >({
     queryKey: [`${apiPrefix}/organizations/${user.organizationId}/progress`],
-    enabled: !!user.organizationId && (user.role === 'admin' || user.role === 'manager'),
+    enabled:
+      !!user.organizationId &&
+      (user.role === "admin" || user.role === "manager"),
   });
 
   // Fetch all badges
@@ -92,10 +93,11 @@ export default function ProgressTracker({ user, onLogout }: ProgressProps) {
   // Get badges that need progress tracking but don't have progress records
   const badgesWithoutProgress = React.useMemo(() => {
     if (!badges || !userProgress) return [];
-    
+
     return badges.filter((badge: Badge) => {
-      return badge.requiresProgress && !userProgress.some(
-        (progress: any) => progress.badgeId === badge.id
+      return (
+        badge.requiresProgress &&
+        !userProgress.some((progress: any) => progress.badgeId === badge.id)
       );
     });
   }, [badges, userProgress]);
@@ -108,7 +110,11 @@ export default function ProgressTracker({ user, onLogout }: ProgressProps) {
   };
 
   // Handle updating progress for a badge
-  const handleUpdateProgress = (badge: Badge, userId: number, existingProgress: any) => {
+  const handleUpdateProgress = (
+    badge: Badge,
+    userId: number,
+    existingProgress: any,
+  ) => {
     setSelectedBadge(badge);
     setSelectedUserId(userId);
     setProgressDialogOpen(true);
@@ -116,13 +122,13 @@ export default function ProgressTracker({ user, onLogout }: ProgressProps) {
 
   return (
     <div className="flex h-screen bg-background">
-      <Sidebar 
-        user={user} 
-        onLogout={onLogout} 
+      <Sidebar
+        user={user}
+        onLogout={onLogout}
         isMobileOpen={mobileMenuOpen}
         onMobileClose={() => setMobileMenuOpen(false)}
       />
-      
+
       <div className="flex-1 overflow-auto">
         {/* Mobile menu button - only visible on mobile */}
         <button
@@ -133,96 +139,124 @@ export default function ProgressTracker({ user, onLogout }: ProgressProps) {
           <span className="sr-only">Open sidebar</span>
           <Menu className="h-6 w-6" />
         </button>
-        
+
         {/* Standardized Page Header */}
         <PageHeader
           title="Progress Tracking"
           description="Track your progress towards badge achievements"
         />
-        
+
         <div className="p-6">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full"
+          >
             <TabsList className="mb-6 bg-muted/50 border border-border">
-              <TabsTrigger 
-                value="my-progress" 
+              <TabsTrigger
+                value="my-progress"
                 className="data-[state=active]:bg-brand-purple/10 data-[state=active]:text-brand-purple data-[state=active]:border-b-2 data-[state=active]:border-brand-purple"
               >
                 My Progress
               </TabsTrigger>
-              {(user.role === 'admin' || user.role === 'manager') && (
-                <TabsTrigger 
-                  value="organization-progress" 
+              {(user.role === "admin" || user.role === "manager") && (
+                <TabsTrigger
+                  value="organization-progress"
                   className="data-[state=active]:bg-brand-purple/10 data-[state=active]:text-brand-purple data-[state=active]:border-b-2 data-[state=active]:border-brand-purple"
                 >
                   Organization Progress
                 </TabsTrigger>
               )}
             </TabsList>
-          
+
             <TabsContent value="my-progress" className="space-y-6">
               {/* In Progress Badges */}
               <Card bordered>
                 <CardHeader>
                   <CardTitle gradient>In Progress Badges</CardTitle>
-                  <CardDescription>Badges you are currently working towards</CardDescription>
+                  <CardDescription>
+                    Badges you are currently working towards
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   {loadingUserProgress ? (
-                    <div className="flex justify-center py-6 text-muted-foreground">Loading progress data...</div>
+                    <div className="flex justify-center py-6 text-muted-foreground">
+                      Loading progress data...
+                    </div>
                   ) : userProgress && userProgress.length > 0 ? (
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                      {userProgress.filter((item: any) => item.status === 'in_progress').map((item: any) => (
-                        <Card key={item.id} bordered className="overflow-hidden">
-                          <CardHeader className="pb-2 pt-4">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center space-x-2">
-                                <div 
-                                  className="w-8 h-8 flex items-center justify-center rounded-full"
-                                  style={{ 
-                                    backgroundColor: `${item.badgeColor}20`,
-                                    color: item.badgeColor || "#5E2B97" 
-                                  }}
-                                >
-                                  {generateBadgeIcon(item.badgeName, item.badgeColor)}
+                      {userProgress
+                        .filter((item: any) => item.status === "in_progress")
+                        .map((item: any) => (
+                          <Card
+                            key={item.id}
+                            bordered
+                            className="overflow-hidden"
+                          >
+                            <CardHeader className="pb-2 pt-4">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center space-x-2">
+                                  <div
+                                    className="w-8 h-8 flex items-center justify-center rounded-full"
+                                    style={{
+                                      backgroundColor: `${item.badgeColor}20`,
+                                      color: item.badgeColor || "#5E2B97",
+                                    }}
+                                  >
+                                    {generateBadgeIcon(
+                                      item.badgeName,
+                                      item.badgeColor,
+                                    )}
+                                  </div>
+                                  <CardTitle className="text-lg">
+                                    {item.badgeName}
+                                  </CardTitle>
                                 </div>
-                                <CardTitle className="text-lg">{item.badgeName}</CardTitle>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() =>
+                                    handleUpdateProgress(
+                                      {
+                                        id: item.badgeId,
+                                        name: item.badgeName,
+                                        description: item.badgeDescription,
+                                        color: item.badgeColor,
+                                        imageUrl: item.badgeImageUrl,
+                                        requiresProgress: true,
+                                        criteriaSections: item.criteriaSections,
+                                        organizationId:
+                                          user.organizationId || 0,
+                                      } as Badge,
+                                      user.id,
+                                      item,
+                                    )
+                                  }
+                                >
+                                  <LucideEdit className="h-4 w-4" />
+                                </Button>
                               </div>
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                onClick={() => handleUpdateProgress(
-                                  {
-                                    id: item.badgeId,
-                                    name: item.badgeName,
-                                    description: item.badgeDescription,
-                                    color: item.badgeColor,
-                                    imageUrl: item.badgeImageUrl,
-                                    requiresProgress: true,
-                                    criteriaSections: item.criteriaSections,
-                                    organizationId: user.organizationId || 0,
-                                  } as Badge, 
-                                  user.id,
-                                  item
-                                )}
-                              >
-                                <LucideEdit className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </CardHeader>
-                          <CardContent>
-                            <div className="space-y-2">
-                              <div className="flex justify-between text-sm text-muted-foreground">
-                                <span>Progress</span>
-                                <span>{Number(item.progress).toFixed(0)}%</span>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="space-y-2">
+                                <div className="flex justify-between text-sm text-muted-foreground">
+                                  <span>Progress</span>
+                                  <span>
+                                    {Number(item.progress).toFixed(0)}%
+                                  </span>
+                                </div>
+                                <Progress
+                                  value={Number(item.progress)}
+                                  gradient
+                                  className="h-2"
+                                />
+                                <div className="text-xs text-muted-foreground">
+                                  Last updated: {formatDate(item.lastUpdated)}
+                                </div>
                               </div>
-                              <Progress value={Number(item.progress)} gradient className="h-2" />
-                              <div className="text-xs text-muted-foreground">
-                                Last updated: {formatDate(item.lastUpdated)}
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
+                            </CardContent>
+                          </Card>
+                        ))}
                     </div>
                   ) : (
                     <div className="text-center py-6 text-muted-foreground">
@@ -231,38 +265,53 @@ export default function ProgressTracker({ user, onLogout }: ProgressProps) {
                   )}
                 </CardContent>
               </Card>
-              
+
               {/* Ready to Start Badges */}
               {badgesWithoutProgress.length > 0 && (
                 <Card bordered>
                   <CardHeader>
                     <CardTitle gradient>Ready to Start</CardTitle>
-                    <CardDescription>Badges you can work towards</CardDescription>
+                    <CardDescription>
+                      Badges you can work towards
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                       {badgesWithoutProgress.map((badge: Badge) => (
-                        <Card key={badge.id} bordered className="overflow-hidden">
+                        <Card
+                          key={badge.id}
+                          bordered
+                          className="overflow-hidden"
+                        >
                           <CardHeader className="pb-2 pt-4">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center space-x-2">
-                                <div 
+                                <div
                                   className="w-8 h-8 flex items-center justify-center rounded-full"
-                                  style={{ 
-                                    backgroundColor: `${badge.color}20` || 'rgba(94, 43, 151, 0.1)',
-                                    color: badge.color || "#5E2B97" 
+                                  style={{
+                                    backgroundColor:
+                                      `${badge.color}20` ||
+                                      "rgba(94, 43, 151, 0.1)",
+                                    color: badge.color || "#5E2B97",
                                   }}
                                 >
-                                  {generateBadgeIcon(badge.name, badge.color || '#5E2B97')}
+                                  {generateBadgeIcon(
+                                    badge.name,
+                                    badge.color || "#5E2B97",
+                                  )}
                                 </div>
-                                <CardTitle className="text-lg">{badge.name}</CardTitle>
+                                <CardTitle className="text-lg">
+                                  {badge.name}
+                                </CardTitle>
                               </div>
                             </div>
                           </CardHeader>
                           <CardContent>
-                            <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{badge.description}</p>
-                            <Button 
-                              variant="outline" 
+                            <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                              {badge.description}
+                            </p>
+                            <Button
+                              variant="outline"
                               className="w-full"
                               onClick={() => handleStartProgress(badge)}
                             >
@@ -276,7 +325,7 @@ export default function ProgressTracker({ user, onLogout }: ProgressProps) {
                   </CardContent>
                 </Card>
               )}
-              
+
               {/* Completed Badges */}
               <Card bordered>
                 <CardHeader>
@@ -285,42 +334,62 @@ export default function ProgressTracker({ user, onLogout }: ProgressProps) {
                 </CardHeader>
                 <CardContent>
                   {loadingUserProgress ? (
-                    <div className="flex justify-center py-6 text-muted-foreground">Loading completed badges...</div>
-                  ) : userProgress && userProgress.filter((item: any) => item.status === 'completed').length > 0 ? (
+                    <div className="flex justify-center py-6 text-muted-foreground">
+                      Loading completed badges...
+                    </div>
+                  ) : userProgress &&
+                    userProgress.filter(
+                      (item: any) => item.status === "completed",
+                    ).length > 0 ? (
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                      {userProgress.filter((item: any) => item.status === 'completed').map((item: any) => (
-                        <Card key={item.id} className="overflow-hidden border-brand-orange/30 dark:border-brand-orange/20">
-                          <CardHeader className="pb-2 pt-4 bg-brand-orange/10 dark:bg-brand-orange/5">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center space-x-2">
-                                <div 
-                                  className="w-8 h-8 flex items-center justify-center rounded-full"
-                                  style={{ 
-                                    backgroundColor: `${item.badgeColor}20`,
-                                    color: item.badgeColor || "#5E2B97" 
-                                  }}
-                                >
-                                  {generateBadgeIcon(item.badgeName, item.badgeColor)}
+                      {userProgress
+                        .filter((item: any) => item.status === "completed")
+                        .map((item: any) => (
+                          <Card
+                            key={item.id}
+                            className="overflow-hidden border-brand-orange/30 dark:border-brand-orange/20"
+                          >
+                            <CardHeader className="pb-2 pt-4 bg-brand-orange/10 dark:bg-brand-orange/5">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center space-x-2">
+                                  <div
+                                    className="w-8 h-8 flex items-center justify-center rounded-full"
+                                    style={{
+                                      backgroundColor: `${item.badgeColor}20`,
+                                      color: item.badgeColor || "#5E2B97",
+                                    }}
+                                  >
+                                    {generateBadgeIcon(
+                                      item.badgeName,
+                                      item.badgeColor,
+                                    )}
+                                  </div>
+                                  <CardTitle className="text-lg">
+                                    {item.badgeName}
+                                  </CardTitle>
                                 </div>
-                                <CardTitle className="text-lg">{item.badgeName}</CardTitle>
+                                <Award className="h-5 w-5 text-brand-orange" />
                               </div>
-                              <Award className="h-5 w-5 text-brand-orange" />
-                            </div>
-                          </CardHeader>
-                          <CardContent className="pt-4">
-                            <div className="space-y-2">
-                              <div className="flex justify-between text-sm text-muted-foreground">
-                                <span>Completed</span>
-                                <span>100%</span>
+                            </CardHeader>
+                            <CardContent className="pt-4">
+                              <div className="space-y-2">
+                                <div className="flex justify-between text-sm text-muted-foreground">
+                                  <span>Completed</span>
+                                  <span>100%</span>
+                                </div>
+                                <Progress
+                                  value={100}
+                                  gradient
+                                  color="accent"
+                                  className="h-2"
+                                />
+                                <div className="text-xs text-muted-foreground">
+                                  Completed on: {formatDate(item.lastUpdated)}
+                                </div>
                               </div>
-                              <Progress value={100} gradient color="accent" className="h-2" />
-                              <div className="text-xs text-muted-foreground">
-                                Completed on: {formatDate(item.lastUpdated)}
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
+                            </CardContent>
+                          </Card>
+                        ))}
                     </div>
                   ) : (
                     <div className="text-center py-6 text-muted-foreground">
@@ -330,18 +399,22 @@ export default function ProgressTracker({ user, onLogout }: ProgressProps) {
                 </CardContent>
               </Card>
             </TabsContent>
-            
+
             {/* Organization Progress (Admin/Manager View) */}
-            {(user.role === 'admin' || user.role === 'manager') && (
+            {(user.role === "admin" || user.role === "manager") && (
               <TabsContent value="organization-progress">
                 <Card bordered>
                   <CardHeader>
                     <CardTitle gradient>Organization Progress</CardTitle>
-                    <CardDescription>Track progress of all users in your organization</CardDescription>
+                    <CardDescription>
+                      Track progress of all users in your organization
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
                     {loadingOrgProgress ? (
-                      <div className="flex justify-center py-6 text-muted-foreground">Loading organization progress...</div>
+                      <div className="flex justify-center py-6 text-muted-foreground">
+                        Loading organization progress...
+                      </div>
                     ) : orgProgress && orgProgress.length > 0 ? (
                       <div className="rounded-md border">
                         <Table>
@@ -361,59 +434,78 @@ export default function ProgressTracker({ user, onLogout }: ProgressProps) {
                                 <TableCell>{item.userName}</TableCell>
                                 <TableCell>
                                   <div className="flex items-center space-x-2">
-                                    <div 
+                                    <div
                                       className="w-6 h-6 flex items-center justify-center rounded-full"
-                                      style={{ 
-                                        backgroundColor: `${item.badgeColor}20` || 'rgba(94, 43, 151, 0.1)',
-                                        color: item.badgeColor || "#5E2B97" 
+                                      style={{
+                                        backgroundColor:
+                                          `${item.badgeColor}20` ||
+                                          "rgba(94, 43, 151, 0.1)",
+                                        color: item.badgeColor || "#5E2B97",
                                       }}
                                     >
-                                      {generateBadgeIcon(item.badgeName, item.badgeColor)}
+                                      {generateBadgeIcon(
+                                        item.badgeName,
+                                        item.badgeColor,
+                                      )}
                                     </div>
                                     <span>{item.badgeName}</span>
                                   </div>
                                 </TableCell>
                                 <TableCell>
                                   <div className="flex flex-col w-32">
-                                    <Progress 
-                                      value={Number(item.progress)} 
-                                      gradient={item.status === 'completed'} 
-                                      className="h-2 mb-1" 
+                                    <Progress
+                                      value={Number(item.progress)}
+                                      gradient={item.status === "completed"}
+                                      className="h-2 mb-1"
                                     />
-                                    <div className="text-xs mt-1 text-muted-foreground">{Number(item.progress).toFixed(0)}%</div>
+                                    <div className="text-xs mt-1 text-muted-foreground">
+                                      {Number(item.progress).toFixed(0)}%
+                                    </div>
                                   </div>
                                 </TableCell>
                                 <TableCell>
-                                  <div className="text-sm">{formatDate(item.lastUpdated)}</div>
-                                  <div className="text-xs text-muted-foreground">by {item.updatedByName}</div>
+                                  <div className="text-sm">
+                                    {formatDate(item.lastUpdated)}
+                                  </div>
+                                  <div className="text-xs text-muted-foreground">
+                                    by {item.updatedByName}
+                                  </div>
                                 </TableCell>
                                 <TableCell>
-                                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                    item.status === 'completed' 
-                                      ? 'bg-brand-orange/10 text-brand-orange' 
-                                      : 'bg-brand-purple/10 text-brand-purple'
-                                  }`}>
-                                    {item.status === 'completed' ? 'Completed' : 'In Progress'}
+                                  <span
+                                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                      item.status === "completed"
+                                        ? "bg-brand-orange/10 text-brand-orange"
+                                        : "bg-brand-purple/10 text-brand-purple"
+                                    }`}
+                                  >
+                                    {item.status === "completed"
+                                      ? "Completed"
+                                      : "In Progress"}
                                   </span>
                                 </TableCell>
                                 <TableCell>
-                                  <Button 
-                                    variant="outline" 
+                                  <Button
+                                    variant="outline"
                                     size="sm"
-                                    onClick={() => handleUpdateProgress(
-                                      {
-                                        id: item.badgeId,
-                                        name: item.badgeName,
-                                        description: item.badgeDescription,
-                                        color: item.badgeColor,
-                                        imageUrl: item.badgeImageUrl,
-                                        requiresProgress: true,
-                                        criteriaSections: item.criteriaSections,
-                                        organizationId: user.organizationId || 0,
-                                      } as Badge, 
-                                      item.userId,
-                                      item
-                                    )}
+                                    onClick={() =>
+                                      handleUpdateProgress(
+                                        {
+                                          id: item.badgeId,
+                                          name: item.badgeName,
+                                          description: item.badgeDescription,
+                                          color: item.badgeColor,
+                                          imageUrl: item.badgeImageUrl,
+                                          requiresProgress: true,
+                                          criteriaSections:
+                                            item.criteriaSections,
+                                          organizationId:
+                                            user.organizationId || 0,
+                                        } as Badge,
+                                        item.userId,
+                                        item,
+                                      )
+                                    }
                                   >
                                     Update
                                   </Button>
@@ -435,7 +527,7 @@ export default function ProgressTracker({ user, onLogout }: ProgressProps) {
           </Tabs>
         </div>
       </div>
-      
+
       {progressDialogOpen && selectedBadge && selectedUserId && (
         <BadgeProgressDialog
           open={progressDialogOpen}
@@ -443,11 +535,10 @@ export default function ProgressTracker({ user, onLogout }: ProgressProps) {
           badge={selectedBadge}
           userId={selectedUserId}
           organizationId={user.organizationId || 0}
-          existingProgress={
-            userProgress?.find((p: any) => 
-              p.badgeId === selectedBadge.id && p.userId === selectedUserId
-            )
-          }
+          existingProgress={userProgress?.find(
+            (p: any) =>
+              p.badgeId === selectedBadge.id && p.userId === selectedUserId,
+          )}
         />
       )}
     </div>

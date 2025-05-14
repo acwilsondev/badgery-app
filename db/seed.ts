@@ -11,15 +11,18 @@ async function seed() {
 
     let organizationId;
     if (!existingOrg) {
-      const [org] = await db.insert(schema.organizations).values({
-        name: "Acme Inc.",
-        description: "Leading provider of innovative software solutions",
-      }).returning();
+      const [org] = await db
+        .insert(schema.organizations)
+        .values({
+          name: "Acme Inc.",
+          description: "Leading provider of innovative software solutions",
+        })
+        .returning();
       organizationId = org.id;
-      console.log('Created organization:', org.name);
+      console.log("Created organization:", org.name);
     } else {
       organizationId = existingOrg.id;
-      console.log('Organization already exists:', existingOrg.name);
+      console.log("Organization already exists:", existingOrg.name);
     }
 
     // Create badge categories
@@ -34,15 +37,18 @@ async function seed() {
       const existingCategory = await db.query.badgeCategories.findFirst({
         where: and(
           eq(schema.badgeCategories.name, category.name),
-          eq(schema.badgeCategories.organizationId, organizationId)
+          eq(schema.badgeCategories.organizationId, organizationId),
         ),
       });
 
       if (!existingCategory) {
-        const [newCategory] = await db.insert(schema.badgeCategories).values(category).returning();
-        console.log('Created category:', newCategory.name);
+        const [newCategory] = await db
+          .insert(schema.badgeCategories)
+          .values(category)
+          .returning();
+        console.log("Created category:", newCategory.name);
       } else {
-        console.log('Category already exists:', existingCategory.name);
+        console.log("Category already exists:", existingCategory.name);
       }
     }
 
@@ -51,19 +57,24 @@ async function seed() {
       where: eq(schema.badgeCategories.organizationId, organizationId),
     });
 
-    const categoryMap = allCategories.reduce((acc, cat) => {
-      acc[cat.name] = cat.id;
-      return acc;
-    }, {} as Record<string, number>);
+    const categoryMap = allCategories.reduce(
+      (acc, cat) => {
+        acc[cat.name] = cat.id;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
 
     // Create badges
     const badges = [
       {
         name: "Code Master",
-        description: "Awarded for exceptional programming skills and code quality.",
+        description:
+          "Awarded for exceptional programming skills and code quality.",
         criteria: "Consistently write clean, maintainable, and efficient code.",
         color: "#4F46E5",
-        imageUrl: "https://images.unsplash.com/photo-1531482615713-2afd69097998?ixlib=rb-1.2.1&auto=format&fit=crop&w=256&q=80",
+        imageUrl:
+          "https://images.unsplash.com/photo-1531482615713-2afd69097998?ixlib=rb-1.2.1&auto=format&fit=crop&w=256&q=80",
         categoryId: categoryMap["Technical"],
         organizationId,
       },
@@ -72,7 +83,8 @@ async function seed() {
         description: "Recognizes outstanding leadership and team management.",
         criteria: "Successfully lead a team to accomplish significant goals.",
         color: "#10B981",
-        imageUrl: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-1.2.1&auto=format&fit=crop&w=256&q=80",
+        imageUrl:
+          "https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-1.2.1&auto=format&fit=crop&w=256&q=80",
         categoryId: categoryMap["Leadership"],
         organizationId,
       },
@@ -81,25 +93,31 @@ async function seed() {
         description: "For those who bring creative solutions and new ideas.",
         criteria: "Introduce novel approaches that solve important problems.",
         color: "#F59E0B",
-        imageUrl: "https://images.unsplash.com/photo-1551434678-e076c223a692?ixlib=rb-1.2.1&auto=format&fit=crop&w=256&q=80",
+        imageUrl:
+          "https://images.unsplash.com/photo-1551434678-e076c223a692?ixlib=rb-1.2.1&auto=format&fit=crop&w=256&q=80",
         categoryId: categoryMap["Professional"],
         organizationId,
       },
       {
         name: "Project Excellence",
-        description: "Awarded for successful completion of challenging projects.",
+        description:
+          "Awarded for successful completion of challenging projects.",
         criteria: "Complete complex projects on time and within budget.",
         color: "#6B7280",
-        imageUrl: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?ixlib=rb-1.2.1&auto=format&fit=crop&w=256&q=80",
+        imageUrl:
+          "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?ixlib=rb-1.2.1&auto=format&fit=crop&w=256&q=80",
         categoryId: categoryMap["Professional"],
         organizationId,
       },
       {
         name: "Team Collaboration Award",
-        description: "Recognizes exceptional teamwork and collaboration skills.",
-        criteria: "Demonstrate outstanding ability to work effectively with others.",
+        description:
+          "Recognizes exceptional teamwork and collaboration skills.",
+        criteria:
+          "Demonstrate outstanding ability to work effectively with others.",
         color: "#10B981",
-        imageUrl: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-1.2.1&auto=format&fit=crop&w=256&q=80",
+        imageUrl:
+          "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-1.2.1&auto=format&fit=crop&w=256&q=80",
         categoryId: categoryMap["Professional"],
         organizationId,
       },
@@ -108,7 +126,8 @@ async function seed() {
         description: "For outstanding customer service and satisfaction.",
         criteria: "Consistently provide exceptional customer experiences.",
         color: "#F59E0B",
-        imageUrl: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?ixlib=rb-1.2.1&auto=format&fit=crop&w=256&q=80",
+        imageUrl:
+          "https://images.unsplash.com/photo-1519389950473-47ba0277781c?ixlib=rb-1.2.1&auto=format&fit=crop&w=256&q=80",
         categoryId: categoryMap["Professional"],
         organizationId,
       },
@@ -118,15 +137,18 @@ async function seed() {
       const existingBadge = await db.query.badges.findFirst({
         where: and(
           eq(schema.badges.name, badge.name),
-          eq(schema.badges.organizationId, organizationId)
+          eq(schema.badges.organizationId, organizationId),
         ),
       });
 
       if (!existingBadge) {
-        const [newBadge] = await db.insert(schema.badges).values(badge).returning();
-        console.log('Created badge:', newBadge.name);
+        const [newBadge] = await db
+          .insert(schema.badges)
+          .values(badge)
+          .returning();
+        console.log("Created badge:", newBadge.name);
       } else {
-        console.log('Badge already exists:', existingBadge.name);
+        console.log("Badge already exists:", existingBadge.name);
       }
     }
 
@@ -172,10 +194,13 @@ async function seed() {
       });
 
       if (!existingUser) {
-        const [newUser] = await db.insert(schema.users).values(user).returning();
-        console.log('Created user:', newUser.name);
+        const [newUser] = await db
+          .insert(schema.users)
+          .values(user)
+          .returning();
+        console.log("Created user:", newUser.name);
       } else {
-        console.log('User already exists:', existingUser.name);
+        console.log("User already exists:", existingUser.name);
       }
     }
 
@@ -183,20 +208,26 @@ async function seed() {
     const allUsers = await db.query.users.findMany({
       where: eq(schema.users.organizationId, organizationId),
     });
-    
+
     const allBadges = await db.query.badges.findMany({
       where: eq(schema.badges.organizationId, organizationId),
     });
 
-    const userMap = allUsers.reduce((acc, user) => {
-      acc[user.name] = user.id;
-      return acc;
-    }, {} as Record<string, number>);
+    const userMap = allUsers.reduce(
+      (acc, user) => {
+        acc[user.name] = user.id;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
 
-    const badgeMap = allBadges.reduce((acc, badge) => {
-      acc[badge.name] = badge.id;
-      return acc;
-    }, {} as Record<string, number>);
+    const badgeMap = allBadges.reduce(
+      (acc, badge) => {
+        acc[badge.name] = badge.id;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
 
     // Award badges to users (recent activity)
     const awardData = [
@@ -228,21 +259,24 @@ async function seed() {
         where: and(
           eq(schema.awardedBadges.badgeId, award.badgeId),
           eq(schema.awardedBadges.userId, award.userId),
-          eq(schema.awardedBadges.awardedBy, award.awardedBy)
+          eq(schema.awardedBadges.awardedBy, award.awardedBy),
         ),
       });
 
       if (!existingAward) {
-        const [newAward] = await db.insert(schema.awardedBadges).values(award).returning();
-        console.log('Awarded badge to user');
+        const [newAward] = await db
+          .insert(schema.awardedBadges)
+          .values(award)
+          .returning();
+        console.log("Awarded badge to user");
       } else {
-        console.log('Badge already awarded to user');
+        console.log("Badge already awarded to user");
       }
     }
 
-    console.log('Seed data successfully created');
+    console.log("Seed data successfully created");
   } catch (error) {
-    console.error('Error seeding database:', error);
+    console.error("Error seeding database:", error);
   }
 }
 

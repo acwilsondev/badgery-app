@@ -1,7 +1,7 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
 // API version prefix for all API requests
-export const apiPrefix = '/api/v1';
+export const apiPrefix = "/api/v1";
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {

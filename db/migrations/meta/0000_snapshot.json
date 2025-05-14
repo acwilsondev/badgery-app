@@ -84,12 +84,8 @@
           "name": "achievements_user_id_users_id_fk",
           "tableFrom": "achievements",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -97,12 +93,8 @@
           "name": "achievements_badge_id_badges_id_fk",
           "tableFrom": "achievements",
           "tableTo": "badges",
-          "columnsFrom": [
-            "badge_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["badge_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -110,12 +102,8 @@
           "name": "achievements_awarded_by_users_id_fk",
           "tableFrom": "achievements",
           "tableTo": "users",
-          "columnsFrom": [
-            "awarded_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["awarded_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -187,12 +175,8 @@
           "name": "badge_categories_organization_id_organizations_id_fk",
           "tableFrom": "badge_categories",
           "tableTo": "organizations",
-          "columnsFrom": [
-            "organization_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["organization_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -258,12 +242,8 @@
           "name": "badge_metrics_badge_id_badges_id_fk",
           "tableFrom": "badge_metrics",
           "tableTo": "badges",
-          "columnsFrom": [
-            "badge_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["badge_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -271,12 +251,8 @@
           "name": "badge_metrics_metric_id_metrics_id_fk",
           "tableFrom": "badge_metrics",
           "tableTo": "metrics",
-          "columnsFrom": [
-            "metric_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["metric_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -342,12 +318,8 @@
           "name": "badge_prerequisites_badge_id_badges_id_fk",
           "tableFrom": "badge_prerequisites",
           "tableTo": "badges",
-          "columnsFrom": [
-            "badge_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["badge_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -355,12 +327,8 @@
           "name": "badge_prerequisites_prerequisite_badge_id_badges_id_fk",
           "tableFrom": "badge_prerequisites",
           "tableTo": "badges",
-          "columnsFrom": [
-            "prerequisite_badge_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["prerequisite_badge_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -445,12 +413,8 @@
           "name": "progress_user_id_users_id_fk",
           "tableFrom": "progress",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -458,12 +422,8 @@
           "name": "progress_metric_id_metrics_id_fk",
           "tableFrom": "progress",
           "tableTo": "metrics",
-          "columnsFrom": [
-            "metric_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["metric_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -586,12 +546,8 @@
           "name": "badges_category_id_badge_categories_id_fk",
           "tableFrom": "badges",
           "tableTo": "badge_categories",
-          "columnsFrom": [
-            "category_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["category_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -599,12 +555,8 @@
           "name": "badges_organization_id_organizations_id_fk",
           "tableFrom": "badges",
           "tableTo": "organizations",
-          "columnsFrom": [
-            "organization_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["organization_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -808,12 +760,8 @@
           "name": "user_organization_user_id_users_id_fk",
           "tableFrom": "user_organization",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -821,12 +769,8 @@
           "name": "user_organization_organization_id_organizations_id_fk",
           "tableFrom": "user_organization",
           "tableTo": "organizations",
-          "columnsFrom": [
-            "organization_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["organization_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -904,12 +848,8 @@
           "name": "user_organization_scope_user_id_users_id_fk",
           "tableFrom": "user_organization_scope",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -917,12 +857,8 @@
           "name": "user_organization_scope_organization_id_organizations_id_fk",
           "tableFrom": "user_organization_scope",
           "tableTo": "organizations",
-          "columnsFrom": [
-            "organization_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["organization_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1019,12 +955,8 @@
           "name": "users_organization_id_organizations_id_fk",
           "tableFrom": "users",
           "tableTo": "organizations",
-          "columnsFrom": [
-            "organization_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["organization_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1034,16 +966,12 @@
         "users_username_unique": {
           "name": "users_username_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "username"
-          ]
+          "columns": ["username"]
         },
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},

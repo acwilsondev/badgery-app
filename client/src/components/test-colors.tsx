@@ -1,10 +1,10 @@
-import React from 'react';
+import React from "react";
 
 export default function TestColors() {
   return (
     <div className="p-8 space-y-4">
       <h1 className="text-3xl font-bold">Tailwind Brand Color Test</h1>
-      
+
       <div className="grid grid-cols-2 gap-4">
         <div className="p-4 bg-brand-purple text-white rounded">
           bg-brand-purple
@@ -25,7 +25,7 @@ export default function TestColors() {
           bg-brand-gray
         </div>
       </div>
-      
+
       <div className="p-4 border rounded">
         <h2 className="text-2xl font-bold">CSS Variable Test</h2>
         <div className="p-4 bg-primary text-primary-foreground mt-2 rounded">

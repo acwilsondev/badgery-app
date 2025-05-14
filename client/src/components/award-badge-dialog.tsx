@@ -21,7 +21,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@shared/schema";
 import { generateBadgeIcon } from "@/lib/badge-icons";
 
@@ -39,7 +45,12 @@ const formSchema = z.object({
   }),
 });
 
-export function AwardBadgeDialog({ open, onOpenChange, badge, organizationId }: AwardBadgeDialogProps) {
+export function AwardBadgeDialog({
+  open,
+  onOpenChange,
+  badge,
+  organizationId,
+}: AwardBadgeDialogProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -57,7 +68,11 @@ export function AwardBadgeDialog({ open, onOpenChange, badge, organizationId }: 
 
   const awardBadgeMutation = useMutation({
     mutationFn: async (values: z.infer<typeof formSchema>) => {
-      const res = await apiRequest("POST", `${apiPrefix}/badges/${badge.id}/award`, values);
+      const res = await apiRequest(
+        "POST",
+        `${apiPrefix}/badges/${badge.id}/award`,
+        values,
+      );
       return res.json();
     },
     onSuccess: () => {
@@ -65,15 +80,22 @@ export function AwardBadgeDialog({ open, onOpenChange, badge, organizationId }: 
         title: "Badge awarded",
         description: "The badge has been awarded successfully.",
       });
-      queryClient.invalidateQueries({ queryKey: [`${apiPrefix}/organizations/${organizationId}/awarded-badges`] });
-      queryClient.invalidateQueries({ queryKey: [`${apiPrefix}/organizations/${organizationId}/stats`] });
+      queryClient.invalidateQueries({
+        queryKey: [
+          `${apiPrefix}/organizations/${organizationId}/awarded-badges`,
+        ],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [`${apiPrefix}/organizations/${organizationId}/stats`],
+      });
       form.reset();
       onOpenChange(false);
     },
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to award badge. Please try again.",
+        description:
+          error.message || "Failed to award badge. Please try again.",
         variant: "destructive",
       });
     },
@@ -96,16 +118,16 @@ export function AwardBadgeDialog({ open, onOpenChange, badge, organizationId }: 
             </DialogHeader>
 
             <div className="flex flex-col items-center text-center space-y-3 py-2">
-              <div 
+              <div
                 className="badge-circle w-20 h-20 mb-2 flex items-center justify-center"
-                style={{ 
+                style={{
                   backgroundColor: `${badge.color}10`,
-                  color: badge.color || "#4F46E5" 
+                  color: badge.color || "#4F46E5",
                 }}
               >
                 {badge.imageUrl ? (
-                  <img 
-                    src={badge.imageUrl} 
+                  <img
+                    src={badge.imageUrl}
                     alt={badge.name}
                     className="w-full h-full object-cover"
                   />
@@ -113,7 +135,9 @@ export function AwardBadgeDialog({ open, onOpenChange, badge, organizationId }: 
                   generateBadgeIcon(badge.name, badge.color || "#4F46E5")
                 )}
               </div>
-              <h3 className="text-lg font-medium text-gray-900">{badge.name}</h3>
+              <h3 className="text-lg font-medium text-gray-900">
+                {badge.name}
+              </h3>
               <p className="text-sm text-gray-500">{badge.description}</p>
             </div>
 
@@ -134,10 +158,7 @@ export function AwardBadgeDialog({ open, onOpenChange, badge, organizationId }: 
                     </FormControl>
                     <SelectContent>
                       {users.map((user: any) => (
-                        <SelectItem
-                          key={user.id}
-                          value={user.id.toString()}
-                        >
+                        <SelectItem key={user.id} value={user.id.toString()}>
                           {user.name}
                         </SelectItem>
                       ))}

@@ -98,16 +98,21 @@ const badgeFormSchema = z.object({
             name: z.string(),
             description: z.string().optional(),
             maxValue: z.number().optional(),
-          })
+          }),
         ),
-      })
+      }),
     )
     .optional(),
 });
 
 type BadgeFormValues = z.infer<typeof badgeFormSchema>;
 
-export function BadgeDialog({ open, onOpenChange, badge, organizationId }: BadgeDialogProps) {
+export function BadgeDialog({
+  open,
+  onOpenChange,
+  badge,
+  organizationId,
+}: BadgeDialogProps) {
   // Initialize form with default values or existing badge data
   const form = useForm<BadgeFormValues>({
     resolver: zodResolver(badgeFormSchema),
@@ -138,7 +143,9 @@ export function BadgeDialog({ open, onOpenChange, badge, organizationId }: Badge
   const [showProgressOptions, setShowProgressOptions] = useState(true); // Always show progress options
 
   const { data: categories = [] } = useQuery<BadgeCategory[]>({
-    queryKey: [`${apiPrefix}/badge-categories?organizationId=${organizationId}`],
+    queryKey: [
+      `${apiPrefix}/badge-categories?organizationId=${organizationId}`,
+    ],
   });
 
   // Mutation for creating a new badge
@@ -147,7 +154,9 @@ export function BadgeDialog({ open, onOpenChange, badge, organizationId }: Badge
       // Serialize criteriaSections to JSON
       const payload = {
         ...data,
-        criteriaSectionsJson: data.criteriaSections ? JSON.stringify(data.criteriaSections) : undefined,
+        criteriaSectionsJson: data.criteriaSections
+          ? JSON.stringify(data.criteriaSections)
+          : undefined,
       };
       const result = await apiRequest("POST", `${apiPrefix}/badges`, payload);
       return result;
@@ -167,7 +176,9 @@ export function BadgeDialog({ open, onOpenChange, badge, organizationId }: Badge
       // Serialize criteriaSections to JSON
       const payload = {
         ...data,
-        criteriaSectionsJson: data.criteriaSections ? JSON.stringify(data.criteriaSections) : undefined,
+        criteriaSectionsJson: data.criteriaSections
+          ? JSON.stringify(data.criteriaSections)
+          : undefined,
       };
       return apiRequest("PATCH", `${apiPrefix}/badges/${badge?.id}`, payload);
     },
@@ -214,7 +225,7 @@ export function BadgeDialog({ open, onOpenChange, badge, organizationId }: Badge
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="description"
@@ -232,7 +243,7 @@ export function BadgeDialog({ open, onOpenChange, badge, organizationId }: Badge
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="categoryId"
@@ -250,18 +261,22 @@ export function BadgeDialog({ open, onOpenChange, badge, organizationId }: Badge
                     </FormControl>
                     <SelectContent>
                       <SelectItem value="no_category">No Category</SelectItem>
-                      {Array.isArray(categories) && categories.map((category: BadgeCategory) => (
-                        <SelectItem key={category.id} value={category.id.toString()}>
-                          {category.name}
-                        </SelectItem>
-                      ))}
+                      {Array.isArray(categories) &&
+                        categories.map((category: BadgeCategory) => (
+                          <SelectItem
+                            key={category.id}
+                            value={category.id.toString()}
+                          >
+                            {category.name}
+                          </SelectItem>
+                        ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="imageUrl"
@@ -275,7 +290,7 @@ export function BadgeDialog({ open, onOpenChange, badge, organizationId }: Badge
                 </FormItem>
               )}
             />
-            
+
             {/* Progress tracking options */}
             <div className="border rounded-md p-4 space-y-4">
               <div className="flex flex-row items-center justify-between">
@@ -289,7 +304,7 @@ export function BadgeDialog({ open, onOpenChange, badge, organizationId }: Badge
                   Enabled
                 </div>
               </div>
-              
+
               {/* Criteria type and sections are always shown */}
               <FormField
                 control={form.control}
@@ -308,18 +323,20 @@ export function BadgeDialog({ open, onOpenChange, badge, organizationId }: Badge
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="binary">Binary (Yes/No)</SelectItem>
-                        <SelectItem value="numeric">Numeric (Points)</SelectItem>
+                        <SelectItem value="numeric">
+                          Numeric (Points)
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                     <FormDescription>
-                      Binary criteria are checkbox-style (completed or not). 
+                      Binary criteria are checkbox-style (completed or not).
                       Numeric criteria track points or specific values.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              
+
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <h4 className="text-sm font-medium">Criteria Sections</h4>
@@ -328,19 +345,19 @@ export function BadgeDialog({ open, onOpenChange, badge, organizationId }: Badge
                     variant="outline"
                     size="sm"
                     onClick={() => {
-                      const current = form.getValues('criteriaSections') || [];
-                      form.setValue('criteriaSections', [
+                      const current = form.getValues("criteriaSections") || [];
+                      form.setValue("criteriaSections", [
                         ...current,
                         {
                           title: `Section ${current.length + 1}`,
                           criteria: [
-                            { 
-                              id: 1, 
-                              name: "New Requirement", 
-                              description: "Description of the requirement" 
-                            }
-                          ]
-                        }
+                            {
+                              id: 1,
+                              name: "New Requirement",
+                              description: "Description of the requirement",
+                            },
+                          ],
+                        },
                       ]);
                     }}
                   >
@@ -348,125 +365,184 @@ export function BadgeDialog({ open, onOpenChange, badge, organizationId }: Badge
                     Add Section
                   </Button>
                 </div>
-                
-                {form.watch('criteriaSections')?.map((section, sectionIndex) => (
-                  <div key={sectionIndex} className="border rounded-md p-3 space-y-3">
-                    <div className="flex justify-between items-center">
-                      <input
-                        className="bg-transparent border-0 border-b border-gray-300 focus:border-primary-500 focus-visible:ring-0 px-0 py-1 text-sm font-medium"
-                        value={section.title}
-                        onChange={(e) => {
-                          const currentSections = [...form.getValues('criteriaSections') || []];
-                          currentSections[sectionIndex].title = e.target.value;
-                          form.setValue('criteriaSections', currentSections);
-                        }}
-                      />
-                      <div className="flex space-x-1">
+
+                {form
+                  .watch("criteriaSections")
+                  ?.map((section, sectionIndex) => (
+                    <div
+                      key={sectionIndex}
+                      className="border rounded-md p-3 space-y-3"
+                    >
+                      <div className="flex justify-between items-center">
+                        <input
+                          className="bg-transparent border-0 border-b border-gray-300 focus:border-primary-500 focus-visible:ring-0 px-0 py-1 text-sm font-medium"
+                          value={section.title}
+                          onChange={(e) => {
+                            const currentSections = [
+                              ...(form.getValues("criteriaSections") || []),
+                            ];
+                            currentSections[sectionIndex].title =
+                              e.target.value;
+                            form.setValue("criteriaSections", currentSections);
+                          }}
+                        />
+                        <div className="flex space-x-1">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              const current = [
+                                ...(form.getValues("criteriaSections") || []),
+                              ];
+
+                              // Don't remove if it's the only section
+                              if (current.length <= 1) return;
+
+                              current.splice(sectionIndex, 1);
+                              form.setValue("criteriaSections", current);
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        {section.criteria.map((criterion, criterionIndex) => (
+                          <div
+                            key={criterionIndex}
+                            className="grid grid-cols-1 gap-2 border border-dashed p-2 rounded-md"
+                          >
+                            <div className="flex items-center justify-between">
+                              <input
+                                className="bg-transparent border-0 border-b border-gray-300 focus:border-primary-500 focus-visible:ring-0 px-0 py-1 w-full text-sm"
+                                placeholder="Criterion name"
+                                value={criterion.name}
+                                onChange={(e) => {
+                                  const currentSections = [
+                                    ...(form.getValues("criteriaSections") ||
+                                      []),
+                                  ];
+                                  currentSections[sectionIndex].criteria[
+                                    criterionIndex
+                                  ].name = e.target.value;
+                                  form.setValue(
+                                    "criteriaSections",
+                                    currentSections,
+                                  );
+                                }}
+                              />
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  const currentSections = [
+                                    ...(form.getValues("criteriaSections") ||
+                                      []),
+                                  ];
+
+                                  // Don't remove if it's the only criterion
+                                  if (
+                                    currentSections[sectionIndex].criteria
+                                      .length <= 1
+                                  )
+                                    return;
+
+                                  currentSections[sectionIndex].criteria.splice(
+                                    criterionIndex,
+                                    1,
+                                  );
+                                  form.setValue(
+                                    "criteriaSections",
+                                    currentSections,
+                                  );
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+
+                            <textarea
+                              className="min-h-[60px] resize-none bg-transparent border rounded-md text-sm p-2"
+                              placeholder="Description"
+                              value={criterion.description}
+                              onChange={(e) => {
+                                const currentSections = [
+                                  ...(form.getValues("criteriaSections") || []),
+                                ];
+                                currentSections[sectionIndex].criteria[
+                                  criterionIndex
+                                ].description = e.target.value;
+                                form.setValue(
+                                  "criteriaSections",
+                                  currentSections,
+                                );
+                              }}
+                            />
+
+                            {form.watch("criteriaType") === "numeric" && (
+                              <div className="flex space-x-2 items-center">
+                                <Input
+                                  type="number"
+                                  placeholder="Points"
+                                  className="w-20"
+                                  value={criterion.maxValue || 0}
+                                  onChange={(e) => {
+                                    const currentSections = [
+                                      ...(form.getValues("criteriaSections") ||
+                                        []),
+                                    ];
+                                    currentSections[sectionIndex].criteria[
+                                      criterionIndex
+                                    ].maxValue = Number(e.target.value);
+                                    form.setValue(
+                                      "criteriaSections",
+                                      currentSections,
+                                    );
+                                  }}
+                                />
+                                <span className="text-sm text-gray-500">
+                                  points
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+
                         <Button
                           type="button"
-                          variant="ghost"
+                          variant="outline"
                           size="sm"
+                          className="w-full mt-2"
                           onClick={() => {
-                            const current = [...form.getValues('criteriaSections') || []];
-                            
-                            // Don't remove if it's the only section
-                            if (current.length <= 1) return;
-                            
-                            current.splice(sectionIndex, 1);
-                            form.setValue('criteriaSections', current);
+                            const currentSections = [
+                              ...(form.getValues("criteriaSections") || []),
+                            ];
+                            const nextId =
+                              Math.max(
+                                0,
+                                ...currentSections[sectionIndex].criteria.map(
+                                  (c) => c.id,
+                                ),
+                              ) + 1;
+
+                            currentSections[sectionIndex].criteria.push({
+                              id: nextId,
+                              name: `Requirement ${nextId}`,
+                              description: "Description of the requirement",
+                            });
+
+                            form.setValue("criteriaSections", currentSections);
                           }}
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <PlusCircle className="h-4 w-4 mr-2" />
+                          Add Criterion
                         </Button>
                       </div>
                     </div>
-                    
-                    <div className="space-y-2">
-                      {section.criteria.map((criterion, criterionIndex) => (
-                        <div key={criterionIndex} className="grid grid-cols-1 gap-2 border border-dashed p-2 rounded-md">
-                          <div className="flex items-center justify-between">
-                            <input
-                              className="bg-transparent border-0 border-b border-gray-300 focus:border-primary-500 focus-visible:ring-0 px-0 py-1 w-full text-sm"
-                              placeholder="Criterion name"
-                              value={criterion.name}
-                              onChange={(e) => {
-                                const currentSections = [...form.getValues('criteriaSections') || []];
-                                currentSections[sectionIndex].criteria[criterionIndex].name = e.target.value;
-                                form.setValue('criteriaSections', currentSections);
-                              }}
-                            />
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                const currentSections = [...form.getValues('criteriaSections') || []];
-                                
-                                // Don't remove if it's the only criterion
-                                if (currentSections[sectionIndex].criteria.length <= 1) return;
-                                
-                                currentSections[sectionIndex].criteria.splice(criterionIndex, 1);
-                                form.setValue('criteriaSections', currentSections);
-                              }}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                          
-                          <textarea
-                            className="min-h-[60px] resize-none bg-transparent border rounded-md text-sm p-2"
-                            placeholder="Description"
-                            value={criterion.description}
-                            onChange={(e) => {
-                              const currentSections = [...form.getValues('criteriaSections') || []];
-                              currentSections[sectionIndex].criteria[criterionIndex].description = e.target.value;
-                              form.setValue('criteriaSections', currentSections);
-                            }}
-                          />
-                          
-                          {form.watch('criteriaType') === 'numeric' && (
-                            <div className="flex space-x-2 items-center">
-                              <Input
-                                type="number"
-                                placeholder="Points"
-                                className="w-20"
-                                value={criterion.maxValue || 0}
-                                onChange={(e) => {
-                                  const currentSections = [...form.getValues('criteriaSections') || []];
-                                  currentSections[sectionIndex].criteria[criterionIndex].maxValue = Number(e.target.value);
-                                  form.setValue('criteriaSections', currentSections);
-                                }}
-                              />
-                              <span className="text-sm text-gray-500">points</span>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                      
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="w-full mt-2"
-                        onClick={() => {
-                          const currentSections = [...form.getValues('criteriaSections') || []];
-                          const nextId = Math.max(0, ...currentSections[sectionIndex].criteria.map(c => c.id)) + 1;
-                          
-                          currentSections[sectionIndex].criteria.push({
-                            id: nextId,
-                            name: `Requirement ${nextId}`,
-                            description: "Description of the requirement"
-                          });
-                          
-                          form.setValue('criteriaSections', currentSections);
-                        }}
-                      >
-                        <PlusCircle className="h-4 w-4 mr-2" />
-                        Add Criterion
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+                  ))}
               </div>
             </div>
 
@@ -481,7 +557,9 @@ export function BadgeDialog({ open, onOpenChange, badge, organizationId }: Badge
               <Button
                 type="submit"
                 className="bg-primary-600 hover:bg-primary-700"
-                disabled={createBadgeMutation.isPending || updateBadgeMutation.isPending}
+                disabled={
+                  createBadgeMutation.isPending || updateBadgeMutation.isPending
+                }
               >
                 {badge ? "Update Badge" : "Create Badge"}
               </Button>

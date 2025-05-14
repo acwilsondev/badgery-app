@@ -82,7 +82,7 @@
     --border: 0 0% 25%; /* Dark gray border */
     --input: 0 0% 25%; /* Dark gray input */
     --ring: 273 57% 48%; /* Brighter Deep Purple for dark mode */
-    
+
     /* Dark sidebar colors */
     --sidebar-background: 273 50% 28%; /* Darker Deep Purple */
     --sidebar-foreground: 0 0% 100%;
@@ -92,7 +92,7 @@
     --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 273 40% 35%; /* Even darker purple */
     --sidebar-ring: 0 0% 100%;
-    
+
     /* Dark chart colors - adjusted for better visibility on dark backgrounds */
     --chart-1: 273 60% 55%; /* Brighter Deep Purple */
     --chart-2: 22 93% 65%; /* Brighter Vibrant Orange */
@@ -119,11 +119,19 @@
   }
 
   @keyframes badge-pop {
-    0% { transform: scale(0.8); opacity: 0; }
-    70% { transform: scale(1.1); }
-    100% { transform: scale(1); opacity: 1; }
+    0% {
+      transform: scale(0.8);
+      opacity: 0;
+    }
+    70% {
+      transform: scale(1.1);
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
   }
-  
+
   .badge-earned {
     animation: badge-pop 0.5s ease-out forwards;
   }
