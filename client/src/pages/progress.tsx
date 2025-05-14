@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Badge } from '@shared/schema';
 import { useToast } from '@/hooks/use-toast';
 import { Sidebar } from '@/components/sidebar';
+import { apiPrefix } from '@/lib/queryClient';
 import { BadgeProgressDialog } from '@/components/badge-progress-dialog';
 import { generateBadgeIcon } from '@/lib/badge-icons';
 import { formatDate } from '@/lib/utils';
@@ -72,19 +73,19 @@ export default function ProgressTracker({ user, onLogout }: ProgressProps) {
 
   // Fetch user progress
   const { data: userProgress, isLoading: loadingUserProgress } = useQuery<ProgressItem[]>({
-    queryKey: [`/api/users/${user.id}/progress`],
+    queryKey: [`${apiPrefix}/users/${user.id}/progress`],
     enabled: !!user.id,
   });
 
   // Fetch organization progress (for admins/managers)
   const { data: orgProgress, isLoading: loadingOrgProgress } = useQuery<ProgressItem[]>({
-    queryKey: [`/api/organizations/${user.organizationId}/progress`],
+    queryKey: [`${apiPrefix}/organizations/${user.organizationId}/progress`],
     enabled: !!user.organizationId && (user.role === 'admin' || user.role === 'manager'),
   });
 
   // Fetch all badges
   const { data: badges } = useQuery<Badge[]>({
-    queryKey: [`/api/organizations/${user.organizationId}/badges`],
+    queryKey: [`${apiPrefix}/organizations/${user.organizationId}/badges`],
     enabled: !!user.organizationId,
   });
 
