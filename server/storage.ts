@@ -234,24 +234,56 @@ export async function getUserByUsername(username: string) {
 }
 
 export async function createUser(user: Omit<User, "id" | "createdAt">, organizationIds?: number[]) {
-  // Start a transaction
-  return await db.transaction(async (tx) => {
-    // Create the user
-    const [newUser] = await tx.insert(users).values(user).returning();
+  try {
+    // Check which fields actually exist in the database to avoid errors
+    const userColumns = await getTableColumns('users');
     
-    // Associate user with organizations if provided
-    if (organizationIds && organizationIds.length > 0) {
-      const userOrgData = organizationIds.map(orgId => ({
-        userId: newUser.id,
-        organizationId: orgId,
-        createdBy: user.createdBy
-      }));
+    // Filter out fields that don't exist in the database
+    const filteredUserData: any = {};
+    for (const [key, value] of Object.entries(user)) {
+      // Convert camelCase to snake_case for column comparison
+      const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
       
-      await tx.insert(userOrganization).values(userOrgData);
+      if (userColumns.includes(key) || userColumns.includes(snakeKey)) {
+        filteredUserData[key] = value;
+      }
     }
     
-    return newUser;
-  });
+    // Start a transaction
+    return await db.transaction(async (tx) => {
+      // Create the user
+      const [newUser] = await tx.insert(users).values(filteredUserData).returning();
+      
+      // Associate user with organizations if provided
+      if (organizationIds && organizationIds.length > 0) {
+        const userOrgData = organizationIds.map(orgId => ({
+          userId: newUser.id,
+          organizationId: orgId
+        }));
+        
+        await tx.insert(userOrganization).values(userOrgData);
+      }
+      
+      return newUser;
+    });
+  } catch (error) {
+    console.error("Error in createUser:", error);
+    throw error;
+  }
+}
+
+// Helper function to get table columns
+async function getTableColumns(tableName: string): Promise<string[]> {
+  try {
+    const result = await pool.query(
+      `SELECT column_name FROM information_schema.columns WHERE table_name = $1`,
+      [tableName]
+    );
+    return result.rows.map(row => row.column_name);
+  } catch (error) {
+    console.error(`Error fetching columns for table ${tableName}:`, error);
+    return [];
+  }
 }
 
 export async function updateUser(id: number, data: Partial<User>, organizationIds?: number[]) {
