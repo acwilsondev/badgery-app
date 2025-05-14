@@ -360,10 +360,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put(`${apiPrefix}/badges/:id`, async (req, res) => {
+  app.put(`${apiPrefix}/badges/:id`, isAuthenticated, isAdminOrManager, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const updateData = req.body;
+      
+      // Verify badge exists
+      const existingBadge = await storage.getBadgeById(id);
+      if (!existingBadge) {
+        return res.status(404).json({ message: "Badge not found" });
+      }
+      
+      // Verify organization access
+      const userId = req.session.userId;
+      const user = await storage.getUserById(userId);
+      
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+      
+      const hasAccess = user.role === 'admin' || 
+        (user.organizations && user.organizations.some((org: any) => org.id === existingBadge.organizationId));
+      
+      if (!hasAccess) {
+        return res.status(403).json({ message: "No access to this badge's organization" });
+      }
+      
+      const updateData = {
+        ...req.body,
+        updatedBy: req.session.userId || null
+      };
       
       const updatedBadge = await storage.updateBadge(id, updateData);
       
@@ -378,9 +403,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete(`${apiPrefix}/badges/:id`, async (req, res) => {
+  app.delete(`${apiPrefix}/badges/:id`, isAuthenticated, isAdminOrManager, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
+      
+      // Verify badge exists
+      const existingBadge = await storage.getBadgeById(id);
+      if (!existingBadge) {
+        return res.status(404).json({ message: "Badge not found" });
+      }
+      
+      // Verify organization access
+      const userId = req.session.userId;
+      const user = await storage.getUserById(userId);
+      
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+      
+      const hasAccess = user.role === 'admin' || 
+        (user.organizations && user.organizations.some((org: any) => org.id === existingBadge.organizationId));
+      
+      if (!hasAccess) {
+        return res.status(403).json({ message: "No access to this badge's organization" });
+      }
+      
       await storage.deleteBadge(id);
       
       return res.status(200).json({ message: "Badge deleted successfully" });
@@ -391,9 +438,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // User endpoints
-  app.get(`${apiPrefix}/organizations/:orgId/users`, async (req, res) => {
+  app.get(`${apiPrefix}/organizations/:orgId/users`, isAuthenticated, async (req, res) => {
     try {
       const orgId = parseInt(req.params.orgId);
+      
+      // Verify organization access
+      const userId = req.session.userId;
+      const currentUser = await storage.getUserById(userId);
+      
+      if (!currentUser) {
+        return res.status(401).json({ message: "User not found" });
+      }
+      
+      const hasAccess = currentUser.role === 'admin' || 
+        (currentUser.organizations && currentUser.organizations.some((org: any) => org.id === orgId));
+      
+      if (!hasAccess) {
+        return res.status(403).json({ message: "No access to this organization" });
+      }
+      
       const users = await storage.getUsersByOrganization(orgId);
       
       return res.status(200).json(users);
@@ -403,7 +466,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get(`${apiPrefix}/users/:id`, async (req, res) => {
+  app.get(`${apiPrefix}/users/:id`, isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const user = await storage.getUserById(id);
@@ -412,13 +475,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "User not found" });
       }
       
+      // If requesting another user, verify they're in the same organization
+      const requesterId = req.session.userId;
+      
+      if (id !== requesterId) {
+        const requester = await storage.getUserById(requesterId);
+        
+        if (!requester) {
+          return res.status(401).json({ message: "Requester not found" });
+        }
+        
+        // Admin can view any user
+        if (requester.role !== 'admin') {
+          // Check if the requested user and requester share any organization
+          const requesterOrgIds = requester.organizations ? requester.organizations.map((org: any) => org.id) : [];
+          const userOrgIds = user.organizations ? user.organizations.map((org: any) => org.id) : [];
+          
+          // Find common organizations
+          const sharedOrgs = requesterOrgIds.filter((orgId: number) => userOrgIds.includes(orgId));
+          
+          if (sharedOrgs.length === 0) {
+            return res.status(403).json({ message: "No access to this user" });
+          }
+        }
+      }
+      
       return res.status(200).json({
         id: user.id,
         username: user.username,
         name: user.name,
         email: user.email,
         role: user.role,
-        organizationId: user.organizationId || null,
+        organizations: user.organizations || [],
       });
     } catch (error) {
       console.error('Error fetching user:', error);
@@ -427,19 +515,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Badge Awarding endpoints
-  app.post(`${apiPrefix}/badges/:badgeId/award`, async (req, res) => {
+  app.post(`${apiPrefix}/badges/:badgeId/award`, isAuthenticated, isAdminOrManager, async (req, res) => {
     try {
       const badgeId = parseInt(req.params.badgeId);
       const { userId } = req.body;
       
-      if (!req.session.userId) {
-        return res.status(401).json({ message: "Not authenticated" });
+      // Get the badge to check organization access
+      const badge = await storage.getBadgeById(badgeId);
+      if (!badge) {
+        return res.status(404).json({ message: "Badge not found" });
+      }
+      
+      // Verify organization access
+      const currentUserId = req.session.userId;
+      const currentUser = await storage.getUserById(currentUserId);
+      
+      if (!currentUser) {
+        return res.status(401).json({ message: "User not found" });
+      }
+      
+      const hasAccess = currentUser.role === 'admin' || 
+        (currentUser.organizations && currentUser.organizations.some((org: any) => org.id === badge.organizationId));
+      
+      if (!hasAccess) {
+        return res.status(403).json({ message: "No access to this badge's organization" });
+      }
+      
+      // Verify the user to award the badge to is in same organization
+      const targetUser = await storage.getUserById(userId);
+      if (!targetUser) {
+        return res.status(404).json({ message: "Target user not found" });
+      }
+      
+      const targetUserHasAccess = targetUser.organizations && 
+        targetUser.organizations.some((org: any) => org.id === badge.organizationId);
+      
+      if (!targetUserHasAccess) {
+        return res.status(403).json({ message: "Target user not in this badge's organization" });
       }
       
       const awardData = awardedBadgesInsertSchema.parse({
         badgeId,
         userId,
         awardedBy: req.session.userId,
+        status: 'awarded'
       });
       
       const newAward = await storage.awardBadge(awardData);
@@ -454,9 +573,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get(`${apiPrefix}/organizations/:orgId/awarded-badges`, async (req, res) => {
+  app.get(`${apiPrefix}/organizations/:orgId/awarded-badges`, isAuthenticated, async (req, res) => {
     try {
       const orgId = parseInt(req.params.orgId);
+      
+      // Verify organization access
+      const userId = req.session.userId;
+      const user = await storage.getUserById(userId);
+      
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+      
+      const hasAccess = user.role === 'admin' || 
+        (user.organizations && user.organizations.some((org: any) => org.id === orgId));
+      
+      if (!hasAccess) {
+        return res.status(403).json({ message: "No access to this organization" });
+      }
+      
       const awardedBadges = await storage.getAwardedBadges(orgId);
       
       return res.status(200).json(awardedBadges);
@@ -466,10 +601,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get(`${apiPrefix}/users/:userId/awarded-badges`, async (req, res) => {
+  app.get(`${apiPrefix}/users/:userId/awarded-badges`, isAuthenticated, async (req, res) => {
     try {
-      const userId = parseInt(req.params.userId);
-      const awardedBadges = await storage.getUserAwardedBadges(userId);
+      const targetUserId = parseInt(req.params.userId);
+      const requesterId = req.session.userId;
+      
+      // If the user is requesting their own data, allow it
+      if (targetUserId === requesterId) {
+        const awardedBadges = await storage.getUserAwardedBadges(targetUserId);
+        return res.status(200).json(awardedBadges);
+      }
+      
+      // If requesting another user's data, check permissions
+      const requester = await storage.getUserById(requesterId);
+      const targetUser = await storage.getUserById(targetUserId);
+      
+      if (!requester || !targetUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Admin can view any user's badges
+      if (requester.role === 'admin') {
+        const awardedBadges = await storage.getUserAwardedBadges(targetUserId);
+        return res.status(200).json(awardedBadges);
+      }
+      
+      // Check if they share any organization (can only see each other if in same org)
+      const requesterOrgIds = requester.organizations ? requester.organizations.map((org: any) => org.id) : [];
+      const targetUserOrgIds = targetUser.organizations ? targetUser.organizations.map((org: any) => org.id) : [];
+      
+      // Find common organizations
+      const sharedOrgs = requesterOrgIds.filter((orgId: number) => targetUserOrgIds.includes(orgId));
+      
+      if (sharedOrgs.length === 0) {
+        return res.status(403).json({ message: "No access to this user" });
+      }
+      
+      const awardedBadges = await storage.getUserAwardedBadges(targetUserId);
       
       return res.status(200).json(awardedBadges);
     } catch (error) {
@@ -479,12 +647,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Badge Progress tracking endpoints
-  app.get(`${apiPrefix}/badges/:badgeId/progress/:userId`, async (req, res) => {
+  app.get(`${apiPrefix}/badges/:badgeId/progress/:userId`, isAuthenticated, async (req, res) => {
     try {
       const badgeId = parseInt(req.params.badgeId);
-      const userId = parseInt(req.params.userId);
+      const targetUserId = parseInt(req.params.userId);
+      const requesterId = req.session.userId;
       
-      const progress = await storage.getBadgeProgress(badgeId, userId);
+      // Get the badge to check organization access
+      const badge = await storage.getBadgeById(badgeId);
+      if (!badge) {
+        return res.status(404).json({ message: "Badge not found" });
+      }
+      
+      // Verify organization access to badge
+      const requester = await storage.getUserById(requesterId);
+      
+      if (!requester) {
+        return res.status(401).json({ message: "User not found" });
+      }
+      
+      const hasAccessToBadge = requester.role === 'admin' || 
+        (requester.organizations && requester.organizations.some((org: any) => org.id === badge.organizationId));
+      
+      if (!hasAccessToBadge) {
+        return res.status(403).json({ message: "No access to this badge's organization" });
+      }
+      
+      // If requesting another user's progress, verify they're in the same organization
+      if (targetUserId !== requesterId) {
+        // Admin can view any user's progress
+        if (requester.role !== 'admin') {
+          const targetUser = await storage.getUserById(targetUserId);
+          
+          if (!targetUser) {
+            return res.status(404).json({ message: "Target user not found" });
+          }
+          
+          // Check if target user has access to the badge's organization
+          const targetUserAccessToBadge = targetUser.organizations && 
+            targetUser.organizations.some((org: any) => org.id === badge.organizationId);
+          
+          if (!targetUserAccessToBadge) {
+            return res.status(403).json({ message: "Target user not in this badge's organization" });
+          }
+        }
+      }
+      
+      const progress = await storage.getBadgeProgress(badgeId, targetUserId);
       
       if (!progress) {
         return res.status(404).json({ message: "Progress not found" });
@@ -497,10 +706,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get(`${apiPrefix}/users/:userId/progress`, async (req, res) => {
+  app.get(`${apiPrefix}/users/:userId/progress`, isAuthenticated, async (req, res) => {
     try {
-      const userId = parseInt(req.params.userId);
-      const progress = await storage.getUserProgressForAllBadges(userId);
+      const targetUserId = parseInt(req.params.userId);
+      const requesterId = req.session.userId;
+      
+      // If the user is requesting their own data, allow it
+      if (targetUserId === requesterId) {
+        const progress = await storage.getUserProgressForAllBadges(targetUserId);
+        return res.status(200).json(progress);
+      }
+      
+      // If requesting another user's data, check permissions
+      const requester = await storage.getUserById(requesterId);
+      const targetUser = await storage.getUserById(targetUserId);
+      
+      if (!requester || !targetUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Admin can view any user's progress
+      if (requester.role === 'admin') {
+        const progress = await storage.getUserProgressForAllBadges(targetUserId);
+        return res.status(200).json(progress);
+      }
+      
+      // Check if they share any organization (can only see each other if in same org)
+      const requesterOrgIds = requester.organizations ? requester.organizations.map((org: any) => org.id) : [];
+      const targetUserOrgIds = targetUser.organizations ? targetUser.organizations.map((org: any) => org.id) : [];
+      
+      // Find common organizations
+      const sharedOrgs = requesterOrgIds.filter((orgId: number) => targetUserOrgIds.includes(orgId));
+      
+      if (sharedOrgs.length === 0) {
+        return res.status(403).json({ message: "No access to this user" });
+      }
+      
+      const progress = await storage.getUserProgressForAllBadges(targetUserId);
       
       return res.status(200).json(progress);
     } catch (error) {
@@ -509,9 +751,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get(`${apiPrefix}/organizations/:orgId/progress`, async (req, res) => {
+  app.get(`${apiPrefix}/organizations/:orgId/progress`, isAuthenticated, async (req, res) => {
     try {
       const orgId = parseInt(req.params.orgId);
+      
+      // Verify organization access
+      const userId = req.session.userId;
+      const user = await storage.getUserById(userId);
+      
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+      
+      const hasAccess = user.role === 'admin' || 
+        (user.organizations && user.organizations.some((org: any) => org.id === orgId));
+      
+      if (!hasAccess) {
+        return res.status(403).json({ message: "No access to this organization" });
+      }
+      
       const progress = await storage.getBadgeProgressForOrganization(orgId);
       
       return res.status(200).json(progress);
