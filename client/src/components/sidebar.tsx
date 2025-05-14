@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { apiPrefix } from "@/lib/queryClient";
 
 interface Organization {
   id: number;
@@ -42,7 +43,7 @@ export function Sidebar({ user, onLogout, isMobileOpen, onMobileClose }: Sidebar
   );
 
   const { data: organizations = [] } = useQuery<Organization[]>({
-    queryKey: ['/api/organizations'],
+    queryKey: [`${apiPrefix}/organizations`],
     enabled: user.role === 'administrator',
   });
 
