@@ -4,6 +4,7 @@ import * as storage from "./storage";
 import * as z from "zod";
 import { eq } from "drizzle-orm";
 import { db } from "@db";
+import { isAuthenticated, hasOrganizationAccess, isAdminOrManager } from "./middleware";
 import { 
   users,
   organizations,
@@ -116,17 +117,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Organization endpoints
-  app.get(`${apiPrefix}/organizations`, async (req, res) => {
+  app.get(`${apiPrefix}/organizations`, isAuthenticated, async (req, res) => {
     try {
-      const organizations = await storage.getOrganizations();
-      return res.status(200).json(organizations);
+      const userId = req.session.userId;
+      
+      // If we have a userId, get only organizations the user belongs to
+      if (userId) {
+        const user = await storage.getUserById(userId);
+        if (user && user.role === 'admin') {
+          // Admins can see all organizations
+          const organizations = await storage.getOrganizations();
+          return res.status(200).json(organizations);
+        } else if (user) {
+          // Regular users only see organizations they belong to
+          return res.status(200).json(user.organizations || []);
+        }
+      }
+      
+      return res.status(401).json({ message: "Not authenticated" });
     } catch (error) {
       console.error('Error fetching organizations:', error);
       return res.status(500).json({ message: "Internal server error" });
     }
   });
 
-  app.get(`${apiPrefix}/organizations/:id`, async (req, res) => {
+  app.get(`${apiPrefix}/organizations/:id`, isAuthenticated, hasOrganizationAccess, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const organization = await storage.getOrganizationById(id);
@@ -142,10 +157,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post(`${apiPrefix}/organizations`, async (req, res) => {
+  app.post(`${apiPrefix}/organizations`, isAuthenticated, isAdminOrManager, async (req, res) => {
     try {
       const organizationData = organizationsInsertSchema.parse(req.body);
-      const newOrganization = await storage.createOrganization(organizationData);
+      const newOrganization = await storage.createOrganization({
+        ...organizationData,
+        createdBy: req.session.userId || null
+      });
       
       return res.status(201).json(newOrganization);
     } catch (error) {
@@ -157,10 +175,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put(`${apiPrefix}/organizations/:id`, async (req, res) => {
+  app.put(`${apiPrefix}/organizations/:id`, isAuthenticated, hasOrganizationAccess, isAdminOrManager, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const updateData = req.body;
+      const updateData = {
+        ...req.body,
+        updatedBy: req.session.userId || null
+      };
       
       const updatedOrganization = await storage.updateOrganization(id, updateData);
       
@@ -176,9 +197,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Badge Category endpoints
-  app.get(`${apiPrefix}/organizations/:orgId/categories`, async (req, res) => {
+  app.get(`${apiPrefix}/organizations/:orgId/categories`, isAuthenticated, async (req, res) => {
     try {
       const orgId = parseInt(req.params.orgId);
+      
+      // Verify organization access
+      const userId = req.session.userId;
+      const user = await storage.getUserById(userId);
+      
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+      
+      const hasAccess = user.role === 'admin' || 
+        (user.organizations && user.organizations.some((org: any) => org.id === orgId));
+      
+      if (!hasAccess) {
+        return res.status(403).json({ message: "No access to this organization" });
+      }
+      
       const categories = await storage.getBadgeCategories(orgId);
       
       return res.status(200).json(categories);
@@ -188,14 +225,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post(`${apiPrefix}/organizations/:orgId/categories`, async (req, res) => {
+  app.post(`${apiPrefix}/organizations/:orgId/categories`, isAuthenticated, isAdminOrManager, async (req, res) => {
     try {
       const orgId = parseInt(req.params.orgId);
+      
+      // Verify organization access
+      const userId = req.session.userId;
+      const user = await storage.getUserById(userId);
+      
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+      
+      const hasAccess = user.role === 'admin' || 
+        (user.organizations && user.organizations.some((org: any) => org.id === orgId));
+      
+      if (!hasAccess) {
+        return res.status(403).json({ message: "No access to this organization" });
+      }
+      
       const categoryData = badgeCategoriesInsertSchema.parse(req.body);
       
       const newCategory = await storage.createBadgeCategory({
         ...categoryData,
         organizationId: orgId,
+        createdBy: req.session.userId || null
       });
       
       return res.status(201).json(newCategory);
@@ -209,10 +263,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Badge endpoints
-  app.get(`${apiPrefix}/organizations/:orgId/badges`, async (req, res) => {
+  app.get(`${apiPrefix}/organizations/:orgId/badges`, isAuthenticated, async (req, res) => {
     try {
       const orgId = parseInt(req.params.orgId);
       const categoryId = req.query.categoryId ? parseInt(req.query.categoryId as string) : undefined;
+      
+      // Verify organization access
+      const userId = req.session.userId;
+      const user = await storage.getUserById(userId);
+      
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+      
+      const hasAccess = user.role === 'admin' || 
+        (user.organizations && user.organizations.some((org: any) => org.id === orgId));
+      
+      if (!hasAccess) {
+        return res.status(403).json({ message: "No access to this organization" });
+      }
       
       const badges = await storage.getBadges(orgId, categoryId);
       
@@ -223,13 +292,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get(`${apiPrefix}/badges/:id`, async (req, res) => {
+  app.get(`${apiPrefix}/badges/:id`, isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const badge = await storage.getBadgeById(id);
       
       if (!badge) {
         return res.status(404).json({ message: "Badge not found" });
+      }
+      
+      // Verify organization access
+      const userId = req.session.userId;
+      const user = await storage.getUserById(userId);
+      
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+      
+      const hasAccess = user.role === 'admin' || 
+        (user.organizations && user.organizations.some((org: any) => org.id === badge.organizationId));
+      
+      if (!hasAccess) {
+        return res.status(403).json({ message: "No access to this badge's organization" });
       }
       
       return res.status(200).json(badge);
@@ -239,14 +323,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post(`${apiPrefix}/organizations/:orgId/badges`, async (req, res) => {
+  app.post(`${apiPrefix}/organizations/:orgId/badges`, isAuthenticated, isAdminOrManager, async (req, res) => {
     try {
       const orgId = parseInt(req.params.orgId);
+      
+      // Verify organization access
+      const userId = req.session.userId;
+      const user = await storage.getUserById(userId);
+      
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+      
+      const hasAccess = user.role === 'admin' || 
+        (user.organizations && user.organizations.some((org: any) => org.id === orgId));
+      
+      if (!hasAccess) {
+        return res.status(403).json({ message: "No access to this organization" });
+      }
+      
       const badgeData = badgesInsertSchema.parse(req.body);
       
       const newBadge = await storage.createBadge({
         ...badgeData,
         organizationId: orgId,
+        createdBy: req.session.userId || null
       });
       
       return res.status(201).json(newBadge);
