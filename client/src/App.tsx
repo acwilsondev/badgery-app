@@ -1,4 +1,4 @@
-import { Switch, Route, useLocation } from "wouter";
+import { Switch, Route, useLocation, Link } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -9,6 +9,7 @@ import Users from "@/pages/users";
 import UserProfile from "@/pages/user-profile";
 import ProgressTracker from "@/pages/progress";
 import Branding from "@/pages/branding";
+import RegisterPage from "@/pages/register";
 import { useState, useEffect } from "react";
 import { apiRequest, apiPrefix } from "@/lib/queryClient";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -67,8 +68,8 @@ function Router() {
     return <div className="flex items-center justify-center h-screen">Loading...</div>;
   }
 
-  // If user is not logged in and not on the login page, redirect to login
-  if (!currentUser && location !== '/') {
+  // If user is not logged in and not on the login or register page, redirect to login
+  if (!currentUser && location !== '/' && location !== '/register') {
     setLocation('/');
     return null;
   }
@@ -80,6 +81,13 @@ function Router() {
           <Dashboard user={currentUser} onLogout={handleLogout} />
         ) : (
           <LoginPage onLogin={handleLogin} />
+        )}
+      </Route>
+      <Route path="/register">
+        {currentUser ? (
+          <Dashboard user={currentUser} onLogout={handleLogout} />
+        ) : (
+          <RegisterPage />
         )}
       </Route>
       <Route path="/dashboard">
@@ -193,9 +201,18 @@ function LoginPage({ onLogin }: { onLogin: (username: string, password: string) 
             </button>
           </div>
           
-          <div className="text-sm text-center">
+          <div className="text-sm text-center space-y-2">
             <p className="text-gray-600 dark:text-gray-400">
               Use the demo account: <span className="font-medium dark:text-gray-300">admin / password123</span>
+            </p>
+            <p className="text-gray-600 dark:text-gray-400">
+              Don't have an account?{' '}
+              <Link 
+                href="/register" 
+                className="font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300"
+              >
+                Register here
+              </Link>
             </p>
           </div>
         </form>
