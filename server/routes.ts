@@ -779,24 +779,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post(`${apiPrefix}/badges/:badgeId/progress/:userId`, async (req, res) => {
+  app.post(`${apiPrefix}/badges/:badgeId/progress/:userId`, isAuthenticated, isAdminOrManager, async (req, res) => {
     try {
       const badgeId = parseInt(req.params.badgeId);
-      const userId = parseInt(req.params.userId);
+      const targetUserId = parseInt(req.params.userId);
       
-      if (!req.session.userId) {
-        return res.status(401).json({ message: "Not authenticated" });
+      // Get the badge to check organization access
+      const badge = await storage.getBadgeById(badgeId);
+      if (!badge) {
+        return res.status(404).json({ message: "Badge not found" });
       }
       
-      // Only admins or managers can update progress
-      const currentUser = await storage.getUserById(req.session.userId);
-      if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'manager')) {
-        return res.status(403).json({ message: "Unauthorized to update progress" });
+      // Verify organization access
+      const requesterId = req.session.userId;
+      const requester = await storage.getUserById(requesterId);
+      
+      if (!requester) {
+        return res.status(401).json({ message: "User not found" });
+      }
+      
+      // Check if requester has access to the badge's organization
+      const hasAccess = requester.role === 'admin' || 
+        (requester.organizations && requester.organizations.some((org: any) => org.id === badge.organizationId));
+      
+      if (!hasAccess) {
+        return res.status(403).json({ message: "No access to this badge's organization" });
+      }
+      
+      // Verify the target user is in same organization as the badge
+      const targetUser = await storage.getUserById(targetUserId);
+      if (!targetUser) {
+        return res.status(404).json({ message: "Target user not found" });
+      }
+      
+      const targetUserHasAccess = targetUser.organizations && 
+        targetUser.organizations.some((org: any) => org.id === badge.organizationId);
+      
+      if (!targetUserHasAccess) {
+        return res.status(403).json({ message: "Target user not in this badge's organization" });
       }
       
       const progressData = {
         badgeId,
-        userId,
+        userId: targetUserId,
         updatedBy: req.session.userId,
         progress: req.body.progress,
         progressData: req.body.progressData,
@@ -807,8 +832,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const updatedProgress = await storage.createOrUpdateBadgeProgress(progressData);
       
       // Check if badge should be auto-awarded based on progress
-      if (Number(updatedProgress.progress) === 100) {
-        await storage.autoAwardBadgeIfComplete(updatedProgress);
+      if (updatedProgress && Number(updatedProgress.progress) === 100) {
+        await storage.autoAwardBadgeIfComplete({
+          badgeId,
+          userId: targetUserId,
+          updatedBy: req.session.userId
+        });
       }
       
       return res.status(200).json(updatedProgress);
@@ -819,9 +848,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Stats endpoints
-  app.get(`${apiPrefix}/organizations/:orgId/stats`, async (req, res) => {
+  app.get(`${apiPrefix}/organizations/:orgId/stats`, isAuthenticated, async (req, res) => {
     try {
       const orgId = parseInt(req.params.orgId);
+      
+      // Verify organization access
+      const userId = req.session.userId;
+      const user = await storage.getUserById(userId);
+      
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+      
+      const hasAccess = user.role === 'admin' || 
+        (user.organizations && user.organizations.some((org: any) => org.id === orgId));
+      
+      if (!hasAccess) {
+        return res.status(403).json({ message: "No access to this organization" });
+      }
+      
       const stats = await storage.getOrganizationStats(orgId);
       
       return res.status(200).json(stats);
