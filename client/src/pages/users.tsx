@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Sidebar } from "@/components/sidebar";
 import { Link } from "wouter";
+import { apiPrefix } from "@/lib/queryClient";
 import { Menu, Search, Plus, MoreHorizontal } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -41,7 +42,7 @@ export default function Users({ user, onLogout }: UsersProps) {
   const [searchQuery, setSearchQuery] = useState("");
 
   const { data: users = [], isLoading } = useQuery<any[]>({
-    queryKey: [`/api/organizations/${organizationId}/users`],
+    queryKey: [`${apiPrefix}/organizations/${organizationId}/users`],
   });
 
   const filteredUsers = Array.isArray(users) 

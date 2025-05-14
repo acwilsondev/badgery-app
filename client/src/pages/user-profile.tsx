@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Sidebar } from "@/components/sidebar";
+import { apiPrefix } from "@/lib/queryClient";
 import { Menu, Award, Calendar, ArrowLeft } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -79,15 +80,15 @@ export default function UserProfile({ id, user, onLogout }: UserProfileProps) {
   }
 
   const { data: profileUser, isLoading: isLoadingUser } = useQuery<ProfileUser>({
-    queryKey: [`/api/users/${id}`],
+    queryKey: [`${apiPrefix}/users/${id}`],
   });
 
   const { data: awardedBadges = [], isLoading: isLoadingBadges } = useQuery<AwardedBadge[]>({
-    queryKey: [`/api/users/${id}/awarded-badges`],
+    queryKey: [`${apiPrefix}/users/${id}/awarded-badges`],
   });
 
   const { data: availableBadges = [] } = useQuery<Badge[]>({
-    queryKey: [`/api/organizations/${organizationId}/badges`],
+    queryKey: [`${apiPrefix}/organizations/${organizationId}/badges`],
   });
 
   const handleAwardBadge = (badge: Badge) => {
