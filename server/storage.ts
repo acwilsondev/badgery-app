@@ -233,46 +233,62 @@ export async function getUserByUsername(username: string) {
   }
 }
 
-export async function createUser(user: Omit<User, "id" | "createdAt">, organizationIds?: number[]) {
+export async function createUser(userData: Omit<User, "id" | "createdAt">, organizationIds?: number[]) {
   try {
-    // Check which fields actually exist in the database to avoid errors
-    const userColumns = await getTableColumns('users');
+    // Log the exact SQL and values used for debugging
+    console.log("Creating user with data:", {
+      username: userData.username,
+      name: userData.name,
+      email: userData.email,
+      role: userData.role || 'user',
+      organizationId: userData.organizationId || null
+    });
     
-    // Filter out fields that don't exist in the database
-    const filteredUserData: any = {};
-    for (const [key, value] of Object.entries(user)) {
-      // Convert camelCase to snake_case for column comparison
-      const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
-      
-      if (userColumns.includes(key) || userColumns.includes(snakeKey)) {
-        filteredUserData[key] = value;
-      }
+    // Use direct SQL for user creation with only columns that definitely exist
+    const sql = `
+      INSERT INTO users (username, password, name, email, role, organization_id)
+      VALUES ($1, $2, $3, $4, $5, $6)
+      RETURNING id, username, password, name, email, role, organization_id as "organizationId", created_at as "createdAt"
+    `;
+    
+    const values = [
+      userData.username,
+      userData.password,
+      userData.name,
+      userData.email,
+      userData.role || 'user',
+      userData.organizationId || null,
+    ];
+    
+    const result = await pool.query(sql, values);
+    if (result.rows.length === 0) {
+      throw new Error("Failed to create user");
     }
     
-    // Start a transaction
-    return await db.transaction(async (tx) => {
-      // Create the user
-      const [newUser] = await tx.insert(users).values(filteredUserData).returning();
+    const newUser = result.rows[0];
+    console.log("User created successfully:", newUser.id);
+    
+    // Associate user with organizations if provided
+    if (organizationIds && organizationIds.length > 0) {
+      const orgPromises = organizationIds.map(orgId => {
+        return pool.query(
+          `INSERT INTO user_organization (user_id, organization_id)
+           VALUES ($1, $2)`,
+          [newUser.id, orgId]
+        );
+      });
       
-      // Associate user with organizations if provided
-      if (organizationIds && organizationIds.length > 0) {
-        const userOrgData = organizationIds.map(orgId => ({
-          userId: newUser.id,
-          organizationId: orgId
-        }));
-        
-        await tx.insert(userOrganization).values(userOrgData);
-      }
-      
-      return newUser;
-    });
+      await Promise.all(orgPromises);
+    }
+    
+    return newUser;
   } catch (error) {
     console.error("Error in createUser:", error);
     throw error;
   }
 }
 
-// Helper function to get table columns
+// Helper function to get table columns (keeping for reference)
 async function getTableColumns(tableName: string): Promise<string[]> {
   try {
     const result = await pool.query(
