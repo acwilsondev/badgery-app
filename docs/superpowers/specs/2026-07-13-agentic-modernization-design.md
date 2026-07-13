@@ -20,7 +20,7 @@ verify with one command, change safely, and deploy.
 - **Auth:** hashed local auth (argon2id) with Postgres-backed sessions; OIDC can
   layer on later.
 - **Strategy:** stabilize → instrument → restructure (Option 1). API-level
-  integration tests are written *before* the restructure so they act as the
+  integration tests are written _before_ the restructure so they act as the
   regression net during it.
 
 ## Assumptions

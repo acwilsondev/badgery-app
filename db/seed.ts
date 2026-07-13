@@ -264,7 +264,7 @@ async function seed() {
       });
 
       if (!existingAward) {
-        const [newAward] = await db
+        const [_newAward] = await db
           .insert(schema.awardedBadges)
           .values(award)
           .returning();

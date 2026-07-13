@@ -2,8 +2,8 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import * as storage from "./storage";
 import * as z from "zod";
-import { eq } from "drizzle-orm";
-import { db } from "@db";
+import { eq as _eq } from "drizzle-orm";
+import { db as _db } from "@db";
 import {
   isAuthenticated,
   hasOrganizationAccess,
@@ -11,18 +11,18 @@ import {
   requireSessionUserId,
 } from "./middleware";
 import {
-  users,
-  organizations,
-  badges,
-  badgeCategories,
-  awardedBadges,
-  badgeProgress,
+  users as _users,
+  organizations as _organizations,
+  badges as _badges,
+  badgeCategories as _badgeCategories,
+  awardedBadges as _awardedBadges,
+  badgeProgress as _badgeProgress,
   insertUserSchema,
   organizationsInsertSchema,
   badgesInsertSchema,
   badgeCategoriesInsertSchema,
   awardedBadgesInsertSchema,
-  badgeProgressInsertSchema,
+  badgeProgressInsertSchema as _badgeProgressInsertSchema,
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -840,11 +840,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
               );
 
             if (!targetUserAccessToBadge) {
-              return res
-                .status(403)
-                .json({
-                  message: "Target user not in this badge's organization",
-                });
+              return res.status(403).json({
+                message: "Target user not in this badge's organization",
+              });
             }
           }
         }

@@ -23,9 +23,11 @@
 ### Task 1: Branch and delete dead files
 
 **Files:**
+
 - Delete: `server/routes.updated.ts`, `server/routes.ts.bak`, `badge-dialog-backup.tsx`, `badge-dialog-new.tsx`, `db/align-schema-with-doc.sql`, `db/run-align-schema.ts`, `db/run-migration.ts`, `attached_assets/` (8 Replit screenshots)
 
 **Interfaces:**
+
 - Consumes: nothing
 - Produces: branch `phase-0-hygiene`; tsc error count drops 38 → 31 (the 7 errors in `server/routes.updated.ts` disappear)
 
@@ -72,9 +74,11 @@ Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
 The five `create*` functions in `server/storage.ts` declare params as `Omit<Entity, "id" | "createdAt">` — every remaining column required. Routes pass drizzle-zod-parsed insert data (optional columns optional), causing 5 errors in `server/routes.ts` (lines 75, 178, 290, 413, 682). `shared/schema.ts` already exports the correct `Insert*` types.
 
 **Files:**
+
 - Modify: `server/storage.ts:3-29` (import block), `:55-56`, `:247-248`, `:381-382`, `:481`, `:501-502`
 
 **Interfaces:**
+
 - Consumes: `InsertOrganization`, `InsertUser`, `InsertBadgeCategory`, `InsertBadge`, `InsertAwardedBadge` from `@shared/schema` (already exported there)
 - Produces: `createOrganization(organization: InsertOrganization)`, `createUser(userData: InsertUser)`, `createBadgeCategory(category: InsertBadgeCategory)`, `createBadge(badge: InsertBadge)`, `awardBadge(awardData: InsertAwardedBadge)` — Task 3+ and all existing routes rely on these exact names
 
@@ -114,7 +118,7 @@ Keep the function bodies unchanged — drizzle's `.values()` accepts insert-shap
 - [ ] **Step 3: Verify error count**
 
 Run: `npm run check 2>&1 | grep -c "error TS"`
-Expected: `26`. If new errors appear *inside* `server/storage.ts`, they will be at `.values(...)` calls where the zod-inferred type disagrees with drizzle's `$inferInsert`; in that case change the offending parameter type to `typeof <table>.$inferInsert` (e.g. `typeof users.$inferInsert`) instead of the zod-inferred type and re-run.
+Expected: `26`. If new errors appear _inside_ `server/storage.ts`, they will be at `.values(...)` calls where the zod-inferred type disagrees with drizzle's `$inferInsert`; in that case change the offending parameter type to `typeof <table>.$inferInsert` (e.g. `typeof users.$inferInsert`) instead of the zod-inferred type and re-run.
 
 - [ ] **Step 4: Commit**
 
@@ -132,9 +136,11 @@ Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
 `req.session.userId` is `number | undefined` (see `server/types.ts`), but 18 call sites in routes behind `isAuthenticated` pass it where `number` is required. Add one narrowing helper. Also fix the one-line `allowedHosts` literal-type error in `server/vite.ts:26`.
 
 **Files:**
+
 - Modify: `server/middleware.ts` (append helper), `server/routes.ts:8` (import) and the 18 sites below, `server/vite.ts:26`
 
 **Interfaces:**
+
 - Consumes: `isAuthenticated` middleware (existing, unchanged)
 - Produces: `requireSessionUserId(req: Request): number` exported from `server/middleware.ts` — throws if session has no userId; only for routes behind `isAuthenticated`
 
@@ -150,7 +156,9 @@ Append (it already imports `Request` from express for the middleware signatures;
 export function requireSessionUserId(req: Request): number {
   const userId = req.session.userId;
   if (userId === undefined) {
-    throw new Error("Session userId missing — route must be behind isAuthenticated");
+    throw new Error(
+      "Session userId missing — route must be behind isAuthenticated",
+    );
   }
   return userId;
 }
@@ -165,8 +173,8 @@ Add `requireSessionUserId` to the existing `import { isAuthenticated, ... } from
 At each of these lines in `server/routes.ts` — 233, 270, 319, 357, 393, 445, 499, 538, 576, 637, 703, 737, 796, 871, 931, 975, 1053 — the code reads:
 
 ```ts
-const userId = req.session.userId;          // (variable name varies:
-                                            //  userId / requesterId / currentUserId)
+const userId = req.session.userId; // (variable name varies:
+//  userId / requesterId / currentUserId)
 ```
 
 Replace only the right-hand side, keeping each site's variable name:
@@ -218,9 +226,11 @@ Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
 Seven errors, four root causes: (a) `sidebar.tsx` imports a hook name that doesn't exist; (b) `BrandHeading` widens its dynamic tag to all intrinsic elements; (c) `award-badge-dialog.tsx` has an untyped `useQuery` and demands the full DB `Badge` row when it uses 5 fields; (d) `badge-dialog.tsx` declares its own `Badge` with `imageUrl?: string` while callers pass DB rows with `imageUrl: string | null`.
 
 **Files:**
+
 - Modify: `client/src/hooks/use-mobile.tsx:5`, `client/src/pages/dashboard.tsx:28`, `client/src/components/ui/brand-elements.tsx:95`, `client/src/components/award-badge-dialog.tsx:34-38,57-60`, `client/src/components/badge-dialog.tsx:69-80,127`
 
 **Interfaces:**
+
 - Consumes: `Badge` type from `@shared/schema` (`$inferSelect`: `imageUrl: string | null`, `categoryId: number | null`, `criteriaSections: unknown` — it's an untyped jsonb column, sometimes a string at runtime; do not try to type the column itself in this phase)
 - Produces: `useIsMobile` hook (renamed from `useMobile`); `AwardBadgeDialogProps.badge: Pick<Badge, "id" | "name" | "description" | "color" | "imageUrl">`; `BadgeDialog`'s local `Badge` widened as below
 
@@ -235,9 +245,9 @@ These are the only two importers (verified by grep).
 
 ```ts
 // was:
-    const Component = `h${level}` as keyof JSX.IntrinsicElements;
+const Component = `h${level}` as keyof JSX.IntrinsicElements;
 // becomes:
-    const Component = `h${level}` as "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
+const Component = `h${level}` as "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
 ```
 
 This fixes both errors at lines 117–118 (heading tags accept `HTMLAttributes<HTMLHeadingElement>` and the forwarded ref; the 170-member intrinsic union was the source of the ref mismatch and TS2590).
@@ -315,10 +325,12 @@ Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
 ### Task 5: ESLint + Prettier
 
 **Files:**
+
 - Create: `eslint.config.js`
 - Modify: `package.json` (devDependencies + scripts)
 
 **Interfaces:**
+
 - Consumes: nothing
 - Produces: `npm run lint` and `npm run format:check` both exit 0 — Phase 2's CI workflow will call exactly these script names
 
@@ -395,10 +407,12 @@ Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
 ### Task 6: README, .env.example, LICENSE, .gitignore
 
 **Files:**
+
 - Create: `README.md`, `.env.example`, `LICENSE`
 - Modify: `.gitignore` (ensure `.env` is ignored)
 
 **Interfaces:**
+
 - Consumes: nothing
 - Produces: onboarding docs Phase 5's CLAUDE.md will link to rather than duplicate
 
@@ -452,8 +466,8 @@ Prereqs: Node 20+, a running PostgreSQL.
 
 ## Scripts
 
-| Script                 | What it does                            |
-| ---------------------- | --------------------------------------- |
+| Script                 | What it does                             |
+| ---------------------- | ---------------------------------------- |
 | `npm run dev`          | Dev server (API + Vite client, one port) |
 | `npm run check`        | TypeScript typecheck                     |
 | `npm run lint`         | ESLint                                   |
@@ -492,9 +506,11 @@ Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
 10 of the 12 open Dependabot PRs are transitive/lockfile-level or patch bumps. They're months stale and will conflict with each other; instead of merging serially, apply the equivalent bumps locally in one commit — Dependabot auto-closes its PRs once main contains the fix. Defer the two majors per the spec.
 
 **Files:**
+
 - Modify: `package-lock.json` (and `package.json` only if `npm update` moves a direct dep's resolved version)
 
 **Interfaces:**
+
 - Consumes: green `npm run check` from Task 4
 - Produces: lockfile with the security bumps; Dependabot PRs #5, #8, #11, #13–#18, #20 satisfied
 
@@ -543,6 +559,7 @@ gh pr comment 21 --body "Deferring vite 5→8 to Phase 3 (after the test harness
 **Files:** none (verification only)
 
 **Interfaces:**
+
 - Consumes: all prior tasks
 - Produces: an open PR for `phase-0-hygiene` → `main`
 

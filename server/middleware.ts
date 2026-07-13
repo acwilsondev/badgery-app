@@ -109,7 +109,9 @@ export async function isAdminOrManager(
 export function requireSessionUserId(req: Request): number {
   const userId = req.session.userId;
   if (userId === undefined) {
-    throw new Error("Session userId missing — route must be behind isAuthenticated");
+    throw new Error(
+      "Session userId missing — route must be behind isAuthenticated",
+    );
   }
   return userId;
 }

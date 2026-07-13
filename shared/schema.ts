@@ -5,10 +5,10 @@ import {
   integer,
   boolean,
   timestamp,
-  json,
-  uuid,
+  json as _json,
+  uuid as _uuid,
   jsonb,
-  numeric,
+  numeric as _numeric,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";

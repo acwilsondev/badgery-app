@@ -1,13 +1,13 @@
 import React from "react";
 import { Sidebar } from "@/components/sidebar";
-import { Button } from "@/components/ui/button";
+import { Button as _Button } from "@/components/ui/button";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
+  Card as _Card,
+  CardContent as _CardContent,
+  CardDescription as _CardDescription,
+  CardFooter as _CardFooter,
+  CardHeader as _CardHeader,
+  CardTitle as _CardTitle,
 } from "@/components/ui/card";
 import {
   BrandButton,

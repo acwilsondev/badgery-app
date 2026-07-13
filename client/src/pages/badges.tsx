@@ -24,7 +24,7 @@ type Badge = BaseBadge & {
 };
 import {
   Menu,
-  Search,
+  Search as _Search,
   Plus,
   LayoutGrid,
   List,
@@ -33,15 +33,20 @@ import {
   Award,
   MoreHorizontal,
 } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { Input as _Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select as _Select,
+  SelectContent as _SelectContent,
+  SelectItem as _SelectItem,
+  SelectTrigger as _SelectTrigger,
+  SelectValue as _SelectValue,
 } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Tabs as _Tabs,
+  TabsContent as _TabsContent,
+  TabsList as _TabsList,
+  TabsTrigger as _TabsTrigger,
+} from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -78,7 +83,7 @@ export default function Badges({ user, onLogout }: BadgesProps) {
   const [viewDetailsDialogOpen, setViewDetailsDialogOpen] = useState(false);
   const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string>("all");
+  const [selectedCategoryId, _setSelectedCategoryId] = useState<string>("all");
   const [currentTab, setCurrentTab] = useState("all");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 

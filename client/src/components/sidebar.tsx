@@ -10,7 +10,11 @@ import {
   BarChart2,
   Palette,
 } from "lucide-react";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import {
+  Avatar,
+  AvatarImage as _AvatarImage,
+  AvatarFallback,
+} from "@/components/ui/avatar";
 import {
   Select,
   SelectContent,

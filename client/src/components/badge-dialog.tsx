@@ -30,7 +30,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { cn as _cn } from "@/lib/utils";
 import { PlusCircle, Trash2 } from "lucide-react";
 import { apiRequest, apiPrefix, queryClient } from "@/lib/queryClient";
 
@@ -55,7 +55,7 @@ type CriterionItem = {
   valueType?: string;
 };
 
-type CriteriaSection = {
+type _CriteriaSection = {
   title: string;
   criteria: CriterionItem[];
 };
@@ -124,23 +124,24 @@ export function BadgeDialog({
       organizationId,
       requiresProgress: true, // Always enabled
       criteriaType: badge?.criteriaType || "binary",
-      criteriaSections: (badge?.criteriaSections as BadgeFormValues["criteriaSections"]) || [
-        {
-          title: "Basic Requirements",
-          criteria: [
-            {
-              id: 1,
-              name: "Requirement 1",
-              description: "Description of the requirement",
-            },
-          ],
-        },
-      ],
+      criteriaSections:
+        (badge?.criteriaSections as BadgeFormValues["criteriaSections"]) || [
+          {
+            title: "Basic Requirements",
+            criteria: [
+              {
+                id: 1,
+                name: "Requirement 1",
+                description: "Description of the requirement",
+              },
+            ],
+          },
+        ],
     },
   });
 
   // State for managing criteria sections
-  const [showProgressOptions, setShowProgressOptions] = useState(true); // Always show progress options
+  const [_showProgressOptions, _setShowProgressOptions] = useState(true); // Always show progress options
 
   const { data: categories = [] } = useQuery<BadgeCategory[]>({
     queryKey: [

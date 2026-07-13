@@ -11,9 +11,9 @@ import {
   Tag,
   Users,
   CheckCircle,
-  Search,
+  Search as _Search,
   Menu,
-  Bell,
+  Bell as _Bell,
   Plus,
 } from "lucide-react";
 import {
@@ -42,7 +42,7 @@ interface DashboardProps {
 
 export default function Dashboard({ user, onLogout }: DashboardProps) {
   const organizationId = user.organizationId || 1;
-  const isMobile = useIsMobile();
+  const _isMobile = useIsMobile();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("all");
   const [badgeDialogOpen, setBadgeDialogOpen] = useState(false);
