@@ -8,6 +8,7 @@ import {
   isAuthenticated,
   hasOrganizationAccess,
   isAdminOrManager,
+  requireSessionUserId,
 } from "./middleware";
 import {
   users,
@@ -230,7 +231,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const orgId = parseInt(req.params.orgId);
 
         // Verify organization access
-        const userId = req.session.userId;
+        const userId = requireSessionUserId(req);
         const user = await storage.getUserById(userId);
 
         if (!user) {
@@ -267,7 +268,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const orgId = parseInt(req.params.orgId);
 
         // Verify organization access
-        const userId = req.session.userId;
+        const userId = requireSessionUserId(req);
         const user = await storage.getUserById(userId);
 
         if (!user) {
@@ -316,7 +317,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           : undefined;
 
         // Verify organization access
-        const userId = req.session.userId;
+        const userId = requireSessionUserId(req);
         const user = await storage.getUserById(userId);
 
         if (!user) {
@@ -354,7 +355,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Verify organization access
-      const userId = req.session.userId;
+      const userId = requireSessionUserId(req);
       const user = await storage.getUserById(userId);
 
       if (!user) {
@@ -390,7 +391,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const orgId = parseInt(req.params.orgId);
 
         // Verify organization access
-        const userId = req.session.userId;
+        const userId = requireSessionUserId(req);
         const user = await storage.getUserById(userId);
 
         if (!user) {
@@ -442,7 +443,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
 
         // Verify organization access
-        const userId = req.session.userId;
+        const userId = requireSessionUserId(req);
         const user = await storage.getUserById(userId);
 
         if (!user) {
@@ -496,7 +497,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
 
         // Verify organization access
-        const userId = req.session.userId;
+        const userId = requireSessionUserId(req);
         const user = await storage.getUserById(userId);
 
         if (!user) {
@@ -535,7 +536,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const orgId = parseInt(req.params.orgId);
 
         // Verify organization access
-        const userId = req.session.userId;
+        const userId = requireSessionUserId(req);
         const currentUser = await storage.getUserById(userId);
 
         if (!currentUser) {
@@ -573,7 +574,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // If requesting another user, verify they're in the same organization
-      const requesterId = req.session.userId;
+      const requesterId = requireSessionUserId(req);
 
       if (id !== requesterId) {
         const requester = await storage.getUserById(requesterId);
@@ -634,7 +635,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
 
         // Verify organization access
-        const currentUserId = req.session.userId;
+        const currentUserId = requireSessionUserId(req);
         const currentUser = await storage.getUserById(currentUserId);
 
         if (!currentUser) {
@@ -700,7 +701,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const orgId = parseInt(req.params.orgId);
 
         // Verify organization access
-        const userId = req.session.userId;
+        const userId = requireSessionUserId(req);
         const user = await storage.getUserById(userId);
 
         if (!user) {
@@ -734,7 +735,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     async (req, res) => {
       try {
         const targetUserId = parseInt(req.params.userId);
-        const requesterId = req.session.userId;
+        const requesterId = requireSessionUserId(req);
 
         // If the user is requesting their own data, allow it
         if (targetUserId === requesterId) {
@@ -793,7 +794,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         const badgeId = parseInt(req.params.badgeId);
         const targetUserId = parseInt(req.params.userId);
-        const requesterId = req.session.userId;
+        const requesterId = requireSessionUserId(req);
 
         // Get the badge to check organization access
         const badge = await storage.getBadgeById(badgeId);
@@ -868,7 +869,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     async (req, res) => {
       try {
         const targetUserId = parseInt(req.params.userId);
-        const requesterId = req.session.userId;
+        const requesterId = requireSessionUserId(req);
 
         // If the user is requesting their own data, allow it
         if (targetUserId === requesterId) {
@@ -928,7 +929,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const orgId = parseInt(req.params.orgId);
 
         // Verify organization access
-        const userId = req.session.userId;
+        const userId = requireSessionUserId(req);
         const user = await storage.getUserById(userId);
 
         if (!user) {
@@ -972,7 +973,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
 
         // Verify organization access
-        const requesterId = req.session.userId;
+        const requesterId = requireSessionUserId(req);
         const requester = await storage.getUserById(requesterId);
 
         if (!requester) {
@@ -1029,7 +1030,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           await storage.autoAwardBadgeIfComplete({
             badgeId,
             userId: targetUserId,
-            updatedBy: req.session.userId,
+            updatedBy: requireSessionUserId(req),
           });
         }
 
@@ -1050,7 +1051,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const orgId = parseInt(req.params.orgId);
 
         // Verify organization access
-        const userId = req.session.userId;
+        const userId = requireSessionUserId(req);
         const user = await storage.getUserById(userId);
 
         if (!user) {
