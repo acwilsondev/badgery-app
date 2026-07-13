@@ -70,12 +70,12 @@ type Badge = {
   id: number;
   name: string;
   description: string;
-  imageUrl?: string;
-  categoryId?: number;
+  imageUrl?: string | null;
+  categoryId?: number | null;
   organizationId: number;
   requiresProgress: boolean;
   criteriaType?: string;
-  criteriaSections?: CriteriaSection[];
+  criteriaSections?: unknown;
   criteriaSectionsJson?: string;
 };
 
@@ -124,7 +124,7 @@ export function BadgeDialog({
       organizationId,
       requiresProgress: true, // Always enabled
       criteriaType: badge?.criteriaType || "binary",
-      criteriaSections: badge?.criteriaSections || [
+      criteriaSections: (badge?.criteriaSections as BadgeFormValues["criteriaSections"]) || [
         {
           title: "Basic Requirements",
           criteria: [

@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@shared/schema";
 import { generateBadgeIcon } from "@/lib/badge-icons";
-import { useMobile } from "@/hooks/use-mobile";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { PageHeader } from "@/components/page-header";
 import { apiPrefix } from "@/lib/queryClient";
 
@@ -42,7 +42,7 @@ interface DashboardProps {
 
 export default function Dashboard({ user, onLogout }: DashboardProps) {
   const organizationId = user.organizationId || 1;
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("all");
   const [badgeDialogOpen, setBadgeDialogOpen] = useState(false);

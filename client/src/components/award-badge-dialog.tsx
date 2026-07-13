@@ -34,7 +34,7 @@ import { generateBadgeIcon } from "@/lib/badge-icons";
 interface AwardBadgeDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  badge: Badge;
+  badge: Pick<Badge, "id" | "name" | "description" | "color" | "imageUrl">;
   organizationId: number;
 }
 
@@ -54,7 +54,7 @@ export function AwardBadgeDialog({
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: users = [] } = useQuery({
+  const { data: users = [] } = useQuery<{ id: number; name: string }[]>({
     queryKey: [`${apiPrefix}/organizations/${organizationId}/users`],
     enabled: !!organizationId && open,
   });
