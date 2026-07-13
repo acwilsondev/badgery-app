@@ -21,6 +21,11 @@ import {
   type Metric,
   type UserOrganization,
   type UserOrganizationScope,
+  type InsertOrganization,
+  type InsertUser,
+  type InsertBadgeCategory,
+  type InsertBadge,
+  type InsertAwardedBadge,
   // For backward compatibility
   awardedBadges,
   badgeProgress,
@@ -53,7 +58,7 @@ export async function getOrganizationById(id: number) {
 }
 
 export async function createOrganization(
-  organization: Omit<Organization, "id" | "createdAt">,
+  organization: InsertOrganization,
 ) {
   const [newOrganization] = await db
     .insert(organizations)
@@ -245,7 +250,7 @@ export async function getUserByUsername(username: string) {
 }
 
 export async function createUser(
-  userData: Omit<User, "id" | "createdAt">,
+  userData: InsertUser,
   organizationIds?: number[],
 ) {
   try {
@@ -379,7 +384,7 @@ export async function getBadgeCategoryById(id: number) {
 }
 
 export async function createBadgeCategory(
-  category: Omit<BadgeCategory, "id" | "createdAt">,
+  category: InsertBadgeCategory,
 ) {
   const [newCategory] = await db
     .insert(badgeCategories)
@@ -478,7 +483,7 @@ export async function getBadgeById(id: number) {
   }
 }
 
-export async function createBadge(badge: Omit<Badge, "id" | "createdAt">) {
+export async function createBadge(badge: InsertBadge) {
   const [newBadge] = await db.insert(badges).values(badge).returning();
   return newBadge;
 }
@@ -499,7 +504,7 @@ export async function deleteBadge(id: number) {
 
 // Badge Awarding
 export async function awardBadge(
-  awardData: Omit<AwardedBadge, "id" | "awardedAt">,
+  awardData: InsertAwardedBadge,
 ) {
   const [newAward] = await db
     .insert(awardedBadges)
