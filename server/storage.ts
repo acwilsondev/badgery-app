@@ -1,31 +1,44 @@
 import { db, pool } from "@db";
-import { eq, and, desc, sql, count, asc, inArray } from "drizzle-orm";
+import {
+  eq,
+  and,
+  desc,
+  sql,
+  count as _count,
+  asc as _asc,
+  inArray,
+} from "drizzle-orm";
 import {
   organizations,
   users,
   badges,
   badgeCategories,
   userOrganization,
-  userOrganizationScope,
+  userOrganizationScope as _userOrganizationScope,
   metrics,
   badgeMetrics,
   achievements, // new name for awardedBadges
   progress, // new name for badgeProgress
-  badgePrerequisites,
+  badgePrerequisites as _badgePrerequisites,
   type Organization,
   type User,
   type Badge,
-  type BadgeCategory,
-  type Achievement, // renamed from AwardedBadge
-  type Progress, // renamed from BadgeProgress
-  type Metric,
-  type UserOrganization,
-  type UserOrganizationScope,
+  type BadgeCategory as _BadgeCategory,
+  type Achievement as _Achievement, // renamed from AwardedBadge
+  type Progress as _Progress, // renamed from BadgeProgress
+  type Metric as _Metric,
+  type UserOrganization as _UserOrganization,
+  type UserOrganizationScope as _UserOrganizationScope,
+  type InsertOrganization,
+  type InsertUser,
+  type InsertBadgeCategory,
+  type InsertBadge,
+  type InsertAwardedBadge,
   // For backward compatibility
   awardedBadges,
-  badgeProgress,
-  type AwardedBadge,
-  type BadgeProgress,
+  badgeProgress as _badgeProgress,
+  type AwardedBadge as _AwardedBadge,
+  type BadgeProgress as _BadgeProgress,
 } from "@shared/schema";
 
 // Organizations
@@ -52,9 +65,7 @@ export async function getOrganizationById(id: number) {
   });
 }
 
-export async function createOrganization(
-  organization: Omit<Organization, "id" | "createdAt">,
-) {
+export async function createOrganization(organization: InsertOrganization) {
   const [newOrganization] = await db
     .insert(organizations)
     .values(organization)
@@ -245,7 +256,7 @@ export async function getUserByUsername(username: string) {
 }
 
 export async function createUser(
-  userData: Omit<User, "id" | "createdAt">,
+  userData: InsertUser,
   organizationIds?: number[],
 ) {
   try {
@@ -303,7 +314,7 @@ export async function createUser(
 }
 
 // Helper function to get table columns (keeping for reference)
-async function getTableColumns(tableName: string): Promise<string[]> {
+async function _getTableColumns(tableName: string): Promise<string[]> {
   try {
     const result = await pool.query(
       `SELECT column_name FROM information_schema.columns WHERE table_name = $1`,
@@ -378,9 +389,7 @@ export async function getBadgeCategoryById(id: number) {
   });
 }
 
-export async function createBadgeCategory(
-  category: Omit<BadgeCategory, "id" | "createdAt">,
-) {
+export async function createBadgeCategory(category: InsertBadgeCategory) {
   const [newCategory] = await db
     .insert(badgeCategories)
     .values(category)
@@ -478,7 +487,7 @@ export async function getBadgeById(id: number) {
   }
 }
 
-export async function createBadge(badge: Omit<Badge, "id" | "createdAt">) {
+export async function createBadge(badge: InsertBadge) {
   const [newBadge] = await db.insert(badges).values(badge).returning();
   return newBadge;
 }
@@ -498,9 +507,7 @@ export async function deleteBadge(id: number) {
 }
 
 // Badge Awarding
-export async function awardBadge(
-  awardData: Omit<AwardedBadge, "id" | "awardedAt">,
-) {
+export async function awardBadge(awardData: InsertAwardedBadge) {
   const [newAward] = await db
     .insert(awardedBadges)
     .values(awardData)
@@ -865,7 +872,7 @@ export async function getBadgeProgressForOrganization(organizationId: number) {
 
     // Format the response
     const result = [];
-    for (const [key, items] of Object.entries(groupedProgress)) {
+    for (const [_key, items] of Object.entries(groupedProgress)) {
       if (items.length === 0) continue;
 
       const badgeId = items[0].badgeId;

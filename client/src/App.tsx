@@ -148,7 +148,7 @@ function LoginPage({
       if (!success) {
         setError("Invalid username or password");
       }
-    } catch (err) {
+    } catch {
       setError("An error occurred during login");
     } finally {
       setIsLoading(false);

@@ -101,3 +101,17 @@ export async function isAdminOrManager(
     return res.status(500).json({ message: "Error checking user role" });
   }
 }
+
+/**
+ * Narrow req.session.userId to number. Only call in handlers behind
+ * isAuthenticated, which guarantees the session has a userId.
+ */
+export function requireSessionUserId(req: Request): number {
+  const userId = req.session.userId;
+  if (userId === undefined) {
+    throw new Error(
+      "Session userId missing — route must be behind isAuthenticated",
+    );
+  }
+  return userId;
+}

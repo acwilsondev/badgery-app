@@ -59,7 +59,7 @@ export default function RegisterPage() {
       setIsLoading(true);
 
       // Submit registration request
-      const { confirmPassword, ...userData } = validatedData;
+      const { confirmPassword: _confirmPassword, ...userData } = validatedData;
       const response = await apiRequest(
         "POST",
         `${apiPrefix}/auth/register`,

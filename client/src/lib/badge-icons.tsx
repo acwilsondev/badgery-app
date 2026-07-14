@@ -1,6 +1,6 @@
 import React from "react";
 
-export const generateBadgeIcon = (name: string, color: string) => {
+export const generateBadgeIcon = (name: string, _color: string) => {
   // Create a simple hash from the badge name
   const hash = name
     .split("")

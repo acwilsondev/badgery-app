@@ -16,20 +16,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserCreate'
+              $ref: "#/components/schemas/UserCreate"
       responses:
-        '201':
+        "201":
           description: User registered successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/LoginResponse'
-        '400':
+                $ref: "#/components/schemas/LoginResponse"
+        "400":
           description: Invalid input or user already exists
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AuthError'
+                $ref: "#/components/schemas/AuthError"
 
   /auth/login:
     post:
@@ -41,26 +41,26 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/LoginRequest'
+              $ref: "#/components/schemas/LoginRequest"
       responses:
-        '200':
+        "200":
           description: Login successful
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/LoginResponse'
-        '400':
+                $ref: "#/components/schemas/LoginResponse"
+        "400":
           description: Invalid credentials
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AuthError'
-        '401':
+                $ref: "#/components/schemas/AuthError"
+        "401":
           description: Authentication failed
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AuthError'
+                $ref: "#/components/schemas/AuthError"
 
   /auth/refresh:
     post:
@@ -72,26 +72,26 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RefreshTokenRequest'
+              $ref: "#/components/schemas/RefreshTokenRequest"
       responses:
-        '200':
+        "200":
           description: Token refreshed successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TokenResponse'
-        '400':
+                $ref: "#/components/schemas/TokenResponse"
+        "400":
           description: Invalid request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AuthError'
-        '401':
+                $ref: "#/components/schemas/AuthError"
+        "401":
           description: Invalid or expired refresh token
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AuthError'
+                $ref: "#/components/schemas/AuthError"
 
   /auth/logout:
     post:
@@ -102,14 +102,14 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        '204':
+        "204":
           description: Logout successful
-        '401':
+        "401":
           description: Not authenticated
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AuthError'
+                $ref: "#/components/schemas/AuthError"
 
   /auth/password-reset-request:
     post:
@@ -121,16 +121,16 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PasswordResetRequest'
+              $ref: "#/components/schemas/PasswordResetRequest"
       responses:
-        '202':
+        "202":
           description: Password reset email sent
-        '400':
+        "400":
           description: Invalid email
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AuthError'
+                $ref: "#/components/schemas/AuthError"
 
   /auth/password-reset:
     post:
@@ -142,16 +142,16 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PasswordResetConfirmation'
+              $ref: "#/components/schemas/PasswordResetConfirmation"
       responses:
-        '200':
+        "200":
           description: Password reset successful
-        '400':
+        "400":
           description: Invalid or expired token
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AuthError'
+                $ref: "#/components/schemas/AuthError"
 
   /auth/me:
     get:
@@ -162,18 +162,18 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        '200':
+        "200":
           description: Current user details
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
-        '401':
+                $ref: "#/components/schemas/User"
+        "401":
           description: Not authenticated
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AuthError'
+                $ref: "#/components/schemas/AuthError"
 
   /users:
     get:
@@ -196,7 +196,7 @@ paths:
             type: string
             format: uuid
       responses:
-        '200':
+        "200":
           description: List of users
           content:
             application/json:
@@ -206,9 +206,9 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: '#/components/schemas/User'
+                      $ref: "#/components/schemas/User"
                   pagination:
-                    $ref: '#/components/schemas/Pagination'
+                    $ref: "#/components/schemas/Pagination"
     post:
       summary: Create a new user
       operationId: createUser
@@ -216,17 +216,17 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserCreate'
+              $ref: "#/components/schemas/UserCreate"
       responses:
-        '201':
+        "201":
           description: User created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
-        '400':
+                $ref: "#/components/schemas/User"
+        "400":
           description: Invalid input
-          
+
   /users/{userId}:
     parameters:
       - name: userId
@@ -239,13 +239,13 @@ paths:
       summary: Get a user by ID
       operationId: getUserById
       responses:
-        '200':
+        "200":
           description: User details
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
-        '404':
+                $ref: "#/components/schemas/User"
+        "404":
           description: User not found
     put:
       summary: Update a user
@@ -254,17 +254,17 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserUpdate'
+              $ref: "#/components/schemas/UserUpdate"
       responses:
-        '200':
+        "200":
           description: User updated
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
-        '400':
+                $ref: "#/components/schemas/User"
+        "400":
           description: Invalid input
-        '404':
+        "404":
           description: User not found
     delete:
       summary: Delete a user
@@ -272,9 +272,9 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        '204':
+        "204":
           description: User deleted
-        '404':
+        "404":
           description: User not found
 
   /organizations:
@@ -293,7 +293,7 @@ paths:
             type: integer
             default: 20
       responses:
-        '200':
+        "200":
           description: List of organizations
           content:
             application/json:
@@ -303,9 +303,9 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: '#/components/schemas/Organization'
+                      $ref: "#/components/schemas/Organization"
                   pagination:
-                    $ref: '#/components/schemas/Pagination'
+                    $ref: "#/components/schemas/Pagination"
     post:
       summary: Create a new organization
       operationId: createOrganization
@@ -315,15 +315,15 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/OrganizationCreate'
+              $ref: "#/components/schemas/OrganizationCreate"
       responses:
-        '201':
+        "201":
           description: Organization created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Organization'
-        '400':
+                $ref: "#/components/schemas/Organization"
+        "400":
           description: Invalid input
 
   /organizations/{organizationId}:
@@ -338,13 +338,13 @@ paths:
       summary: Get an organization by ID
       operationId: getOrganizationById
       responses:
-        '200':
+        "200":
           description: Organization details
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Organization'
-        '404':
+                $ref: "#/components/schemas/Organization"
+        "404":
           description: Organization not found
     put:
       summary: Update an organization
@@ -355,17 +355,17 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/OrganizationUpdate'
+              $ref: "#/components/schemas/OrganizationUpdate"
       responses:
-        '200':
+        "200":
           description: Organization updated
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Organization'
-        '400':
+                $ref: "#/components/schemas/Organization"
+        "400":
           description: Invalid input
-        '404':
+        "404":
           description: Organization not found
     delete:
       summary: Delete an organization
@@ -373,9 +373,9 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        '204':
+        "204":
           description: Organization deleted
-        '404':
+        "404":
           description: Organization not found
 
   /organizations/{organizationId}/users:
@@ -390,7 +390,7 @@ paths:
       summary: Get users in an organization
       operationId: getOrganizationUsers
       responses:
-        '200':
+        "200":
           description: List of users in organization
           content:
             application/json:
@@ -400,10 +400,10 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: '#/components/schemas/UserWithRole'
+                      $ref: "#/components/schemas/UserWithRole"
                   pagination:
-                    $ref: '#/components/schemas/Pagination'
-        '404':
+                    $ref: "#/components/schemas/Pagination"
+        "404":
           description: Organization not found
 
   /user-organization-roles:
@@ -414,17 +414,17 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserOrganizationRoleCreate'
+              $ref: "#/components/schemas/UserOrganizationRoleCreate"
       responses:
-        '201':
+        "201":
           description: User assigned to organization
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserOrganizationRole'
-        '400':
+                $ref: "#/components/schemas/UserOrganizationRole"
+        "400":
           description: Invalid input
-        '404':
+        "404":
           description: User or organization not found
 
   /user-organization-roles/{roleId}:
@@ -442,25 +442,25 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserOrganizationRoleUpdate'
+              $ref: "#/components/schemas/UserOrganizationRoleUpdate"
       responses:
-        '200':
+        "200":
           description: Role updated
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserOrganizationRole'
-        '400':
+                $ref: "#/components/schemas/UserOrganizationRole"
+        "400":
           description: Invalid input
-        '404':
+        "404":
           description: Role assignment not found
     delete:
       summary: Remove a user from an organization
       operationId: removeUserFromOrganization
       responses:
-        '204':
+        "204":
           description: User removed from organization
-        '404':
+        "404":
           description: Role assignment not found
 
   /badges:
@@ -484,7 +484,7 @@ paths:
             type: string
             format: uuid
       responses:
-        '200':
+        "200":
           description: List of badges
           content:
             application/json:
@@ -494,9 +494,9 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: '#/components/schemas/Badge'
+                      $ref: "#/components/schemas/Badge"
                   pagination:
-                    $ref: '#/components/schemas/Pagination'
+                    $ref: "#/components/schemas/Pagination"
     post:
       summary: Create a new badge
       operationId: createBadge
@@ -506,15 +506,15 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/BadgeCreate'
+              $ref: "#/components/schemas/BadgeCreate"
       responses:
-        '201':
+        "201":
           description: Badge created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Badge'
-        '400':
+                $ref: "#/components/schemas/Badge"
+        "400":
           description: Invalid input
 
   /badges/{badgeId}:
@@ -529,13 +529,13 @@ paths:
       summary: Get a badge by ID
       operationId: getBadgeById
       responses:
-        '200':
+        "200":
           description: Badge details
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BadgeDetail'
-        '404':
+                $ref: "#/components/schemas/BadgeDetail"
+        "404":
           description: Badge not found
     put:
       summary: Update a badge
@@ -546,17 +546,17 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/BadgeUpdate'
+              $ref: "#/components/schemas/BadgeUpdate"
       responses:
-        '200':
+        "200":
           description: Badge updated
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Badge'
-        '400':
+                $ref: "#/components/schemas/Badge"
+        "400":
           description: Invalid input
-        '404':
+        "404":
           description: Badge not found
     delete:
       summary: Delete a badge
@@ -564,9 +564,9 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        '204':
+        "204":
           description: Badge deleted
-        '404':
+        "404":
           description: Badge not found
 
   /badges/{badgeId}/metrics:
@@ -581,15 +581,15 @@ paths:
       summary: Get metrics required for a badge
       operationId: getBadgeMetrics
       responses:
-        '200':
+        "200":
           description: List of required metrics for the badge
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/BadgeMetricRequired'
-        '404':
+                  $ref: "#/components/schemas/BadgeMetricRequired"
+        "404":
           description: Badge not found
     post:
       summary: Add a required metric to a badge
@@ -598,17 +598,17 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/BadgeMetricRequiredCreate'
+              $ref: "#/components/schemas/BadgeMetricRequiredCreate"
       responses:
-        '201':
+        "201":
           description: Metric requirement added
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BadgeMetricRequired'
-        '400':
+                $ref: "#/components/schemas/BadgeMetricRequired"
+        "400":
           description: Invalid input
-        '404':
+        "404":
           description: Badge or metric not found
 
   /badges/{badgeId}/prerequisites:
@@ -623,15 +623,15 @@ paths:
       summary: Get prerequisite badges for a badge
       operationId: getBadgePrerequisites
       responses:
-        '200':
+        "200":
           description: List of prerequisite badges
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/BadgeBadgeRequired'
-        '404':
+                  $ref: "#/components/schemas/BadgeBadgeRequired"
+        "404":
           description: Badge not found
     post:
       summary: Add a prerequisite badge
@@ -640,17 +640,17 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/BadgeBadgeRequiredCreate'
+              $ref: "#/components/schemas/BadgeBadgeRequiredCreate"
       responses:
-        '201':
+        "201":
           description: Prerequisite added
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BadgeBadgeRequired'
-        '400':
+                $ref: "#/components/schemas/BadgeBadgeRequired"
+        "400":
           description: Invalid input
-        '404':
+        "404":
           description: Badge not found
 
   /badge-metric-required/{requirementId}:
@@ -665,9 +665,9 @@ paths:
       summary: Remove a metric requirement from a badge
       operationId: removeMetricRequirement
       responses:
-        '204':
+        "204":
           description: Requirement removed
-        '404':
+        "404":
           description: Requirement not found
 
   /badge-badge-required/{requirementId}:
@@ -682,9 +682,9 @@ paths:
       summary: Remove a badge prerequisite
       operationId: removeBadgePrerequisite
       responses:
-        '204':
+        "204":
           description: Prerequisite removed
-        '404':
+        "404":
           description: Prerequisite not found
 
   /metrics:
@@ -708,7 +708,7 @@ paths:
             type: string
             format: uuid
       responses:
-        '200':
+        "200":
           description: List of metrics
           content:
             application/json:
@@ -718,9 +718,9 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: '#/components/schemas/Metric'
+                      $ref: "#/components/schemas/Metric"
                   pagination:
-                    $ref: '#/components/schemas/Pagination'
+                    $ref: "#/components/schemas/Pagination"
     post:
       summary: Create a new metric
       operationId: createMetric
@@ -728,15 +728,15 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/MetricCreate'
+              $ref: "#/components/schemas/MetricCreate"
       responses:
-        '201':
+        "201":
           description: Metric created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Metric'
-        '400':
+                $ref: "#/components/schemas/Metric"
+        "400":
           description: Invalid input
 
   /metrics/{metricId}:
@@ -751,13 +751,13 @@ paths:
       summary: Get a metric by ID
       operationId: getMetricById
       responses:
-        '200':
+        "200":
           description: Metric details
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Metric'
-        '404':
+                $ref: "#/components/schemas/Metric"
+        "404":
           description: Metric not found
     put:
       summary: Update a metric
@@ -766,25 +766,25 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/MetricUpdate'
+              $ref: "#/components/schemas/MetricUpdate"
       responses:
-        '200':
+        "200":
           description: Metric updated
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Metric'
-        '400':
+                $ref: "#/components/schemas/Metric"
+        "400":
           description: Invalid input
-        '404':
+        "404":
           description: Metric not found
     delete:
       summary: Delete a metric
       operationId: deleteMetric
       responses:
-        '204':
+        "204":
           description: Metric deleted
-        '404':
+        "404":
           description: Metric not found
 
   /users/{userId}/badges/awarded:
@@ -799,7 +799,7 @@ paths:
       summary: Get badges awarded to a user
       operationId: getUserAwardedBadges
       responses:
-        '200':
+        "200":
           description: List of awarded badges
           content:
             application/json:
@@ -809,10 +809,10 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: '#/components/schemas/UserBadgeAwarded'
+                      $ref: "#/components/schemas/UserBadgeAwarded"
                   pagination:
-                    $ref: '#/components/schemas/Pagination'
-        '404':
+                    $ref: "#/components/schemas/Pagination"
+        "404":
           description: User not found
     post:
       summary: Award a badge to a user
@@ -823,19 +823,19 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserBadgeAwardedCreate'
+              $ref: "#/components/schemas/UserBadgeAwardedCreate"
       responses:
-        '201':
+        "201":
           description: Badge awarded
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserBadgeAwarded'
-        '400':
+                $ref: "#/components/schemas/UserBadgeAwarded"
+        "400":
           description: Invalid input
-        '404':
+        "404":
           description: User or badge not found
-        '409':
+        "409":
           description: Badge already awarded to user
 
   /users/{userId}/badges/tracked:
@@ -850,7 +850,7 @@ paths:
       summary: Get badges being tracked by a user
       operationId: getUserTrackedBadges
       responses:
-        '200':
+        "200":
           description: List of tracked badges
           content:
             application/json:
@@ -860,10 +860,10 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: '#/components/schemas/UserBadgeTracked'
+                      $ref: "#/components/schemas/UserBadgeTracked"
                   pagination:
-                    $ref: '#/components/schemas/Pagination'
-        '404':
+                    $ref: "#/components/schemas/Pagination"
+        "404":
           description: User not found
     post:
       summary: Track a badge for a user
@@ -874,19 +874,19 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserBadgeTrackedCreate'
+              $ref: "#/components/schemas/UserBadgeTrackedCreate"
       responses:
-        '201':
+        "201":
           description: Badge now being tracked
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserBadgeTracked'
-        '400':
+                $ref: "#/components/schemas/UserBadgeTracked"
+        "400":
           description: Invalid input
-        '404':
+        "404":
           description: User or badge not found
-        '409':
+        "409":
           description: Badge already being tracked by user
 
   /user-badge-awarded/{awardId}:
@@ -901,21 +901,21 @@ paths:
       summary: Get details of a badge awarded to a user
       operationId: getBadgeAwardDetails
       responses:
-        '200':
+        "200":
           description: Award details
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserBadgeAwarded'
-        '404':
+                $ref: "#/components/schemas/UserBadgeAwarded"
+        "404":
           description: Award not found
     delete:
       summary: Revoke a badge award
       operationId: revokeBadgeAward
       responses:
-        '204':
+        "204":
           description: Badge award revoked
-        '404':
+        "404":
           description: Award not found
 
   /user-badge-tracked/{trackingId}:
@@ -930,21 +930,21 @@ paths:
       summary: Get details of a badge being tracked by a user
       operationId: getBadgeTrackingDetails
       responses:
-        '200':
+        "200":
           description: Tracking details
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserBadgeTracked'
-        '404':
+                $ref: "#/components/schemas/UserBadgeTracked"
+        "404":
           description: Tracking not found
     delete:
       summary: Stop tracking a badge
       operationId: stopTrackingBadge
       responses:
-        '204':
+        "204":
           description: Badge tracking removed
-        '404':
+        "404":
           description: Tracking not found
 
   /users/{userId}/progress:
@@ -959,7 +959,7 @@ paths:
       summary: Get user's overall progress on badges
       operationId: getUserProgress
       responses:
-        '200':
+        "200":
           description: User badge progress
           content:
             application/json:
@@ -979,8 +979,8 @@ paths:
                   metricStatuses:
                     type: array
                     items:
-                      $ref: '#/components/schemas/UserMetricStatus'
-        '404':
+                      $ref: "#/components/schemas/UserMetricStatus"
+        "404":
           description: User not found
 
   /users/{userId}/metrics:
@@ -1006,7 +1006,7 @@ paths:
             type: integer
             default: 20
       responses:
-        '200':
+        "200":
           description: List of user's metric statuses
           content:
             application/json:
@@ -1016,10 +1016,10 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: '#/components/schemas/UserMetricStatus'
+                      $ref: "#/components/schemas/UserMetricStatus"
                   pagination:
-                    $ref: '#/components/schemas/Pagination'
-        '404':
+                    $ref: "#/components/schemas/Pagination"
+        "404":
           description: User not found
     post:
       summary: Create or update a metric status for a user
@@ -1028,17 +1028,17 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserMetricStatusCreate'
+              $ref: "#/components/schemas/UserMetricStatusCreate"
       responses:
-        '201':
+        "201":
           description: Metric status created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserMetricStatus'
-        '400':
+                $ref: "#/components/schemas/UserMetricStatus"
+        "400":
           description: Invalid input
-        '404':
+        "404":
           description: User or metric not found
 
   /users/{userId}/metrics/{metricId}:
@@ -1059,13 +1059,13 @@ paths:
       summary: Get a specific metric status for a user
       operationId: getUserMetricStatus
       responses:
-        '200':
+        "200":
           description: User's metric status
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserMetricStatus'
-        '404':
+                $ref: "#/components/schemas/UserMetricStatus"
+        "404":
           description: User or metric status not found
     put:
       summary: Update a metric status for a user
@@ -1074,25 +1074,25 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserMetricStatusUpdate'
+              $ref: "#/components/schemas/UserMetricStatusUpdate"
       responses:
-        '200':
+        "200":
           description: Metric status updated
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserMetricStatus'
-        '400':
+                $ref: "#/components/schemas/UserMetricStatus"
+        "400":
           description: Invalid input
-        '404':
+        "404":
           description: User or metric status not found
     delete:
       summary: Reset a metric status for a user
       operationId: resetUserMetricStatus
       responses:
-        '204':
+        "204":
           description: Metric status reset
-        '404':
+        "404":
           description: User or metric status not found
 
 components:
@@ -1309,7 +1309,7 @@ components:
       type: object
       properties:
         user:
-          $ref: '#/components/schemas/User'
+          $ref: "#/components/schemas/User"
         role:
           type: string
           enum: [owner, admin, manager, member]
@@ -1362,17 +1362,17 @@ components:
     BadgeDetail:
       description: Extended badge information that includes its prerequisites and metrics. Used when viewing detailed badge information.
       allOf:
-        - $ref: '#/components/schemas/Badge'
+        - $ref: "#/components/schemas/Badge"
         - type: object
           properties:
             metrics:
               type: array
               items:
-                $ref: '#/components/schemas/BadgeMetricRequired'
+                $ref: "#/components/schemas/BadgeMetricRequired"
             prerequisites:
               type: array
               items:
-                $ref: '#/components/schemas/BadgeBadgeRequired'
+                $ref: "#/components/schemas/BadgeBadgeRequired"
             awardedCount:
               type: integer
               description: Number of users who have been awarded this badge
@@ -1730,9 +1730,9 @@ components:
       type: object
       properties:
         user:
-          $ref: '#/components/schemas/User'
+          $ref: "#/components/schemas/User"
         tokens:
-          $ref: '#/components/schemas/TokenResponse'
+          $ref: "#/components/schemas/TokenResponse"
       required:
         - user
         - tokens

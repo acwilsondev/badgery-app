@@ -42,7 +42,7 @@ interface ProgressProps {
 }
 
 export default function ProgressTracker({ user, onLogout }: ProgressProps) {
-  const { toast } = useToast();
+  const { toast: _toast } = useToast();
   const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   const [progressDialogOpen, setProgressDialogOpen] = useState(false);
@@ -113,7 +113,7 @@ export default function ProgressTracker({ user, onLogout }: ProgressProps) {
   const handleUpdateProgress = (
     badge: Badge,
     userId: number,
-    existingProgress: any,
+    _existingProgress: any,
   ) => {
     setSelectedBadge(badge);
     setSelectedUserId(userId);

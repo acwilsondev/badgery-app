@@ -34,8 +34,7 @@ export const brandButtonVariants = cva(
   },
 );
 
-export interface BrandButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+export interface BrandButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?:
     | "default"
     | "outline"
@@ -70,8 +69,7 @@ export const BrandButton = React.forwardRef<
 BrandButton.displayName = "BrandButton";
 
 // Branded heading with optional gradient text effect
-export interface BrandHeadingProps
-  extends React.HTMLAttributes<HTMLHeadingElement> {
+export interface BrandHeadingProps extends React.HTMLAttributes<HTMLHeadingElement> {
   level?: 1 | 2 | 3 | 4 | 5 | 6;
   gradient?: boolean;
   align?: "left" | "center" | "right";
@@ -92,7 +90,7 @@ export const BrandHeading = React.forwardRef<
     },
     ref,
   ) => {
-    const Component = `h${level}` as keyof JSX.IntrinsicElements;
+    const Component = `h${level}` as "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
 
     const sizeClasses = {
       1: "text-4xl sm:text-5xl font-extrabold tracking-tight",
