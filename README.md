@@ -20,9 +20,12 @@ Prereqs: Node 20+, a running PostgreSQL.
 
     cp .env.example .env      # then edit DATABASE_URL
     npm install
-    npm run db:push           # sync schema to the database
+    npm run db:push           # sync schema to the database (drizzle-kit reads .env itself)
+    set -a; source .env; set +a   # dev/db:seed do NOT read .env yet — export the vars first
     npm run db:seed           # optional: seed sample data
     npm run dev               # serves API + client on http://localhost:5000
+
+> Note: automatic env loading (and required-secret enforcement) lands in Phase 1 of the modernization plan.
 
 ## Scripts
 
