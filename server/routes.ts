@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import * as storage from "./storage";
 import * as z from "zod";
+import argon2 from "argon2";
 import { eq as _eq } from "drizzle-orm";
 import { db as _db } from "@db";
 import {
@@ -40,11 +41,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const user = await storage.getUserByUsername(username);
-      if (!user || user.password !== password) {
+      // argon2.verify throws on malformed stored hashes (e.g. legacy
+      // plaintext rows) — treat that as a failed login, not a 500.
+      const passwordValid = user
+        ? await argon2.verify(user.password, password).catch(() => false)
+        : false;
+      if (!user || !passwordValid) {
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
-      // In a real-world application, you would use a proper authentication system with hashed passwords
+      // Prevent session fixation: issue a fresh session id on login
+      await new Promise<void>((resolve, reject) =>
+        req.session.regenerate((err) => (err ? reject(err) : resolve())),
+      );
+
       req.session.userId = user.id;
       if (user.organizationId) {
         req.session.organizationId = user.organizationId;
@@ -73,7 +83,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Username already exists" });
       }
 
-      const newUser = await storage.createUser(userData);
+      const newUser = await storage.createUser({
+        ...userData,
+        password: await argon2.hash(userData.password),
+      });
 
       return res.status(201).json({
         id: newUser.id,
