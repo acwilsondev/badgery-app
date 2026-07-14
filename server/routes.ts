@@ -19,12 +19,14 @@ import {
   badgeCategories as _badgeCategories,
   awardedBadges as _awardedBadges,
   badgeProgress as _badgeProgress,
-  insertUserSchema,
+  insertUserSchema as _insertUserSchema,
   organizationsInsertSchema,
   badgesInsertSchema,
   badgeCategoriesInsertSchema,
   awardedBadgesInsertSchema,
   badgeProgressInsertSchema as _badgeProgressInsertSchema,
+  loginSchema,
+  registerUserSchema,
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -52,12 +54,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication endpoints
   app.post(`${apiPrefix}/auth/login`, loginLimiter, async (req, res) => {
     try {
-      const { username, password } = req.body;
-      if (!username || !password) {
-        return res
-          .status(400)
-          .json({ message: "Username and password are required" });
-      }
+      const { username, password } = loginSchema.parse(req.body);
 
       const user = await storage.getUserByUsername(username);
       // argon2.verify throws on malformed stored hashes (e.g. legacy
@@ -88,6 +85,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         organizationId: user.organizationId || null,
       });
     } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ errors: error.errors });
+      }
       console.error("Error during login:", error);
       return res.status(500).json({ message: "Internal server error" });
     }
@@ -95,7 +95,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post(`${apiPrefix}/auth/register`, registerLimiter, async (req, res) => {
     try {
-      const userData = insertUserSchema.parse(req.body);
+      const userData = registerUserSchema.parse(req.body);
       const existingUser = await storage.getUserByUsername(userData.username);
 
       if (existingUser) {
@@ -233,7 +233,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         const id = parseInt(req.params.id);
         const updateData = {
-          ...req.body,
+          ...organizationsInsertSchema.partial().parse(req.body),
           updatedBy: req.session.userId || null,
         };
 
@@ -248,6 +248,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         return res.status(200).json(updatedOrganization);
       } catch (error) {
+        if (error instanceof z.ZodError) {
+          return res.status(400).json({ errors: error.errors });
+        }
         console.error("Error updating organization:", error);
         return res.status(500).json({ message: "Internal server error" });
       }
@@ -496,7 +499,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
 
         const updateData = {
-          ...req.body,
+          ...badgesInsertSchema.partial().parse(req.body),
           updatedBy: req.session.userId || null,
         };
 
@@ -508,6 +511,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         return res.status(200).json(updatedBadge);
       } catch (error) {
+        if (error instanceof z.ZodError) {
+          return res.status(400).json({ errors: error.errors });
+        }
         console.error("Error updating badge:", error);
         return res.status(500).json({ message: "Internal server error" });
       }
@@ -658,7 +664,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     async (req, res) => {
       try {
         const badgeId = parseInt(req.params.badgeId);
-        const { userId } = req.body;
+        const { userId } = z
+          .object({ userId: z.coerce.number().int().positive() })
+          .parse(req.body);
 
         // Get the badge to check organization access
         const badge = await storage.getBadgeById(badgeId);
@@ -1042,14 +1050,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
             .json({ message: "Target user not in this badge's organization" });
         }
 
+        const body = z
+          .object({
+            progress: z.coerce.number().min(0).max(100).optional(),
+            progressData: z.unknown().optional(),
+            notes: z.string().optional(),
+            status: z.string().optional(),
+          })
+          .parse(req.body);
+
         const progressData = {
           badgeId,
           userId: targetUserId,
           updatedBy: req.session.userId,
-          progress: req.body.progress,
-          progressData: req.body.progressData,
-          notes: req.body.notes,
-          status: req.body.status || "in_progress",
+          progress: body.progress,
+          progressData: body.progressData,
+          notes: body.notes,
+          status: body.status || "in_progress",
         };
 
         const updatedProgress =
@@ -1066,6 +1083,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         return res.status(200).json(updatedProgress);
       } catch (error) {
+        if (error instanceof z.ZodError) {
+          return res.status(400).json({ errors: error.errors });
+        }
         console.error("Error updating badge progress:", error);
         return res.status(500).json({ message: "Internal server error" });
       }
