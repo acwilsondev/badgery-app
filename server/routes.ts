@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import * as storage from "./storage";
 import * as z from "zod";
 import argon2 from "argon2";
+import rateLimit from "express-rate-limit";
 import { eq as _eq } from "drizzle-orm";
 import { db as _db } from "@db";
 import {
@@ -30,8 +31,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // API version prefix
   const apiPrefix = "/api/v1";
 
+  // In-memory rate limiting: per-process, resets on restart. Fine for a
+  // single-instance deployment; revisit if the app ever scales out.
+  const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 10,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { message: "Too many login attempts, please try again later" },
+  });
+
+  const registerLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000,
+    limit: 5,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { message: "Too many accounts created, please try again later" },
+  });
+
   // Authentication endpoints
-  app.post(`${apiPrefix}/auth/login`, async (req, res) => {
+  app.post(`${apiPrefix}/auth/login`, loginLimiter, async (req, res) => {
     try {
       const { username, password } = req.body;
       if (!username || !password) {
@@ -74,7 +93,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post(`${apiPrefix}/auth/register`, async (req, res) => {
+  app.post(`${apiPrefix}/auth/register`, registerLimiter, async (req, res) => {
     try {
       const userData = insertUserSchema.parse(req.body);
       const existingUser = await storage.getUserByUsername(userData.username);
