@@ -16,16 +16,31 @@ prerequisites and progress metrics, and award them to their members.
 
 ## Getting started
 
-Prereqs: Node 20+, a running PostgreSQL.
+Prereqs: Node 20+, Docker (or any PostgreSQL 15+).
 
-    cp .env.example .env      # then edit DATABASE_URL
+    docker run --name badgery-postgres -e POSTGRES_USER=badgery \
+      -e POSTGRES_PASSWORD=badgery -e POSTGRES_DB=badgery \
+      -p 5432:5432 -d postgres:17
+    cp .env.example .env      # then set SESSION_SECRET (openssl rand -hex 32)
     npm install
-    npm run db:push           # sync schema to the database (drizzle-kit reads .env itself)
-    set -a; source .env; set +a   # dev/db:seed do NOT read .env yet — export the vars first
-    npm run db:seed           # optional: seed sample data
+    npm run db:push           # sync schema to the database
+    npm run db:seed           # optional: seed sample data (all users: password123)
     npm run dev               # serves API + client on http://localhost:5000
 
-> Note: automatic env loading (and required-secret enforcement) lands in Phase 1 of the modernization plan.
+`.env` is loaded automatically (dotenv) by the server, the seed script, and
+drizzle-kit. `SESSION_SECRET` must be ≥ 32 chars and is required in
+production — the process exits without it. In development a missing secret
+falls back to an ephemeral one (sessions reset on restart).
+
+**Resetting the database** (no migrations exist yet; pre-Phase-1 databases
+hold plaintext passwords and must be reset):
+
+    docker exec badgery-postgres psql -U badgery -d badgery \
+      -c 'DROP SCHEMA public CASCADE; CREATE SCHEMA public;'
+    npm run db:push && npm run db:seed
+
+Login/register are rate-limited (10/15min and 5/hour per IP); restart the
+dev server to reset the counters.
 
 ## Scripts
 
