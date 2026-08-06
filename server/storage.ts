@@ -389,7 +389,9 @@ export async function getBadgeCategoryById(id: number) {
   });
 }
 
-export async function createBadgeCategory(category: InsertBadgeCategory) {
+export async function createBadgeCategory(
+  category: InsertBadgeCategory & { organizationId: number },
+) {
   const [newCategory] = await db
     .insert(badgeCategories)
     .values(category)
@@ -487,7 +489,9 @@ export async function getBadgeById(id: number) {
   }
 }
 
-export async function createBadge(badge: InsertBadge) {
+export async function createBadge(
+  badge: InsertBadge & { organizationId: number },
+) {
   const [newBadge] = await db.insert(badges).values(badge).returning();
   return newBadge;
 }
