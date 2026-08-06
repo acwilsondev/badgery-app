@@ -1,6 +1,7 @@
 import { db } from "./index";
 import * as schema from "@shared/schema";
 import { eq, and } from "drizzle-orm";
+import argon2 from "argon2";
 
 async function seed() {
   try {
@@ -153,18 +154,19 @@ async function seed() {
     }
 
     // Create users
+    const seedPasswordHash = await argon2.hash("password123");
     const users = [
       {
         username: "admin",
-        password: "password123", // In a real app, this would be properly hashed
+        password: seedPasswordHash,
         name: "Sarah Johnson",
         email: "sarah.johnson@example.com",
-        role: "administrator",
+        role: "admin",
         organizationId,
       },
       {
         username: "emily",
-        password: "password123",
+        password: seedPasswordHash,
         name: "Emily Chen",
         email: "emily.chen@example.com",
         role: "user",
@@ -172,7 +174,7 @@ async function seed() {
       },
       {
         username: "marcus",
-        password: "password123",
+        password: seedPasswordHash,
         name: "Marcus Johnson",
         email: "marcus.johnson@example.com",
         role: "user",
@@ -180,7 +182,7 @@ async function seed() {
       },
       {
         username: "sophia",
-        password: "password123",
+        password: seedPasswordHash,
         name: "Sophia Lee",
         email: "sophia.lee@example.com",
         role: "user",

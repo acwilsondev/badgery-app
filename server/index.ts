@@ -1,3 +1,4 @@
+import { config } from "./config";
 import express, { type Request, Response, NextFunction } from "express";
 import "./types"; // Import session type extensions
 import session from "express-session";
@@ -7,6 +8,12 @@ import { setupVite, serveStatic, log } from "./vite";
 import { pool } from "@db";
 
 const app = express();
+
+// Behind the reverse proxy in production so secure cookies and client IPs work
+if (config.isProduction) {
+  app.set("trust proxy", 1);
+}
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -19,13 +26,14 @@ app.use(
       tableName: "session",
       createTableIfMissing: true,
     }),
-    secret: process.env.SESSION_SECRET || "meritmark-secret",
+    secret: config.sessionSecret,
     resave: false,
     saveUninitialized: false,
     cookie: {
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-      secure: false,
+      secure: config.isProduction,
       httpOnly: true,
+      sameSite: "lax",
     },
   }),
 );

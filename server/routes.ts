@@ -1,7 +1,10 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import crypto from "node:crypto";
 import * as storage from "./storage";
 import * as z from "zod";
+import argon2 from "argon2";
+import rateLimit from "express-rate-limit";
 import { eq as _eq } from "drizzle-orm";
 import { db as _db } from "@db";
 import {
@@ -17,34 +20,68 @@ import {
   badgeCategories as _badgeCategories,
   awardedBadges as _awardedBadges,
   badgeProgress as _badgeProgress,
-  insertUserSchema,
+  insertUserSchema as _insertUserSchema,
   organizationsInsertSchema,
   badgesInsertSchema,
   badgeCategoriesInsertSchema,
   awardedBadgesInsertSchema,
   badgeProgressInsertSchema as _badgeProgressInsertSchema,
+  loginSchema,
+  registerUserSchema,
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // API version prefix
   const apiPrefix = "/api/v1";
 
+  // Verified against on login when the username doesn't exist, so a
+  // nonexistent-username request pays the same argon2id cost as a real one
+  // and can't be distinguished from a wrong-password request by timing.
+  const dummyPasswordHash = await argon2.hash(
+    crypto.randomBytes(32).toString("hex"),
+  );
+
+  // In-memory rate limiting: per-process, resets on restart. Fine for a
+  // single-instance deployment; revisit if the app ever scales out.
+  const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 10,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { message: "Too many login attempts, please try again later" },
+  });
+
+  const registerLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000,
+    limit: 5,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { message: "Too many accounts created, please try again later" },
+  });
+
   // Authentication endpoints
-  app.post(`${apiPrefix}/auth/login`, async (req, res) => {
+  app.post(`${apiPrefix}/auth/login`, loginLimiter, async (req, res) => {
     try {
-      const { username, password } = req.body;
-      if (!username || !password) {
-        return res
-          .status(400)
-          .json({ message: "Username and password are required" });
-      }
+      const { username, password } = loginSchema.parse(req.body);
 
       const user = await storage.getUserByUsername(username);
-      if (!user || user.password !== password) {
+      // argon2.verify throws on malformed stored hashes (e.g. legacy
+      // plaintext rows) — treat that as a failed login, not a 500. Always
+      // verify against something (dummyPasswordHash when the user doesn't
+      // exist) so the response time doesn't leak whether the username is
+      // registered.
+      const passwordValid = await argon2
+        .verify(user?.password ?? dummyPasswordHash, password)
+        .catch(() => false);
+      if (!user || !passwordValid) {
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
-      // In a real-world application, you would use a proper authentication system with hashed passwords
+      // Prevent session fixation: issue a fresh session id on login
+      await new Promise<void>((resolve, reject) =>
+        req.session.regenerate((err) => (err ? reject(err) : resolve())),
+      );
+
       req.session.userId = user.id;
       if (user.organizationId) {
         req.session.organizationId = user.organizationId;
@@ -59,21 +96,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         organizationId: user.organizationId || null,
       });
     } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ errors: error.errors });
+      }
       console.error("Error during login:", error);
       return res.status(500).json({ message: "Internal server error" });
     }
   });
 
-  app.post(`${apiPrefix}/auth/register`, async (req, res) => {
+  app.post(`${apiPrefix}/auth/register`, registerLimiter, async (req, res) => {
     try {
-      const userData = insertUserSchema.parse(req.body);
+      const userData = registerUserSchema.parse(req.body);
       const existingUser = await storage.getUserByUsername(userData.username);
 
       if (existingUser) {
         return res.status(400).json({ message: "Username already exists" });
       }
 
-      const newUser = await storage.createUser(userData);
+      const newUser = await storage.createUser({
+        ...userData,
+        password: await argon2.hash(userData.password),
+      });
 
       return res.status(201).json({
         id: newUser.id,
@@ -201,7 +244,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         const id = parseInt(req.params.id);
         const updateData = {
-          ...req.body,
+          // createdBy is an audit field, never client-assignable
+          ...organizationsInsertSchema
+            .omit({ createdBy: true })
+            .partial()
+            .parse(req.body),
           updatedBy: req.session.userId || null,
         };
 
@@ -216,6 +263,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         return res.status(200).json(updatedOrganization);
       } catch (error) {
+        if (error instanceof z.ZodError) {
+          return res.status(400).json({ errors: error.errors });
+        }
         console.error("Error updating organization:", error);
         return res.status(500).json({ message: "Internal server error" });
       }
@@ -464,7 +514,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
 
         const updateData = {
-          ...req.body,
+          // organizationId is the tenant boundary and createdBy is an audit
+          // field — neither is client-assignable via this update endpoint
+          ...badgesInsertSchema
+            .omit({ organizationId: true, createdBy: true })
+            .partial()
+            .parse(req.body),
           updatedBy: req.session.userId || null,
         };
 
@@ -476,6 +531,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         return res.status(200).json(updatedBadge);
       } catch (error) {
+        if (error instanceof z.ZodError) {
+          return res.status(400).json({ errors: error.errors });
+        }
         console.error("Error updating badge:", error);
         return res.status(500).json({ message: "Internal server error" });
       }
@@ -626,7 +684,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     async (req, res) => {
       try {
         const badgeId = parseInt(req.params.badgeId);
-        const { userId } = req.body;
+        const { userId } = z
+          .object({ userId: z.coerce.number().int().positive() })
+          .parse(req.body);
 
         // Get the badge to check organization access
         const badge = await storage.getBadgeById(badgeId);
@@ -1010,14 +1070,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
             .json({ message: "Target user not in this badge's organization" });
         }
 
+        const body = z
+          .object({
+            progress: z.coerce.number().min(0).max(100).optional(),
+            progressData: z.unknown().optional(),
+            notes: z.string().optional(),
+            status: z.string().optional(),
+          })
+          .parse(req.body);
+
         const progressData = {
           badgeId,
           userId: targetUserId,
           updatedBy: req.session.userId,
-          progress: req.body.progress,
-          progressData: req.body.progressData,
-          notes: req.body.notes,
-          status: req.body.status || "in_progress",
+          progress: body.progress,
+          progressData: body.progressData,
+          notes: body.notes,
+          status: body.status || "in_progress",
         };
 
         const updatedProgress =
@@ -1034,6 +1103,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         return res.status(200).json(updatedProgress);
       } catch (error) {
+        if (error instanceof z.ZodError) {
+          return res.status(400).json({ errors: error.errors });
+        }
         console.error("Error updating badge progress:", error);
         return res.status(500).json({ message: "Internal server error" });
       }

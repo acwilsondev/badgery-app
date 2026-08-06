@@ -59,7 +59,7 @@ export function Sidebar({
 
   const { data: organizations = [] } = useQuery<Organization[]>({
     queryKey: [`${apiPrefix}/organizations`],
-    enabled: user.role === "administrator",
+    enabled: user.role === "admin",
   });
 
   useEffect(() => {

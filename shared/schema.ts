@@ -72,6 +72,22 @@ export const insertUserSchema = createInsertSchema(users, {
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 
+// Auth request bodies. Register deliberately picks only self-service
+// fields: role and organizationId must never be client-assignable.
+export const registerUserSchema = insertUserSchema.pick({
+  username: true,
+  password: true,
+  name: true,
+  email: true,
+});
+export type RegisterUser = z.infer<typeof registerUserSchema>;
+
+export const loginSchema = z.object({
+  username: z.string().min(1, "Username is required"),
+  password: z.string().min(1, "Password is required"),
+});
+export type LoginInput = z.infer<typeof loginSchema>;
+
 // User-Organization mapping (many-to-many)
 export const userOrganization = pgTable(
   "user_organization",
