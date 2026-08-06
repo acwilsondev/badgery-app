@@ -1,5 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import crypto from "node:crypto";
 import * as storage from "./storage";
 import * as z from "zod";
 import argon2 from "argon2";
@@ -33,6 +34,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // API version prefix
   const apiPrefix = "/api/v1";
 
+  // Verified against on login when the username doesn't exist, so a
+  // nonexistent-username request pays the same argon2id cost as a real one
+  // and can't be distinguished from a wrong-password request by timing.
+  const dummyPasswordHash = await argon2.hash(
+    crypto.randomBytes(32).toString("hex"),
+  );
+
   // In-memory rate limiting: per-process, resets on restart. Fine for a
   // single-instance deployment; revisit if the app ever scales out.
   const loginLimiter = rateLimit({
@@ -58,10 +66,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const user = await storage.getUserByUsername(username);
       // argon2.verify throws on malformed stored hashes (e.g. legacy
-      // plaintext rows) — treat that as a failed login, not a 500.
-      const passwordValid = user
-        ? await argon2.verify(user.password, password).catch(() => false)
-        : false;
+      // plaintext rows) — treat that as a failed login, not a 500. Always
+      // verify against something (dummyPasswordHash when the user doesn't
+      // exist) so the response time doesn't leak whether the username is
+      // registered.
+      const passwordValid = await argon2
+        .verify(user?.password ?? dummyPasswordHash, password)
+        .catch(() => false);
       if (!user || !passwordValid) {
         return res.status(401).json({ message: "Invalid credentials" });
       }
@@ -233,7 +244,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         const id = parseInt(req.params.id);
         const updateData = {
-          ...organizationsInsertSchema.partial().parse(req.body),
+          // createdBy is an audit field, never client-assignable
+          ...organizationsInsertSchema
+            .omit({ createdBy: true })
+            .partial()
+            .parse(req.body),
           updatedBy: req.session.userId || null,
         };
 
@@ -499,7 +514,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
 
         const updateData = {
-          ...badgesInsertSchema.partial().parse(req.body),
+          // organizationId is the tenant boundary and createdBy is an audit
+          // field — neither is client-assignable via this update endpoint
+          ...badgesInsertSchema
+            .omit({ organizationId: true, createdBy: true })
+            .partial()
+            .parse(req.body),
           updatedBy: req.session.userId || null,
         };
 
