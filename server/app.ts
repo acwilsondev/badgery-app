@@ -1,9 +1,10 @@
 import { config } from "./config";
-import express, { type Request, Response, NextFunction } from "express";
+import express from "express";
 import "./types"; // Import session type extensions
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 import { registerRoutes } from "./routes";
+import { errorHandler } from "./middleware/errors";
 import { pool } from "@db";
 import { log } from "./logger";
 
@@ -71,18 +72,7 @@ export async function createApp() {
 
   const httpServer = await registerRoutes(app);
 
-  // NOTE (pre-existing, not touched by Phase 2): this rethrows `err` after
-  // already sending a response, which is dead code today only because every
-  // route handler has its own try/catch — it only fires for errors Express
-  // itself raises (e.g. malformed JSON bodies). Revisit in Phase 3; do not
-  // write a test that intentionally hits this path, it can crash the process.
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
-
-    res.status(status).json({ message });
-    throw err;
-  });
+  app.use(errorHandler);
 
   return { app, httpServer };
 }

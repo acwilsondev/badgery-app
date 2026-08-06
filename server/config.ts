@@ -11,6 +11,7 @@ const envSchema = z.object({
     .string()
     .min(32, "SESSION_SECRET must be at least 32 characters")
     .optional(),
+  PORT: z.coerce.number().int().positive().default(5000),
 });
 
 const parsed = envSchema.safeParse(process.env);
@@ -42,4 +43,5 @@ export const config = {
   isProduction: env.NODE_ENV === "production",
   databaseUrl: env.DATABASE_URL,
   sessionSecret: env.SESSION_SECRET ?? ephemeralSecret(),
+  port: env.PORT,
 };

@@ -12,7 +12,7 @@ import {
   hasOrganizationAccess,
   isAdminOrManager,
   requireSessionUserId,
-} from "./middleware";
+} from "./middleware/auth";
 import {
   users as _users,
   organizations as _organizations,
