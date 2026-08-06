@@ -31,6 +31,7 @@ export async function hasOrganizationAccess(
 
   // Get the requested organizationId from the request (route params, query, or body)
   const organizationId =
+    parseInt(req.params.id) ||
     parseInt(req.params.organizationId) ||
     parseInt(req.query.organizationId as string) ||
     (req.body && req.body.organizationId
