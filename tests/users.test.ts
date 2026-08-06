@@ -1,7 +1,11 @@
 import { describe, it, expect, beforeAll } from "vitest";
 import type { Express } from "express";
 import { createApp } from "../server/app";
-import { createTestOrganization, createTestUser, loginAs } from "./support/fixtures";
+import {
+  createTestOrganization,
+  createTestUser,
+  loginAs,
+} from "./support/fixtures";
 
 describe("users", () => {
   let app: Express;

@@ -13,12 +13,14 @@ describe("POST /api/v1/auth/register", () => {
 
   it("creates a user with only self-service fields", async () => {
     const suffix = uniqueSuffix();
-    const res = await request(app).post("/api/v1/auth/register").send({
-      username: `newuser_${suffix}`,
-      password: "hunter22",
-      name: "New User",
-      email: `newuser_${suffix}@test.dev`,
-    });
+    const res = await request(app)
+      .post("/api/v1/auth/register")
+      .send({
+        username: `newuser_${suffix}`,
+        password: "hunter22",
+        name: "New User",
+        email: `newuser_${suffix}@test.dev`,
+      });
 
     expect(res.status).toBe(201);
     expect(res.body.username).toBe(`newuser_${suffix}`);
@@ -28,14 +30,16 @@ describe("POST /api/v1/auth/register", () => {
 
   it("ignores a client-supplied role/organizationId (privilege escalation)", async () => {
     const suffix = uniqueSuffix();
-    const res = await request(app).post("/api/v1/auth/register").send({
-      username: `escalator_${suffix}`,
-      password: "hunter22",
-      name: "Escalator",
-      email: `escalator_${suffix}@test.dev`,
-      role: "admin",
-      organizationId: 999999,
-    });
+    const res = await request(app)
+      .post("/api/v1/auth/register")
+      .send({
+        username: `escalator_${suffix}`,
+        password: "hunter22",
+        name: "Escalator",
+        email: `escalator_${suffix}@test.dev`,
+        role: "admin",
+        organizationId: 999999,
+      });
 
     expect(res.status).toBe(201);
     expect(res.body.role).toBe("user");
@@ -177,12 +181,14 @@ describe("register rate limiting", () => {
     const results: number[] = [];
     for (let i = 0; i < 6; i++) {
       const suffix = uniqueSuffix();
-      const res = await request(app).post("/api/v1/auth/register").send({
-        username: `ratelimit_${suffix}`,
-        password: "hunter22",
-        name: "Rate Limit",
-        email: `ratelimit_${suffix}@test.dev`,
-      });
+      const res = await request(app)
+        .post("/api/v1/auth/register")
+        .send({
+          username: `ratelimit_${suffix}`,
+          password: "hunter22",
+          name: "Rate Limit",
+          email: `ratelimit_${suffix}@test.dev`,
+        });
       results.push(res.status);
     }
     expect(results.slice(0, 5)).toEqual(Array(5).fill(201));

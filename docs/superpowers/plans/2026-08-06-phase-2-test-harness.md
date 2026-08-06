@@ -423,7 +423,11 @@ export async function createTestBadge(
   });
 }
 
-export async function loginAs(app: Express, username: string, password: string) {
+export async function loginAs(
+  app: Express,
+  username: string,
+  password: string,
+) {
   const agent = request.agent(app);
   const res = await agent
     .post("/api/v1/auth/login")
@@ -564,12 +568,14 @@ describe("POST /api/v1/auth/register", () => {
 
   it("creates a user with only self-service fields", async () => {
     const suffix = uniqueSuffix();
-    const res = await request(app).post("/api/v1/auth/register").send({
-      username: `newuser_${suffix}`,
-      password: "hunter22",
-      name: "New User",
-      email: `newuser_${suffix}@test.dev`,
-    });
+    const res = await request(app)
+      .post("/api/v1/auth/register")
+      .send({
+        username: `newuser_${suffix}`,
+        password: "hunter22",
+        name: "New User",
+        email: `newuser_${suffix}@test.dev`,
+      });
 
     expect(res.status).toBe(201);
     expect(res.body.username).toBe(`newuser_${suffix}`);
@@ -579,14 +585,16 @@ describe("POST /api/v1/auth/register", () => {
 
   it("ignores a client-supplied role/organizationId (privilege escalation)", async () => {
     const suffix = uniqueSuffix();
-    const res = await request(app).post("/api/v1/auth/register").send({
-      username: `escalator_${suffix}`,
-      password: "hunter22",
-      name: "Escalator",
-      email: `escalator_${suffix}@test.dev`,
-      role: "admin",
-      organizationId: 999999,
-    });
+    const res = await request(app)
+      .post("/api/v1/auth/register")
+      .send({
+        username: `escalator_${suffix}`,
+        password: "hunter22",
+        name: "Escalator",
+        email: `escalator_${suffix}@test.dev`,
+        role: "admin",
+        organizationId: 999999,
+      });
 
     expect(res.status).toBe(201);
     expect(res.body.role).toBe("user");
@@ -728,12 +736,14 @@ describe("register rate limiting", () => {
     const results: number[] = [];
     for (let i = 0; i < 6; i++) {
       const suffix = uniqueSuffix();
-      const res = await request(app).post("/api/v1/auth/register").send({
-        username: `ratelimit_${suffix}`,
-        password: "hunter22",
-        name: "Rate Limit",
-        email: `ratelimit_${suffix}@test.dev`,
-      });
+      const res = await request(app)
+        .post("/api/v1/auth/register")
+        .send({
+          username: `ratelimit_${suffix}`,
+          password: "hunter22",
+          name: "Rate Limit",
+          email: `ratelimit_${suffix}@test.dev`,
+        });
       results.push(res.status);
     }
     expect(results.slice(0, 5)).toEqual(Array(5).fill(201));
@@ -852,9 +862,10 @@ describe("organizations", () => {
     const manager = await createTestUser({ role: "manager" });
     const agent = await loginAs(app, manager.username, manager.password);
 
-    const res = await agent
-      .post("/api/v1/organizations")
-      .send({ name: `Manager Org ${uniqueSuffix()}`, description: "A fresh org" });
+    const res = await agent.post("/api/v1/organizations").send({
+      name: `Manager Org ${uniqueSuffix()}`,
+      description: "A fresh org",
+    });
     expect(res.status).toBe(201);
     expect(res.body.name).toMatch(/^Manager Org/);
   });
@@ -992,7 +1003,9 @@ describe("badge categories", () => {
     expect(createRes.status).toBe(201);
     expect(createRes.body.organizationId).toBe(org.id);
 
-    const listRes = await agent.get(`/api/v1/organizations/${org.id}/categories`);
+    const listRes = await agent.get(
+      `/api/v1/organizations/${org.id}/categories`,
+    );
     expect(listRes.status).toBe(200);
     expect(listRes.body.map((c: { id: number }) => c.id)).toContain(
       createRes.body.id,
@@ -1133,7 +1146,11 @@ git commit -m "test: cover badge categories and badges — CRUD, org isolation, 
 import { describe, it, expect, beforeAll } from "vitest";
 import type { Express } from "express";
 import { createApp } from "../server/app";
-import { createTestOrganization, createTestUser, loginAs } from "./support/fixtures";
+import {
+  createTestOrganization,
+  createTestUser,
+  loginAs,
+} from "./support/fixtures";
 
 describe("users", () => {
   let app: Express;
@@ -1234,7 +1251,12 @@ git commit -m "test: cover user endpoints — org membership and cross-user visi
 import { describe, it, expect, beforeAll } from "vitest";
 import type { Express } from "express";
 import { createApp } from "../server/app";
-import { createTestOrganization, createTestUser, createTestBadge, loginAs } from "./support/fixtures";
+import {
+  createTestOrganization,
+  createTestUser,
+  createTestBadge,
+  loginAs,
+} from "./support/fixtures";
 
 describe("badge awarding", () => {
   let app: Express;
@@ -1323,7 +1345,11 @@ describe("badge awarding", () => {
       .send({ userId: recipient.id });
 
     const outsider = await createTestUser();
-    const outsiderAgent = await loginAs(app, outsider.username, outsider.password);
+    const outsiderAgent = await loginAs(
+      app,
+      outsider.username,
+      outsider.password,
+    );
     const forbidden = await outsiderAgent.get(
       `/api/v1/organizations/${org.id}/awarded-badges`,
     );
@@ -1365,7 +1391,11 @@ describe("badge awarding", () => {
     ).toBe(true);
 
     const stranger = await createTestUser();
-    const strangerAgent = await loginAs(app, stranger.username, stranger.password);
+    const strangerAgent = await loginAs(
+      app,
+      stranger.username,
+      stranger.password,
+    );
     const strangerRes = await strangerAgent.get(
       `/api/v1/users/${recipient.id}/awarded-badges`,
     );
@@ -1467,7 +1497,11 @@ describe("badge progress", () => {
     expect(ownRes.status).toBe(200);
 
     const stranger = await createTestUser();
-    const strangerAgent = await loginAs(app, stranger.username, stranger.password);
+    const strangerAgent = await loginAs(
+      app,
+      stranger.username,
+      stranger.password,
+    );
     const strangerRes = await strangerAgent.get(
       `/api/v1/badges/${badge.id}/progress/${member.id}`,
     );
@@ -1493,7 +1527,11 @@ describe("badge progress", () => {
     expect(ownProgress.status).toBe(200);
 
     const outsider = await createTestUser();
-    const outsiderAgent = await loginAs(app, outsider.username, outsider.password);
+    const outsiderAgent = await loginAs(
+      app,
+      outsider.username,
+      outsider.password,
+    );
     const forbiddenUserProgress = await outsiderAgent.get(
       `/api/v1/users/${member.id}/progress`,
     );
@@ -1542,7 +1580,12 @@ git commit -m "test: cover badge awarding and progress — org isolation, auto-a
 import { describe, it, expect, beforeAll } from "vitest";
 import type { Express } from "express";
 import { createApp } from "../server/app";
-import { createTestOrganization, createTestUser, createTestBadge, loginAs } from "./support/fixtures";
+import {
+  createTestOrganization,
+  createTestUser,
+  createTestBadge,
+  loginAs,
+} from "./support/fixtures";
 
 describe("organization stats", () => {
   let app: Express;

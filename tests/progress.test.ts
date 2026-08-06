@@ -1,7 +1,12 @@
 import { describe, it, expect, beforeAll } from "vitest";
 import type { Express } from "express";
 import { createApp } from "../server/app";
-import { createTestOrganization, createTestUser, createTestBadge, loginAs } from "./support/fixtures";
+import {
+  createTestOrganization,
+  createTestUser,
+  createTestBadge,
+  loginAs,
+} from "./support/fixtures";
 
 describe("badge awarding", () => {
   let app: Express;
@@ -90,7 +95,11 @@ describe("badge awarding", () => {
       .send({ userId: recipient.id });
 
     const outsider = await createTestUser();
-    const outsiderAgent = await loginAs(app, outsider.username, outsider.password);
+    const outsiderAgent = await loginAs(
+      app,
+      outsider.username,
+      outsider.password,
+    );
     const forbidden = await outsiderAgent.get(
       `/api/v1/organizations/${org.id}/awarded-badges`,
     );
@@ -132,7 +141,11 @@ describe("badge awarding", () => {
     ).toBe(true);
 
     const stranger = await createTestUser();
-    const strangerAgent = await loginAs(app, stranger.username, stranger.password);
+    const strangerAgent = await loginAs(
+      app,
+      stranger.username,
+      stranger.password,
+    );
     const strangerRes = await strangerAgent.get(
       `/api/v1/users/${recipient.id}/awarded-badges`,
     );
@@ -241,7 +254,11 @@ describe("badge progress", () => {
     expect(ownRes.status).toBe(404);
 
     const stranger = await createTestUser();
-    const strangerAgent = await loginAs(app, stranger.username, stranger.password);
+    const strangerAgent = await loginAs(
+      app,
+      stranger.username,
+      stranger.password,
+    );
     const strangerRes = await strangerAgent.get(
       `/api/v1/badges/${badge.id}/progress/${member.id}`,
     );
@@ -267,7 +284,11 @@ describe("badge progress", () => {
     expect(ownProgress.status).toBe(200);
 
     const outsider = await createTestUser();
-    const outsiderAgent = await loginAs(app, outsider.username, outsider.password);
+    const outsiderAgent = await loginAs(
+      app,
+      outsider.username,
+      outsider.password,
+    );
     const forbiddenUserProgress = await outsiderAgent.get(
       `/api/v1/users/${member.id}/progress`,
     );

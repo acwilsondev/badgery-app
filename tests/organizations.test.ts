@@ -75,9 +75,10 @@ describe("organizations", () => {
     const manager = await createTestUser({ role: "manager" });
     const agent = await loginAs(app, manager.username, manager.password);
 
-    const res = await agent
-      .post("/api/v1/organizations")
-      .send({ name: `Manager Org ${uniqueSuffix()}`, description: "A fresh org" });
+    const res = await agent.post("/api/v1/organizations").send({
+      name: `Manager Org ${uniqueSuffix()}`,
+      description: "A fresh org",
+    });
     expect(res.status).toBe(201);
     expect(res.body.name).toMatch(/^Manager Org/);
   });
