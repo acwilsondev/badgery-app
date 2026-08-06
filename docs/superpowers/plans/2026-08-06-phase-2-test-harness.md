@@ -542,7 +542,7 @@ git commit -m "test: add Vitest+supertest harness — app.ts extraction, Docker 
 
 **Interfaces:**
 
-- Consumes: `createApp` (`server/app.ts`), `createTestUser`/`createTestOrganization`/`uniqueSuffix`/`TEST_PASSWORD`/`loginAs` (`tests/support/fixtures.ts`).
+- Consumes: `createApp` (`server/app.ts`), `createTestUser`/`uniqueSuffix` (`tests/support/fixtures.ts`).
 
 **Endpoints covered:** `POST /api/v1/auth/register`, `POST /api/v1/auth/login`, `GET /api/v1/auth/me`, `POST /api/v1/auth/logout`, plus the login/register rate limiters.
 
@@ -553,7 +553,7 @@ import { describe, it, expect, beforeAll } from "vitest";
 import request from "supertest";
 import type { Express } from "express";
 import { createApp } from "../server/app";
-import { createTestUser, uniqueSuffix, TEST_PASSWORD } from "./support/fixtures";
+import { createTestUser, uniqueSuffix } from "./support/fixtures";
 
 describe("POST /api/v1/auth/register", () => {
   let app: Express;
@@ -776,7 +776,6 @@ git commit -m "test: cover auth endpoints — register, login, me, logout, rate 
 
 ```ts
 import { describe, it, expect, beforeAll } from "vitest";
-import request from "supertest";
 import type { Express } from "express";
 import { createApp } from "../server/app";
 import {
@@ -941,7 +940,6 @@ git commit -m "test: cover organizations endpoints — CRUD, org isolation, mass
 
 ```ts
 import { describe, it, expect, beforeAll } from "vitest";
-import request from "supertest";
 import type { Express } from "express";
 import { createApp } from "../server/app";
 import {
@@ -1133,7 +1131,6 @@ git commit -m "test: cover badge categories and badges — CRUD, org isolation, 
 
 ```ts
 import { describe, it, expect, beforeAll } from "vitest";
-import request from "supertest";
 import type { Express } from "express";
 import { createApp } from "../server/app";
 import { createTestOrganization, createTestUser, loginAs } from "./support/fixtures";
@@ -1235,7 +1232,6 @@ git commit -m "test: cover user endpoints — org membership and cross-user visi
 
 ```ts
 import { describe, it, expect, beforeAll } from "vitest";
-import request from "supertest";
 import type { Express } from "express";
 import { createApp } from "../server/app";
 import { createTestOrganization, createTestUser, createTestBadge, loginAs } from "./support/fixtures";
