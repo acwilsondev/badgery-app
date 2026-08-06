@@ -173,6 +173,7 @@ export const badgeCategories = pgTable("badge_categories", {
 
 export const badgeCategoriesInsertSchema = createInsertSchema(badgeCategories, {
   name: (schema) => schema.min(2, "Name must be at least 2 characters"),
+  organizationId: (schema) => schema.optional(),
   active: (schema) => schema.optional(),
   createdBy: (schema) => schema.optional(),
   updatedBy: (schema) => schema.optional(),
@@ -208,6 +209,7 @@ export const badgesInsertSchema = createInsertSchema(badges, {
   imageUrl: (schema) => schema.optional(),
   color: (schema) => schema.optional(),
   categoryId: (schema) => schema.optional(),
+  organizationId: (schema) => schema.optional(),
   requiresProgress: (schema) => schema.optional(),
   criteriaSections: (schema) => schema.optional(),
   criteriaType: (schema) =>

@@ -31,6 +31,12 @@ export async function hasOrganizationAccess(
 
   // Get the requested organizationId from the request (route params, query, or body)
   const organizationId =
+    // req.params.id is only safe to read as an organizationId because this
+    // middleware is currently attached only to GET/PUT /organizations/:id.
+    // If it's ever attached to a route where :id means something else (e.g.
+    // /badges/:id, /users/:id), do not reuse this line as-is — it would
+    // silently compare the wrong kind of id.
+    parseInt(req.params.id) ||
     parseInt(req.params.organizationId) ||
     parseInt(req.query.organizationId as string) ||
     (req.body && req.body.organizationId

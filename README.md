@@ -18,9 +18,7 @@ prerequisites and progress metrics, and award them to their members.
 
 Prereqs: Node 20+, Docker (or any PostgreSQL 15+).
 
-    docker run --name badgery-postgres -e POSTGRES_USER=badgery \
-      -e POSTGRES_PASSWORD=badgery -e POSTGRES_DB=badgery \
-      -p 5432:5432 -d postgres:17
+    docker compose up -d      # starts local Postgres (see docker-compose.yml)
     cp .env.example .env      # then set SESSION_SECRET (openssl rand -hex 32)
     npm install
     npm run db:push           # sync schema to the database
@@ -35,25 +33,39 @@ falls back to an ephemeral one (sessions reset on restart).
 **Resetting the database** (no migrations exist yet; pre-Phase-1 databases
 hold plaintext passwords and must be reset):
 
-    docker exec badgery-postgres psql -U badgery -d badgery \
+    docker compose exec postgres psql -U badgery -d badgery \
       -c 'DROP SCHEMA public CASCADE; CREATE SCHEMA public;'
     npm run db:push && npm run db:seed
 
 Login/register are rate-limited (10/15min and 5/hour per IP); restart the
 dev server to reset the counters.
 
+## Running tests
+
+Integration tests run against a dedicated `badgery_test` database on the
+same Postgres instance as dev — they never touch your `badgery` dev data.
+
+    npm test          # resets + migrates badgery_test, then runs the suite once
+    npm run test:watch # same, but re-runs on file changes
+
+The database reset (`DROP SCHEMA public CASCADE` + `db:push`) happens once
+per run automatically; individual tests create their own organizations/users
+with randomized names rather than sharing seed data.
+
 ## Scripts
 
-| Script                 | What it does                             |
-| ---------------------- | ---------------------------------------- |
-| `npm run dev`          | Dev server (API + Vite client, one port) |
-| `npm run check`        | TypeScript typecheck                     |
-| `npm run lint`         | ESLint                                   |
-| `npm run format:check` | Prettier check                           |
-| `npm run build`        | Production build to `dist/`              |
-| `npm start`            | Run the production build                 |
-| `npm run db:push`      | Push schema to DB (drizzle-kit)          |
-| `npm run db:seed`      | Seed sample data                         |
+| Script                 | What it does                                 |
+| ---------------------- | -------------------------------------------- |
+| `npm run dev`          | Dev server (API + Vite client, one port)     |
+| `npm run check`        | TypeScript typecheck                         |
+| `npm run lint`         | ESLint                                       |
+| `npm run format:check` | Prettier check                               |
+| `npm test`             | Run the integration test suite once          |
+| `npm run test:watch`   | Run the integration test suite in watch mode |
+| `npm run build`        | Production build to `dist/`                  |
+| `npm start`            | Run the production build                     |
+| `npm run db:push`      | Push schema to DB (drizzle-kit)              |
+| `npm run db:seed`      | Seed sample data                             |
 
 ## Layout
 
@@ -62,3 +74,9 @@ dev server to reset the counters.
     shared/   Drizzle schema + zod insert schemas (shared types)
     db/       DB client, migrations, seed
     openapi/  API contract (being brought up to date)
+
+## CI
+
+Every PR into `main` runs `npm run check && npm run lint && npm test && npm run build`
+against a `postgres:17` service container (`.github/workflows/ci.yml`). This is
+intended to be a required status check on `main`.

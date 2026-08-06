@@ -737,7 +737,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           badgeId,
           userId,
           awardedBy: req.session.userId,
-          status: "awarded",
+          status: "achieved",
         });
 
         const newAward = await storage.awardBadge(awardData);
