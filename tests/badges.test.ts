@@ -113,6 +113,10 @@ describe("badges", () => {
     expect(createRes.status).toBe(201);
     const badgeId = createRes.body.id;
 
+    const listRes = await agent.get(`/api/v1/organizations/${org.id}/badges`);
+    expect(listRes.status).toBe(200);
+    expect(listRes.body.map((b: { id: number }) => b.id)).toContain(badgeId);
+
     const getRes = await agent.get(`/api/v1/badges/${badgeId}`);
     expect(getRes.status).toBe(200);
     expect(getRes.body.name).toBe("New Badge");

@@ -121,6 +121,23 @@ server/
   disagree.
 - Take the deferred major dependency bumps (vite, drizzle-orm) here, tests
   green after each.
+- **Badge progress persistence is broken and needs a real design decision.**
+  `storage.createOrUpdateBadgeProgress` only persists progress against a
+  per-metric `badgeMetrics`/`metrics`/`progress` model, but the route
+  (`POST /badges/:badgeId/progress/:userId`) and the real client
+  (`client/src/components/badge-progress-dialog.tsx`) both send a flat
+  `{ progress: 0-100 }` percentage that has no backing storage anywhere.
+  For any badge without pre-configured `badgeMetrics` rows (the normal
+  case for badges made through the UI), the POST silently no-ops
+  (200 + `null` body) and the 100%-auto-award check never fires. Fix
+  requires deciding whether storage should persist the flat percentage
+  directly, or the route/client should move onto the metrics model.
+  Separately, `autoAwardBadgeIfComplete` (`server/storage.ts`) writes
+  `status: "completed"` directly via Drizzle, bypassing
+  `achievementsInsertSchema`'s `["in_progress", "achieved"]` enum
+  entirely — inconsistent with the manual award path's `"achieved"`.
+  Reconcile both status values when this is fixed. Regression tests
+  documenting the current (broken) behavior: `tests/progress.test.ts`.
 
 ### Phase 4 — Docker + CD
 

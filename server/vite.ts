@@ -6,8 +6,6 @@ import { type Server } from "http";
 import viteConfig from "../vite.config";
 import { nanoid } from "nanoid";
 
-export { log } from "./logger";
-
 const viteLogger = createLogger();
 
 export async function setupVite(app: Express, server: Server) {

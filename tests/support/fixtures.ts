@@ -4,6 +4,13 @@ import request from "supertest";
 import type { Express } from "express";
 import * as storage from "../../server/storage";
 
+// Fixtures are intentionally never cleaned up (no afterEach truncation).
+// Uniqueness (uniqueSuffix()) is what prevents collisions between tests;
+// the whole database is reset once per `npm test` run by
+// tests/globalSetup.ts. Adding cleanup logic here would fight that design
+// and risks deleting another test's still-in-use fixtures if tests ever
+// run concurrently.
+
 export function uniqueSuffix(): string {
   return crypto.randomUUID().slice(0, 8);
 }
@@ -81,6 +88,14 @@ export async function loginAs(
   const res = await agent
     .post("/api/v1/auth/login")
     .send({ username, password });
+  if (res.status === 429) {
+    throw new Error(
+      `loginAs(${username}) hit the per-app login rate limit (10 attempts / ` +
+        `15 min). Each createApp() instance gets a fresh limiter — split this ` +
+        `describe block into its own beforeAll(() => createApp()) if it's ` +
+        `making 10+ loginAs() calls.`,
+    );
+  }
   if (res.status !== 200) {
     throw new Error(
       `loginAs(${username}) failed: ${res.status} ${JSON.stringify(res.body)}`,

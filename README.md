@@ -33,7 +33,7 @@ falls back to an ephemeral one (sessions reset on restart).
 **Resetting the database** (no migrations exist yet; pre-Phase-1 databases
 hold plaintext passwords and must be reset):
 
-    docker exec badgery-postgres psql -U badgery -d badgery \
+    docker compose exec postgres psql -U badgery -d badgery \
       -c 'DROP SCHEMA public CASCADE; CREATE SCHEMA public;'
     npm run db:push && npm run db:seed
 
@@ -54,16 +54,18 @@ with randomized names rather than sharing seed data.
 
 ## Scripts
 
-| Script                 | What it does                             |
-| ---------------------- | ---------------------------------------- |
-| `npm run dev`          | Dev server (API + Vite client, one port) |
-| `npm run check`        | TypeScript typecheck                     |
-| `npm run lint`         | ESLint                                   |
-| `npm run format:check` | Prettier check                           |
-| `npm run build`        | Production build to `dist/`              |
-| `npm start`            | Run the production build                 |
-| `npm run db:push`      | Push schema to DB (drizzle-kit)          |
-| `npm run db:seed`      | Seed sample data                         |
+| Script                 | What it does                                 |
+| ---------------------- | -------------------------------------------- |
+| `npm run dev`          | Dev server (API + Vite client, one port)     |
+| `npm run check`        | TypeScript typecheck                         |
+| `npm run lint`         | ESLint                                       |
+| `npm run format:check` | Prettier check                               |
+| `npm test`             | Run the integration test suite once          |
+| `npm run test:watch`   | Run the integration test suite in watch mode |
+| `npm run build`        | Production build to `dist/`                  |
+| `npm start`            | Run the production build                     |
+| `npm run db:push`      | Push schema to DB (drizzle-kit)              |
+| `npm run db:seed`      | Seed sample data                             |
 
 ## Layout
 
@@ -72,3 +74,9 @@ with randomized names rather than sharing seed data.
     shared/   Drizzle schema + zod insert schemas (shared types)
     db/       DB client, migrations, seed
     openapi/  API contract (being brought up to date)
+
+## CI
+
+Every PR into `main` runs `npm run check && npm run lint && npm test && npm run build`
+against a `postgres:17` service container (`.github/workflows/ci.yml`). This is
+intended to be a required status check on `main`.

@@ -161,7 +161,8 @@ describe("badge progress", () => {
   });
 
   it("documents a known bug: POST progress silently no-ops for badges without pre-configured metrics, so auto-award never fires", async () => {
-    // KNOWN BUG (see .superpowers/sdd/2026-08-06-phase-2-test-harness/progress.md):
+    // KNOWN BUG (see docs/superpowers/specs/2026-07-13-agentic-modernization-design.md
+    // (Phase 3 section — "Badge progress persistence is broken")):
     // storage.createOrUpdateBadgeProgress only persists progress against the
     // per-metric badgeMetrics/metrics/progress model. The route (and the real
     // client, client/src/components/badge-progress-dialog.tsx) send a flat
