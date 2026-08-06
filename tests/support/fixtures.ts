@@ -1,0 +1,90 @@
+import crypto from "node:crypto";
+import argon2 from "argon2";
+import request from "supertest";
+import type { Express } from "express";
+import * as storage from "../../server/storage";
+
+export function uniqueSuffix(): string {
+  return crypto.randomUUID().slice(0, 8);
+}
+
+export const TEST_PASSWORD = "test-password-123";
+
+export async function createTestOrganization(
+  overrides: { name?: string; description?: string } = {},
+) {
+  return storage.createOrganization({
+    name: overrides.name ?? `Test Org ${uniqueSuffix()}`,
+    description:
+      overrides.description ?? "Fixture organization for integration tests",
+  });
+}
+
+export async function createTestUser(
+  options: {
+    organizationIds?: number[];
+    role?: "user" | "manager" | "admin";
+    username?: string;
+    name?: string;
+    email?: string;
+  } = {},
+) {
+  const suffix = uniqueSuffix();
+  const passwordHash = await argon2.hash(TEST_PASSWORD);
+  const user = await storage.createUser(
+    {
+      username: options.username ?? `user_${suffix}`,
+      password: passwordHash,
+      name: options.name ?? "Test User",
+      email: options.email ?? `user_${suffix}@test.dev`,
+      role: options.role ?? "user",
+    },
+    options.organizationIds ?? [],
+  );
+  return { ...user, password: TEST_PASSWORD };
+}
+
+export async function createTestCategory(
+  organizationId: number,
+  overrides: { name?: string } = {},
+) {
+  return storage.createBadgeCategory({
+    name: overrides.name ?? `Category ${uniqueSuffix()}`,
+    organizationId,
+  });
+}
+
+export async function createTestBadge(
+  organizationId: number,
+  overrides: {
+    name?: string;
+    description?: string;
+    categoryId?: number;
+    requiresProgress?: boolean;
+  } = {},
+) {
+  return storage.createBadge({
+    name: overrides.name ?? `Badge ${uniqueSuffix()}`,
+    description: overrides.description ?? "Fixture badge for integration tests",
+    organizationId,
+    categoryId: overrides.categoryId,
+    requiresProgress: overrides.requiresProgress ?? false,
+  });
+}
+
+export async function loginAs(
+  app: Express,
+  username: string,
+  password: string,
+) {
+  const agent = request.agent(app);
+  const res = await agent
+    .post("/api/v1/auth/login")
+    .send({ username, password });
+  if (res.status !== 200) {
+    throw new Error(
+      `loginAs(${username}) failed: ${res.status} ${JSON.stringify(res.body)}`,
+    );
+  }
+  return agent;
+}

@@ -18,9 +18,7 @@ prerequisites and progress metrics, and award them to their members.
 
 Prereqs: Node 20+, Docker (or any PostgreSQL 15+).
 
-    docker run --name badgery-postgres -e POSTGRES_USER=badgery \
-      -e POSTGRES_PASSWORD=badgery -e POSTGRES_DB=badgery \
-      -p 5432:5432 -d postgres:17
+    docker compose up -d      # starts local Postgres (see docker-compose.yml)
     cp .env.example .env      # then set SESSION_SECRET (openssl rand -hex 32)
     npm install
     npm run db:push           # sync schema to the database
@@ -41,6 +39,18 @@ hold plaintext passwords and must be reset):
 
 Login/register are rate-limited (10/15min and 5/hour per IP); restart the
 dev server to reset the counters.
+
+## Running tests
+
+Integration tests run against a dedicated `badgery_test` database on the
+same Postgres instance as dev — they never touch your `badgery` dev data.
+
+    npm test          # resets + migrates badgery_test, then runs the suite once
+    npm run test:watch # same, but re-runs on file changes
+
+The database reset (`DROP SCHEMA public CASCADE` + `db:push`) happens once
+per run automatically; individual tests create their own organizations/users
+with randomized names rather than sharing seed data.
 
 ## Scripts
 
