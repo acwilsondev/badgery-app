@@ -2,12 +2,12 @@ import crypto from "node:crypto";
 import argon2 from "argon2";
 import request from "supertest";
 import type { Express } from "express";
-import * as storage from "../../server/storage";
 import { createUser } from "../../server/features/users/service";
 import {
   createOrganization,
   createBadgeCategory,
 } from "../../server/features/organizations/service";
+import { createBadge } from "../../server/features/badges/service";
 
 // Fixtures are intentionally never cleaned up (no afterEach truncation).
 // Uniqueness (uniqueSuffix()) is what prevents collisions between tests;
@@ -75,7 +75,7 @@ export async function createTestBadge(
     requiresProgress?: boolean;
   } = {},
 ) {
-  return storage.createBadge({
+  return createBadge({
     name: overrides.name ?? `Badge ${uniqueSuffix()}`,
     description: overrides.description ?? "Fixture badge for integration tests",
     organizationId,
