@@ -3,6 +3,7 @@ import argon2 from "argon2";
 import request from "supertest";
 import type { Express } from "express";
 import * as storage from "../../server/storage";
+import { createUser } from "../../server/features/users/service";
 
 // Fixtures are intentionally never cleaned up (no afterEach truncation).
 // Uniqueness (uniqueSuffix()) is what prevents collisions between tests;
@@ -38,7 +39,7 @@ export async function createTestUser(
 ) {
   const suffix = uniqueSuffix();
   const passwordHash = await argon2.hash(TEST_PASSWORD);
-  const user = await storage.createUser(
+  const user = await createUser(
     {
       username: options.username ?? `user_${suffix}`,
       password: passwordHash,

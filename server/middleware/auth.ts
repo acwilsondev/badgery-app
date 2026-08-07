@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import * as storage from "../storage";
+import { getUserById } from "../features/users/service";
 
 /**
  * Middleware to check if a user is authenticated
@@ -50,7 +50,7 @@ export async function hasOrganizationAccess(
 
   try {
     // Get the user with their organization relationships
-    const user = await storage.getUserById(req.session.userId);
+    const user = await getUserById(req.session.userId);
 
     if (!user) {
       return res.status(401).json({ message: "User not found" });
@@ -91,7 +91,7 @@ export async function isAdminOrManager(
   }
 
   try {
-    const user = await storage.getUserById(req.session.userId);
+    const user = await getUserById(req.session.userId);
 
     if (!user) {
       return res.status(401).json({ message: "User not found" });

@@ -13,7 +13,6 @@ import {
   users,
   badges,
   badgeCategories,
-  userOrganization,
   userOrganizationScope as _userOrganizationScope,
   metrics,
   badgeMetrics,
@@ -21,7 +20,6 @@ import {
   progress, // new name for badgeProgress
   badgePrerequisites as _badgePrerequisites,
   type Organization,
-  type User,
   type Badge,
   type BadgeCategory as _BadgeCategory,
   type Achievement as _Achievement, // renamed from AwardedBadge
@@ -86,90 +84,11 @@ export async function updateOrganization(
 }
 
 // Users
-export async function getUsers() {
-  try {
-    // Use raw SQL query for compatibility during schema transition
-    const sql = `
-      SELECT u.*,
-            array_agg(DISTINCT o.id) as organization_ids,
-            array_agg(DISTINCT o.name) as organization_names
-      FROM users u
-      LEFT JOIN user_organization uo ON u.id = uo.user_id
-      LEFT JOIN organizations o ON uo.organization_id = o.id
-      GROUP BY u.id
-      ORDER BY u.name ASC
-    `;
-
-    const result = await pool.query(sql);
-
-    // Format the results to include the organizations array
-    return result.rows.map((row) => ({
-      id: row.id,
-      username: row.username,
-      name: row.name,
-      email: row.email,
-      role: row.role,
-      createdAt: row.created_at,
-      // Add organizations array from the joined data
-      organizations:
-        row.organization_ids && row.organization_ids[0] !== null
-          ? row.organization_ids.map((id: number, index: number) => ({
-              id,
-              name: row.organization_names[index],
-            }))
-          : [],
-    }));
-  } catch (error) {
-    console.error("Error in getUsers:", error);
-    throw error;
-  }
-}
-
-export async function getUsersByOrganization(organizationId: number) {
-  try {
-    // Use raw SQL query for compatibility during schema transition
-    const sql = `
-      SELECT u.*,
-            array_agg(DISTINCT o.id) as organization_ids,
-            array_agg(DISTINCT o.name) as organization_names
-      FROM users u
-      JOIN user_organization uo ON u.id = uo.user_id
-      JOIN organizations o ON uo.organization_id = o.id
-      WHERE uo.organization_id = $1
-      GROUP BY u.id
-      ORDER BY u.name ASC
-    `;
-
-    const result = await pool.query(sql, [organizationId]);
-
-    // Format the results to include the organizations array
-    return result.rows.map((row) => ({
-      id: row.id,
-      username: row.username,
-      name: row.name,
-      email: row.email,
-      role: row.role,
-      createdAt: row.created_at,
-      // Add organizations array from the joined data
-      organizations:
-        row.organization_ids && row.organization_ids[0] !== null
-          ? row.organization_ids.map((id: number, index: number) => ({
-              id,
-              name: row.organization_names[index],
-            }))
-          : [],
-    }));
-  } catch (error) {
-    console.error("Error in getUsersByOrganization:", error);
-    throw error;
-  }
-}
-
 export async function getUserById(id: number) {
   try {
     // Use direct SQL query to avoid relationship issues during schema transition
     const sql = `
-      SELECT u.*, 
+      SELECT u.*,
              array_agg(DISTINCT o.id) as organization_ids,
              array_agg(DISTINCT o.name) as organization_names
       FROM users u
@@ -214,7 +133,7 @@ export async function getUserByUsername(username: string) {
   try {
     // Use direct SQL query to avoid relationship issues during schema transition
     const sql = `
-      SELECT u.*, 
+      SELECT u.*,
              array_agg(DISTINCT o.id) as organization_ids,
              array_agg(DISTINCT o.name) as organization_names
       FROM users u
@@ -325,42 +244,6 @@ async function _getTableColumns(tableName: string): Promise<string[]> {
     console.error(`Error fetching columns for table ${tableName}:`, error);
     return [];
   }
-}
-
-export async function updateUser(
-  id: number,
-  data: Partial<User>,
-  organizationIds?: number[],
-) {
-  // Start a transaction
-  return await db.transaction(async (tx) => {
-    // Update the user
-    const [updatedUser] = await tx
-      .update(users)
-      .set(data)
-      .where(eq(users.id, id))
-      .returning();
-
-    // Update organization associations if provided
-    if (organizationIds) {
-      // First delete existing associations
-      await tx.delete(userOrganization).where(eq(userOrganization.userId, id));
-
-      // Then create new ones
-      if (organizationIds.length > 0) {
-        const userOrgData = organizationIds.map((orgId) => ({
-          userId: id,
-          organizationId: orgId,
-          createdBy: data.updatedBy || null,
-          updatedBy: data.updatedBy || null,
-        }));
-
-        await tx.insert(userOrganization).values(userOrgData);
-      }
-    }
-
-    return updatedUser;
-  });
 }
 
 // Badge Categories

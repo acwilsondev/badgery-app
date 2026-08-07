@@ -4,6 +4,7 @@ import "./types"; // Import session type extensions
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 import { registerRoutes } from "./routes";
+import { registerUsersRoutes } from "./features/users/routes";
 import { errorHandler } from "./middleware/errors";
 import { pool } from "@db";
 import { log } from "./logger";
@@ -70,6 +71,7 @@ export async function createApp() {
     next();
   });
 
+  registerUsersRoutes(app);
   const httpServer = await registerRoutes(app);
 
   app.use(errorHandler);
