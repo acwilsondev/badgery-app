@@ -982,7 +982,13 @@ import type { RegisterUser } from "@shared/schema";
 // Verified against on login when the username doesn't exist, so a
 // nonexistent-username request pays the same argon2id cost as a real one
 // and can't be distinguished from a wrong-password request by timing.
-const dummyPasswordHash = await argon2.hash(
+// Stored as a Promise (not awaited here) rather than a top-level `await`:
+// this repo's tsconfig.json doesn't set a `target` that supports top-level
+// await, and scoping the fix to this file avoids widening a compiler
+// setting that affects every other file's output for one hash call. The
+// underlying argon2.hash() call still starts at module load, same as
+// before — this only changes when it's *awaited*, not when it *starts*.
+const dummyPasswordHashPromise = argon2.hash(
   crypto.randomBytes(32).toString("hex"),
 );
 
@@ -993,6 +999,7 @@ export async function verifyCredentials(username: string, password: string) {
   // verify against something (dummyPasswordHash when the user doesn't
   // exist) so the response time doesn't leak whether the username is
   // registered.
+  const dummyPasswordHash = await dummyPasswordHashPromise;
   const passwordValid = await argon2
     .verify(user?.password ?? dummyPasswordHash, password)
     .catch(() => false);
