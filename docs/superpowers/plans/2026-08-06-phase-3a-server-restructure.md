@@ -468,7 +468,7 @@ git commit -m "feat: add typed-error infra (errors.ts, asyncHandler) and relocat
 - Modify: `server/middleware/auth.ts` (import `getUserById` from the new service instead of `../storage`)
 - Modify: `server/app.ts` (mount `registerUsersRoutes`)
 - Modify: `server/routes.ts` (delete the 2 users routes + now-unused imports)
-- Modify: `server/storage.ts` (delete `getUserById`, `getUserByUsername`, `createUser`, `getUsersByOrganization`, `getUsers`, `updateUser` — the last two are confirmed dead code, zero callers anywhere in the app or tests)
+- Modify: `server/storage.ts` (delete only `getUsersByOrganization`, `getUsers`, `updateUser` — the last two are confirmed dead code, zero callers anywhere in the app or tests. `getUserById`/`getUserByUsername`/`createUser` stay in `storage.ts`, temporarily duplicated alongside the new service, until their respective last caller in `routes.ts` migrates in Task 3/Task 6 — see Step 6 below)
 - Modify: `tests/support/fixtures.ts` (`createTestUser` imports from the new service)
 
 **Interfaces:**
@@ -908,11 +908,13 @@ Find and delete this entire block (the `// User endpoints` section):
 
 **Every other call to `storage.getUserById(...)` elsewhere in `routes.ts` stays exactly as-is for now** (still calling the storage.ts version, which still exists and still works — organizations/badges/progress routes migrate in later tasks). Do not touch any route outside the block above.
 
-- [ ] **Step 6: Delete the moved functions from `server/storage.ts`**
+- [ ] **Step 6: Delete only the fully-orphaned functions from `server/storage.ts`**
 
-Delete `getUserById`, `getUserByUsername`, `createUser` (all three are now duplicated in `features/users/service.ts` — the storage.ts copies must go so there's exactly one implementation), and delete `getUsersByOrganization`. Also delete the two dead, zero-caller functions confirmed during Phase 3 research: `getUsers` (the flat, no-argument listing function) and `updateUser`.
+Delete `getUsersByOrganization` (its only caller was the block just deleted from `routes.ts` in Step 5) and the two dead, zero-caller functions confirmed during Phase 3 research: `getUsers` (the flat, no-argument listing function) and `updateUser`.
 
-After deleting these six functions, `server/storage.ts` still has everything else (organizations, badges, badge categories, awarding, progress, stats) — unchanged.
+**Do NOT delete `getUserById`, `getUserByUsername`, or `createUser` from `server/storage.ts` in this task**, even though they now also exist in `features/users/service.ts`. `server/routes.ts` still calls `storage.getUserById` in ~22 places (every not-yet-migrated organizations/badges/progress route's permission check) and `storage.getUserByUsername`/`storage.createUser` in the still-present login/register handlers (Task 3 migrates those). Deleting them now would break the typecheck and, if forced through anyway, break login/register/most permission-gated routes at runtime — Step 5's note above is correct that these "still exist and still work" in `storage.ts` for now. This is a deliberate, temporary duplication (the same three functions exist in both `storage.ts` and `features/users/service.ts` until their respective last caller migrates): `getUserByUsername`/`createUser` get deleted from `storage.ts` in **Task 3** (once the auth routes — their only remaining callers — are removed from `routes.ts`), and `getUserById` gets deleted from `storage.ts` in **Task 6** (once the progress routes — the last feature to migrate — are removed from `routes.ts`, leaving zero remaining callers). Each of those tasks' own "delete from storage.ts" step below has been written to include this.
+
+After this step, `server/storage.ts` still has `getUserById`, `getUserByUsername`, `createUser`, plus everything else (organizations, badges, badge categories, awarding, progress, stats) — only `getUsersByOrganization`, `getUsers`, and `updateUser` are gone.
 
 - [ ] **Step 7: Update `tests/support/fixtures.ts`**
 
@@ -961,6 +963,7 @@ git commit -m "feat: extract users feature (routes+service), migrate off storage
 - Create: `server/features/auth/routes.ts`
 - Modify: `server/app.ts` (mount `registerAuthRoutes`)
 - Modify: `server/routes.ts` (delete the 4 auth routes + now-unused imports: `argon2`, `crypto`, `rateLimit`, `loginSchema`, `registerUserSchema`, and the `loginLimiter`/`registerLimiter`/`dummyPasswordHash` declarations)
+- Modify: `server/storage.ts` (delete `getUserByUsername` and `createUser` — Task 2 deliberately left these in `storage.ts`, temporarily duplicated alongside `features/users/service.ts`, because `routes.ts`'s login/register handlers were still calling them; once this task's route deletions above land, they have zero remaining callers anywhere)
 
 **Interfaces:**
 
@@ -1163,7 +1166,11 @@ Replace with:
 
 Delete the entire `// Authentication endpoints` section — everything from the `loginLimiter`/`registerLimiter` declarations through the closing of the `/auth/logout` handler (i.e. from just after `const apiPrefix = "/api/v1";` through the line before `// Organization endpoints`). After this deletion, prune now-unused imports at the top of `routes.ts`: remove `argon2` (no longer used — `createBadge`/etc. don't need it), remove `rateLimit` (no longer used — badges/progress rate limiting was never added elsewhere), remove `loginSchema` and `registerUserSchema` from the `@shared/schema` import list (keep the rest of that import list — `organizationsInsertSchema`, `badgesInsertSchema`, etc. are still used by remaining routes). Confirm with `npm run lint` that nothing else in `routes.ts` still references `argon2`, `rateLimit`, `loginSchema`, or `registerUserSchema` before removing their imports — if lint flags a leftover reference, leave that specific import in place and note it in the task report rather than guessing.
 
-- [ ] **Step 5: Verify — typecheck, lint, full suite**
+- [ ] **Step 5: Delete `getUserByUsername` and `createUser` from `server/storage.ts`**
+
+Task 2 deliberately kept these two functions in `storage.ts` (duplicated alongside `features/users/service.ts`) because `routes.ts`'s login/register handlers were still calling `storage.getUserByUsername`/`storage.createUser`. After Step 4's deletion above, `routes.ts` no longer calls either — confirm with `grep -n "storage\.\(getUserByUsername\|createUser\)" server/routes.ts` that it returns nothing, then delete both functions from `storage.ts`. `getUserById` stays in `storage.ts` for now (still called throughout the not-yet-migrated organizations/badges/progress routes) — it's Task 6's job to remove it, not this task's.
+
+- [ ] **Step 6: Verify — typecheck, lint, full suite**
 
 ```bash
 unset -f node npm npx 2>/dev/null; export PATH=/usr/local/bin:$PATH; npm run check && npm run lint
@@ -1172,10 +1179,10 @@ unset -f node npm npx 2>/dev/null; export PATH=/usr/local/bin:$PATH; npm test
 
 Expected: both exit 0, `52 passed (52)` — particularly `tests/auth.test.ts`'s 14 tests, including both rate-limiter-exhaustion tests (confirming the limiters still work identically now that they're declared inside `registerAuthRoutes` instead of `registerRoutes`).
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 7: Commit**
 
 ```bash
-git add server/features/auth server/app.ts server/routes.ts
+git add server/features/auth server/app.ts server/routes.ts server/storage.ts
 git commit -m "feat: extract auth feature (routes+service)"
 ```
 
@@ -2016,7 +2023,7 @@ git commit -m "feat: extract badges feature (routes+service)"
 - Create: `server/features/progress/routes.ts`
 - Modify: `server/app.ts` (mount `registerProgressRoutes`)
 - Modify: `server/routes.ts` (delete remaining 7 routes — this empties `registerRoutes` down to just server creation)
-- Modify: `server/storage.ts` (delete all remaining functions — this empties the file down to just the dead `_getTableColumns` and its imports, both removed too)
+- Modify: `server/storage.ts` (delete all remaining progress/awarding functions, the dead `_getTableColumns`, and `getUserById` — the last of these was deliberately left duplicated since Task 2 because `routes.ts` still called it; this task's route deletions are what finally remove its last caller. This empties the file down to nothing but now-unused imports.)
 
 **Interfaces:**
 
@@ -2960,7 +2967,11 @@ Prune every now-unused import at the top of the file — at this point essential
 
 - [ ] **Step 5: Delete the remaining functions from `server/storage.ts`**
 
-Delete `awardBadge`, `getAwardedBadges`, `getUserAwardedBadges`, `getBadgeProgress`, `getUserProgressForAllBadges`, `getBadgeProgressForOrganization`, `createOrUpdateBadgeProgress`, `autoAwardBadgeIfComplete`. Also delete the dead `_getTableColumns` function (confirmed zero callers during Phase 3 research) and prune its now-unused imports. `server/storage.ts` should now be either empty or contain only import statements with nothing left to export — do not delete the file itself yet, that's Task 7.
+Delete `awardBadge`, `getAwardedBadges`, `getUserAwardedBadges`, `getBadgeProgress`, `getUserProgressForAllBadges`, `getBadgeProgressForOrganization`, `createOrUpdateBadgeProgress`, `autoAwardBadgeIfComplete`. Also delete the dead `_getTableColumns` function (confirmed zero callers during Phase 3 research).
+
+Additionally, delete `getUserById` from `server/storage.ts`. Tasks 2-5 deliberately left it there (duplicated alongside `features/users/service.ts`) because `routes.ts`'s not-yet-migrated organizations/badges/progress routes were still calling `storage.getUserById`. After Step 4's deletion above, `routes.ts` no longer calls it — confirm with `grep -n "storage\.getUserById" server/routes.ts` that it returns nothing before deleting.
+
+Prune now-unused imports left over from all of the above. `server/storage.ts` should now be either empty or contain only import statements with nothing left to export — do not delete the file itself yet, that's Task 7.
 
 - [ ] **Step 6: Verify — typecheck, lint, full suite**
 
