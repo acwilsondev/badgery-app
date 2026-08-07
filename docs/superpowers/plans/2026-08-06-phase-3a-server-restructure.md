@@ -1633,7 +1633,7 @@ git commit -m "feat: extract organizations feature (routes+service, incl. catego
 - Create: `server/features/badges/routes.ts`
 - Modify: `server/app.ts` (mount `registerBadgesRoutes`)
 - Modify: `server/routes.ts` (delete 5 routes + now-unused imports)
-- Modify: `server/storage.ts` (delete `getBadges`, `getBadgeById`, `createBadge`, `updateBadge`, `deleteBadge`)
+- Modify: `server/storage.ts` (delete only `getBadges`, `createBadge`, `updateBadge`, `deleteBadge`. **Not** `getBadgeById` — it has live internal callers inside `storage.ts`'s own not-yet-migrated `getBadgeProgressForOrganization`/`getUserProgressForAllBadges`, plus 3 external callers in `routes.ts`'s not-yet-migrated award/progress routes. It stays in `storage.ts`, duplicated alongside `features/badges/service.ts`, until Task 6 migrates the progress feature and removes all of those — same pattern as `getUserById` staying until Task 6 for the same reason.)
 - Modify: `tests/support/fixtures.ts` (`createTestBadge` imports from the new service)
 
 **Interfaces:**
@@ -1983,9 +1983,11 @@ Replace with:
 
 Delete the `// Badge endpoints` section entirely (`GET /organizations/:orgId/badges`, `GET /badges/:id`, `POST /organizations/:orgId/badges`, `PUT /badges/:id`, `DELETE /badges/:id`). Prune `badgesInsertSchema` from the `@shared/schema` import if nothing else in `routes.ts` still uses it (the progress routes, still present until Task 6, do not use it). Verify with lint before removing `isAdminOrManager` from the middleware import — the progress/award routes (Task 6) still need it.
 
-- [ ] **Step 5: Delete the moved functions from `server/storage.ts`**
+- [ ] **Step 5: Delete only the fully-orphaned functions from `server/storage.ts`**
 
-Delete `getBadges`, `getBadgeById`, `createBadge`, `updateBadge`, `deleteBadge`. After this, only the badge-awarding and progress functions remain in `storage.ts`, plus the dead `_getTableColumns`.
+Delete `getBadges`, `createBadge`, `updateBadge`, `deleteBadge` — confirm each has zero remaining callers first (`grep -n "storage\.\(getBadges\|createBadge\|updateBadge\|deleteBadge\)\b" server/routes.ts` should return nothing).
+
+**Do NOT delete `getBadgeById` in this task.** It has two kinds of live callers that don't go away until Task 6: internal, un-namespaced calls from inside `storage.ts`'s own `getBadgeProgressForOrganization` and `getUserProgressForAllBadges` (both badge-awarding/progress functions staying in `storage.ts` until Task 6), and 3 external `storage.getBadgeById(...)` calls in `server/routes.ts`'s not-yet-migrated award/progress routes. This is the same temporary-duplication pattern as `getUserById` (which also stays until Task 6, for the same reason: its last caller is in the progress feature). After this step, `server/storage.ts` still has `getBadgeById`, plus everything else (badge-awarding, progress) — only `getBadges`, `createBadge`, `updateBadge`, `deleteBadge` are gone.
 
 - [ ] **Step 6: Update `tests/support/fixtures.ts`**
 
@@ -2032,7 +2034,7 @@ git commit -m "feat: extract badges feature (routes+service)"
 - Create: `server/features/progress/routes.ts`
 - Modify: `server/app.ts` (mount `registerProgressRoutes`)
 - Modify: `server/routes.ts` (delete remaining 7 routes — this empties `registerRoutes` down to just server creation)
-- Modify: `server/storage.ts` (delete all remaining progress/awarding functions, the dead `_getTableColumns`, and `getUserById` — the last of these was deliberately left duplicated since Task 2 because `routes.ts` still called it; this task's route deletions are what finally remove its last caller. This empties the file down to nothing but now-unused imports.)
+- Modify: `server/storage.ts` (delete all remaining progress/awarding functions, the dead `_getTableColumns`, `getUserById`, and `getBadgeById` — the last two were deliberately left duplicated since Tasks 2/5 because `routes.ts` (and, for `getBadgeById`, `storage.ts`'s own progress functions) still called them; this task's deletions are what finally remove their last callers. This empties the file down to nothing but now-unused imports.)
 
 **Interfaces:**
 
@@ -2978,7 +2980,7 @@ Prune every now-unused import at the top of the file — at this point essential
 
 Delete `awardBadge`, `getAwardedBadges`, `getUserAwardedBadges`, `getBadgeProgress`, `getUserProgressForAllBadges`, `getBadgeProgressForOrganization`, `createOrUpdateBadgeProgress`, `autoAwardBadgeIfComplete`. Also delete the dead `_getTableColumns` function (confirmed zero callers during Phase 3 research).
 
-Additionally, delete `getUserById` from `server/storage.ts`. Tasks 2-5 deliberately left it there (duplicated alongside `features/users/service.ts`) because `routes.ts`'s not-yet-migrated organizations/badges/progress routes were still calling `storage.getUserById`. After Step 4's deletion above, `routes.ts` no longer calls it — confirm with `grep -n "storage\.getUserById" server/routes.ts` that it returns nothing before deleting.
+Additionally, delete `getUserById` and `getBadgeById` from `server/storage.ts`. Both were deliberately left there by earlier tasks (duplicated alongside `features/users/service.ts` and `features/badges/service.ts` respectively) because callers remained: `routes.ts`'s not-yet-migrated organizations/badges/progress routes were still calling `storage.getUserById`, and `getBadgeById` additionally had two *internal* callers inside `storage.ts`'s own `getBadgeProgressForOrganization`/`getUserProgressForAllBadges` (both deleted by this same step) plus 3 external `storage.getBadgeById(...)` calls in `routes.ts`'s award/progress routes (deleted by Step 4 above). After Step 4's route deletion and this step's function deletions, both have zero remaining callers — confirm with `grep -n "storage\.getUserById\|storage\.getBadgeById\|[^.]getBadgeById(" server/routes.ts server/storage.ts` that nothing unexpected remains before deleting (some matches from `server/features/*/service.ts` files are expected and fine — those are the new implementations, not `storage.ts` callers).
 
 Prune now-unused imports left over from all of the above. `server/storage.ts` should now be either empty or contain only import statements with nothing left to export — do not delete the file itself yet, that's Task 7.
 
