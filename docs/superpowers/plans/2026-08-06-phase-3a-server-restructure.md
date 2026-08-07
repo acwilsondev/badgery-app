@@ -1287,7 +1287,9 @@ export async function getBadgeCategories(organizationId: number) {
   }
 }
 
-export async function createBadgeCategory(category: InsertBadgeCategory) {
+export async function createBadgeCategory(
+  category: InsertBadgeCategory & { organizationId: number },
+) {
   const [newCategory] = await db
     .insert(badgeCategories)
     .values(category)
