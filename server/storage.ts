@@ -28,7 +28,6 @@ import {
   type UserOrganization as _UserOrganization,
   type UserOrganizationScope as _UserOrganizationScope,
   type InsertOrganization,
-  type InsertUser,
   type InsertBadgeCategory,
   type InsertBadge,
   type InsertAwardedBadge,
@@ -125,109 +124,6 @@ export async function getUserById(id: number) {
     };
   } catch (error) {
     console.error("Error in getUserById:", error);
-    throw error;
-  }
-}
-
-export async function getUserByUsername(username: string) {
-  try {
-    // Use direct SQL query to avoid relationship issues during schema transition
-    const sql = `
-      SELECT u.*,
-             array_agg(DISTINCT o.id) as organization_ids,
-             array_agg(DISTINCT o.name) as organization_names
-      FROM users u
-      LEFT JOIN user_organization uo ON u.id = uo.user_id
-      LEFT JOIN organizations o ON uo.organization_id = o.id
-      WHERE u.username = $1
-      GROUP BY u.id
-    `;
-
-    const result = await pool.query(sql, [username]);
-
-    if (result.rows.length === 0) {
-      return null;
-    }
-
-    const row = result.rows[0];
-    return {
-      id: row.id,
-      username: row.username,
-      password: row.password,
-      name: row.name,
-      email: row.email,
-      role: row.role,
-      organizationId: row.organization_id,
-      createdAt: row.created_at,
-      // Add organizations array from the joined data
-      organizations:
-        row.organization_ids && row.organization_ids[0] !== null
-          ? row.organization_ids.map((id: number, index: number) => ({
-              id,
-              name: row.organization_names[index],
-            }))
-          : [],
-    };
-  } catch (error) {
-    console.error("Error in getUserByUsername:", error);
-    throw error;
-  }
-}
-
-export async function createUser(
-  userData: InsertUser,
-  organizationIds?: number[],
-) {
-  try {
-    // Log the exact SQL and values used for debugging
-    console.log("Creating user with data:", {
-      username: userData.username,
-      name: userData.name,
-      email: userData.email,
-      role: userData.role || "user",
-      organizationId: userData.organizationId || null,
-    });
-
-    // Use direct SQL for user creation with only columns that definitely exist
-    const sql = `
-      INSERT INTO users (username, password, name, email, role, organization_id)
-      VALUES ($1, $2, $3, $4, $5, $6)
-      RETURNING id, username, password, name, email, role, organization_id as "organizationId", created_at as "createdAt"
-    `;
-
-    const values = [
-      userData.username,
-      userData.password,
-      userData.name,
-      userData.email,
-      userData.role || "user",
-      userData.organizationId || null,
-    ];
-
-    const result = await pool.query(sql, values);
-    if (result.rows.length === 0) {
-      throw new Error("Failed to create user");
-    }
-
-    const newUser = result.rows[0];
-    console.log("User created successfully:", newUser.id);
-
-    // Associate user with organizations if provided
-    if (organizationIds && organizationIds.length > 0) {
-      const orgPromises = organizationIds.map((orgId) => {
-        return pool.query(
-          `INSERT INTO user_organization (user_id, organization_id)
-           VALUES ($1, $2)`,
-          [newUser.id, orgId],
-        );
-      });
-
-      await Promise.all(orgPromises);
-    }
-
-    return newUser;
-  } catch (error) {
-    console.error("Error in createUser:", error);
     throw error;
   }
 }
