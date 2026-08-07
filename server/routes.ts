@@ -6,7 +6,6 @@ import { eq as _eq } from "drizzle-orm";
 import { db as _db } from "@db";
 import {
   isAuthenticated,
-  hasOrganizationAccess,
   isAdminOrManager,
   requireSessionUserId,
 } from "./middleware/auth";
@@ -18,9 +17,7 @@ import {
   awardedBadges as _awardedBadges,
   badgeProgress as _badgeProgress,
   insertUserSchema as _insertUserSchema,
-  organizationsInsertSchema,
   badgesInsertSchema,
-  badgeCategoriesInsertSchema,
   awardedBadgesInsertSchema,
   badgeProgressInsertSchema as _badgeProgressInsertSchema,
 } from "@shared/schema";
@@ -28,195 +25,6 @@ import {
 export async function registerRoutes(app: Express): Promise<Server> {
   // API version prefix
   const apiPrefix = "/api/v1";
-
-  // Organization endpoints
-  app.get(`${apiPrefix}/organizations`, isAuthenticated, async (req, res) => {
-    try {
-      const userId = req.session.userId;
-
-      // If we have a userId, get only organizations the user belongs to
-      if (userId) {
-        const user = await storage.getUserById(userId);
-        if (user && user.role === "admin") {
-          // Admins can see all organizations
-          const organizations = await storage.getOrganizations();
-          return res.status(200).json(organizations);
-        } else if (user) {
-          // Regular users only see organizations they belong to
-          return res.status(200).json(user.organizations || []);
-        }
-      }
-
-      return res.status(401).json({ message: "Not authenticated" });
-    } catch (error) {
-      console.error("Error fetching organizations:", error);
-      return res.status(500).json({ message: "Internal server error" });
-    }
-  });
-
-  app.get(
-    `${apiPrefix}/organizations/:id`,
-    isAuthenticated,
-    hasOrganizationAccess,
-    async (req, res) => {
-      try {
-        const id = parseInt(req.params.id);
-        const organization = await storage.getOrganizationById(id);
-
-        if (!organization) {
-          return res.status(404).json({ message: "Organization not found" });
-        }
-
-        return res.status(200).json(organization);
-      } catch (error) {
-        console.error("Error fetching organization:", error);
-        return res.status(500).json({ message: "Internal server error" });
-      }
-    },
-  );
-
-  app.post(
-    `${apiPrefix}/organizations`,
-    isAuthenticated,
-    isAdminOrManager,
-    async (req, res) => {
-      try {
-        const organizationData = organizationsInsertSchema.parse(req.body);
-        const newOrganization = await storage.createOrganization({
-          ...organizationData,
-          createdBy: req.session.userId || null,
-        });
-
-        return res.status(201).json(newOrganization);
-      } catch (error) {
-        if (error instanceof z.ZodError) {
-          return res.status(400).json({ errors: error.errors });
-        }
-        console.error("Error creating organization:", error);
-        return res.status(500).json({ message: "Internal server error" });
-      }
-    },
-  );
-
-  app.put(
-    `${apiPrefix}/organizations/:id`,
-    isAuthenticated,
-    hasOrganizationAccess,
-    isAdminOrManager,
-    async (req, res) => {
-      try {
-        const id = parseInt(req.params.id);
-        const updateData = {
-          // createdBy is an audit field, never client-assignable
-          ...organizationsInsertSchema
-            .omit({ createdBy: true })
-            .partial()
-            .parse(req.body),
-          updatedBy: req.session.userId || null,
-        };
-
-        const updatedOrganization = await storage.updateOrganization(
-          id,
-          updateData,
-        );
-
-        if (!updatedOrganization) {
-          return res.status(404).json({ message: "Organization not found" });
-        }
-
-        return res.status(200).json(updatedOrganization);
-      } catch (error) {
-        if (error instanceof z.ZodError) {
-          return res.status(400).json({ errors: error.errors });
-        }
-        console.error("Error updating organization:", error);
-        return res.status(500).json({ message: "Internal server error" });
-      }
-    },
-  );
-
-  // Badge Category endpoints
-  app.get(
-    `${apiPrefix}/organizations/:orgId/categories`,
-    isAuthenticated,
-    async (req, res) => {
-      try {
-        const orgId = parseInt(req.params.orgId);
-
-        // Verify organization access
-        const userId = requireSessionUserId(req);
-        const user = await storage.getUserById(userId);
-
-        if (!user) {
-          return res.status(401).json({ message: "User not found" });
-        }
-
-        const hasAccess =
-          user.role === "admin" ||
-          (user.organizations &&
-            user.organizations.some((org: any) => org.id === orgId));
-
-        if (!hasAccess) {
-          return res
-            .status(403)
-            .json({ message: "No access to this organization" });
-        }
-
-        const categories = await storage.getBadgeCategories(orgId);
-
-        return res.status(200).json(categories);
-      } catch (error) {
-        console.error("Error fetching badge categories:", error);
-        return res.status(500).json({ message: "Internal server error" });
-      }
-    },
-  );
-
-  app.post(
-    `${apiPrefix}/organizations/:orgId/categories`,
-    isAuthenticated,
-    isAdminOrManager,
-    async (req, res) => {
-      try {
-        const orgId = parseInt(req.params.orgId);
-
-        // Verify organization access
-        const userId = requireSessionUserId(req);
-        const user = await storage.getUserById(userId);
-
-        if (!user) {
-          return res.status(401).json({ message: "User not found" });
-        }
-
-        const hasAccess =
-          user.role === "admin" ||
-          (user.organizations &&
-            user.organizations.some((org: any) => org.id === orgId));
-
-        if (!hasAccess) {
-          return res
-            .status(403)
-            .json({ message: "No access to this organization" });
-        }
-
-        const categoryData = badgeCategoriesInsertSchema.parse(req.body);
-
-        const newCategory = await storage.createBadgeCategory({
-          ...categoryData,
-          organizationId: orgId,
-          createdBy: req.session.userId || null,
-        });
-
-        return res.status(201).json(newCategory);
-      } catch (error) {
-        if (error instanceof z.ZodError) {
-          return res.status(400).json({ errors: error.errors });
-        }
-        console.error("Error creating badge category:", error);
-        return res.status(500).json({ message: "Internal server error" });
-      }
-    },
-  );
 
   // Badge endpoints
   app.get(
@@ -879,43 +687,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(400).json({ errors: error.errors });
         }
         console.error("Error updating badge progress:", error);
-        return res.status(500).json({ message: "Internal server error" });
-      }
-    },
-  );
-
-  // Stats endpoints
-  app.get(
-    `${apiPrefix}/organizations/:orgId/stats`,
-    isAuthenticated,
-    async (req, res) => {
-      try {
-        const orgId = parseInt(req.params.orgId);
-
-        // Verify organization access
-        const userId = requireSessionUserId(req);
-        const user = await storage.getUserById(userId);
-
-        if (!user) {
-          return res.status(401).json({ message: "User not found" });
-        }
-
-        const hasAccess =
-          user.role === "admin" ||
-          (user.organizations &&
-            user.organizations.some((org: any) => org.id === orgId));
-
-        if (!hasAccess) {
-          return res
-            .status(403)
-            .json({ message: "No access to this organization" });
-        }
-
-        const stats = await storage.getOrganizationStats(orgId);
-
-        return res.status(200).json(stats);
-      } catch (error) {
-        console.error("Error fetching organization stats:", error);
         return res.status(500).json({ message: "Internal server error" });
       }
     },

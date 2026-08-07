@@ -6,6 +6,7 @@ import connectPgSimple from "connect-pg-simple";
 import { registerRoutes } from "./routes";
 import { registerUsersRoutes } from "./features/users/routes";
 import { registerAuthRoutes } from "./features/auth/routes";
+import { registerOrganizationsRoutes } from "./features/organizations/routes";
 import { errorHandler } from "./middleware/errors";
 import { pool } from "@db";
 import { log } from "./logger";
@@ -74,6 +75,7 @@ export async function createApp() {
 
   registerUsersRoutes(app);
   registerAuthRoutes(app);
+  registerOrganizationsRoutes(app);
   const httpServer = await registerRoutes(app);
 
   app.use(errorHandler);

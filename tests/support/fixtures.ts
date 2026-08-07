@@ -4,6 +4,10 @@ import request from "supertest";
 import type { Express } from "express";
 import * as storage from "../../server/storage";
 import { createUser } from "../../server/features/users/service";
+import {
+  createOrganization,
+  createBadgeCategory,
+} from "../../server/features/organizations/service";
 
 // Fixtures are intentionally never cleaned up (no afterEach truncation).
 // Uniqueness (uniqueSuffix()) is what prevents collisions between tests;
@@ -21,7 +25,7 @@ export const TEST_PASSWORD = "test-password-123";
 export async function createTestOrganization(
   overrides: { name?: string; description?: string } = {},
 ) {
-  return storage.createOrganization({
+  return createOrganization({
     name: overrides.name ?? `Test Org ${uniqueSuffix()}`,
     description:
       overrides.description ?? "Fixture organization for integration tests",
@@ -56,7 +60,7 @@ export async function createTestCategory(
   organizationId: number,
   overrides: { name?: string } = {},
 ) {
-  return storage.createBadgeCategory({
+  return createBadgeCategory({
     name: overrides.name ?? `Category ${uniqueSuffix()}`,
     organizationId,
   });
