@@ -1,4 +1,4 @@
-GNU Affero General Public License
+# GNU Affero General Public License
 =================================
 
 _Version 3, 19 November 2007_
