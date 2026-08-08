@@ -49,8 +49,14 @@ export function errorHandler(
   err: unknown,
   _req: Request,
   res: Response,
-  _next: NextFunction,
+  next: NextFunction,
 ) {
+  // A throw after a handler already sent part of a response must go to
+  // Express's default handler (which closes the connection), not attempt
+  // a second res.json() and crash with ERR_HTTP_HEADERS_SENT.
+  if (res.headersSent) {
+    return next(err);
+  }
   // Every feature route calls schema.parse(req.body) directly (no route
   // ever catches ZodError itself) — zod throws its own z.ZodError, not one
   // of our ApiError subclasses, so it needs its own branch here rather than
