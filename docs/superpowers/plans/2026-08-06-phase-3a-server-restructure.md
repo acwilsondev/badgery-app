@@ -3083,9 +3083,11 @@ import {
 
 Delete the backward-compat block — first confirm it's genuinely unused now that `server/storage.ts` (its only real consumer) is deleted:
 ```bash
-grep -rn "awardedBadges\b\|badgeProgress\b\|InsertAwardedBadge\|InsertBadgeProgress\|AwardedBadge\b\|BadgeProgress\b" server/ client/src/ tests/ shared/schema.ts
+grep -rn "awardedBadges\b\|badgeProgress\b\|InsertAwardedBadge\|InsertBadgeProgress\|AwardedBadge\b\|BadgeProgress\b" server/ client/src/ tests/ db/ shared/schema.ts
 ```
-Expect zero matches outside `shared/schema.ts`'s own declaration lines and the local `AwardedBadge`/`Badge` interfaces client-side (those are unrelated, unimported local types — Phase 3b's problem, not this task's). If the grep turns up an unexpected consumer, stop and leave the block in place rather than guessing — report it. If clean, find and delete:
+Note the scope includes `db/` — `db/seed.ts` genuinely consumes `schema.awardedBadges` (5 references: `db.query.awardedBadges.findFirst`, three `eq(schema.awardedBadges.<col>, ...)` calls, and `db.insert(schema.awardedBadges)`). Before deleting the backward-compat block, migrate these 5 references in `db/seed.ts` to `achievements`/`schema.achievements` (mechanical rename, same as the `awardedBadges`→`achievements` rename already applied throughout `server/features/progress/service.ts` in Task 6 — no behavior change, just the identifier). `badgeProgress` has zero consumers anywhere including `db/`, so it needs no such migration.
+
+Expect zero matches outside `shared/schema.ts`'s own declaration lines, `db/seed.ts` (migrated per above), and the local `AwardedBadge`/`Badge` interfaces client-side (those are unrelated, unimported local types — Phase 3b's problem, not this task's). If the grep turns up any other unexpected consumer, stop and leave the block in place rather than guessing — report it. Once `db/seed.ts` is migrated and the grep is otherwise clean, find and delete:
 ```ts
 // For backward compatibility - these will be deprecated
 export const awardedBadges = achievements;
