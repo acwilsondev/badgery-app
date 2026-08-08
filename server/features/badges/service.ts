@@ -1,10 +1,6 @@
 import { db, pool } from "@db";
 import { eq } from "drizzle-orm";
-import {
-  badges,
-  type InsertBadge,
-  type Badge,
-} from "@shared/schema";
+import { badges, type InsertBadge, type Badge } from "@shared/schema";
 
 export async function getBadges(organizationId: number, categoryId?: number) {
   try {

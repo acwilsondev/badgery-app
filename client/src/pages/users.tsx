@@ -4,7 +4,6 @@ import { Sidebar } from "@/components/sidebar";
 import { Link } from "wouter";
 import { apiPrefix } from "@/lib/queryClient";
 import { Menu, Search, Plus, MoreHorizontal } from "lucide-react";
-import { Input as _Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/page-header";
 import {

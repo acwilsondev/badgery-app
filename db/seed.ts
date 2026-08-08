@@ -257,17 +257,17 @@ async function seed() {
     ];
 
     for (const award of awardData) {
-      const existingAward = await db.query.awardedBadges.findFirst({
+      const existingAward = await db.query.achievements.findFirst({
         where: and(
-          eq(schema.awardedBadges.badgeId, award.badgeId),
-          eq(schema.awardedBadges.userId, award.userId),
-          eq(schema.awardedBadges.awardedBy, award.awardedBy),
+          eq(schema.achievements.badgeId, award.badgeId),
+          eq(schema.achievements.userId, award.userId),
+          eq(schema.achievements.awardedBy, award.awardedBy),
         ),
       });
 
       if (!existingAward) {
         const [_newAward] = await db
-          .insert(schema.awardedBadges)
+          .insert(schema.achievements)
           .values(award)
           .returning();
         console.log("Awarded badge to user");

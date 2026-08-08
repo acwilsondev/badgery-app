@@ -63,7 +63,9 @@ export function registerBadgesRoutes(app: Express) {
       const hasAccess =
         user.role === "admin" ||
         (user.organizations &&
-          user.organizations.some((org: any) => org.id === badge.organizationId));
+          user.organizations.some(
+            (org: any) => org.id === badge.organizationId,
+          ));
 
       if (!hasAccess) {
         throw new ForbiddenError("No access to this badge's organization");

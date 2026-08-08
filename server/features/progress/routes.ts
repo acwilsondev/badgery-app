@@ -65,7 +65,9 @@ export function registerProgressRoutes(app: Express) {
         );
 
       if (!targetUserHasAccess) {
-        throw new ForbiddenError("Target user not in this badge's organization");
+        throw new ForbiddenError(
+          "Target user not in this badge's organization",
+        );
       }
 
       const awardData = achievementsInsertSchema.parse({
@@ -320,7 +322,9 @@ export function registerProgressRoutes(app: Express) {
         );
 
       if (!targetUserHasAccess) {
-        throw new ForbiddenError("Target user not in this badge's organization");
+        throw new ForbiddenError(
+          "Target user not in this badge's organization",
+        );
       }
 
       const body = z

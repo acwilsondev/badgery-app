@@ -16,9 +16,9 @@
 - **The full test suite (`npm test`, all 52 tests across 7 files) must pass after every single task, unchanged in what it asserts.** This plan is a restructure, not a redesign — status codes, response bodies, and business logic are preserved exactly except where a step below explicitly says otherwise (there are exactly two explicit, pre-authorized exceptions: the `autoAwardBadgeIfComplete` status-literal fix in Task 6, and the `progress.tsx` color-fallback bug fix in Task 7 — both already decided and documented, not new judgment calls for the implementer).
 - **Error-handling design** (binding on every feature task): four typed error classes in `server/middleware/errors.ts` — `NotFoundError` (404), `ForbiddenError` (403), `UnauthorizedError` (401), `ValidationError` (400). The spec named only the first three; `UnauthorizedError` is added because the codebase has real, distinct 401 cases (not authenticated / the session's user record no longer exists) that are semantically different from 403 (authenticated but not permitted) — collapsing them into `ForbiddenError` would be a status-code change, which is out of scope. Call this out as a deliberate, documented spec extension in the final PR description, not a silent deviation.
   - Every route handler is wrapped in `asyncHandler` (Task 1) so a thrown error — typed or not — reaches the single `errorHandler` middleware via `next(err)`. Untyped errors fall back to a generic 500.
-  - Status-code mapping is preserved exactly from current `routes.ts`: "not authenticated" / "requester's own user record missing" → `UnauthorizedError` (401, matching current behavior — this is a deliberate choice over the arguably-more-semantic `NotFoundError`, specifically to avoid changing a status code no test currently exercises but which would still be a real behavior change). "No access to X" / "Insufficient permissions" → `ForbiddenError` (403). "X not found" for a *target* resource (org/badge/user/progress) → `NotFoundError` (404). zod parse failures → `ValidationError` (400), body shape `{ message, code: "VALIDATION_ERROR", errors: <raw zod .errors array> }` — the existing tests assert `Array.isArray(res.body.errors)`, which still holds since `errors` is still the raw zod array, just now alongside `message`/`code` instead of alone.
+  - Status-code mapping is preserved exactly from current `routes.ts`: "not authenticated" / "requester's own user record missing" → `UnauthorizedError` (401, matching current behavior — this is a deliberate choice over the arguably-more-semantic `NotFoundError`, specifically to avoid changing a status code no test currently exercises but which would still be a real behavior change). "No access to X" / "Insufficient permissions" → `ForbiddenError` (403). "X not found" for a _target_ resource (org/badge/user/progress) → `NotFoundError` (404). zod parse failures → `ValidationError` (400), body shape `{ message, code: "VALIDATION_ERROR", errors: <raw zod .errors array> }` — the existing tests assert `Array.isArray(res.body.errors)`, which still holds since `errors` is still the raw zod array, just now alongside `message`/`code` instead of alone.
 - **Route-registration pattern:** each feature exports `registerXRoutes(app: Express)` (not an `express.Router`) — mirroring the existing `registerRoutes(app)` shape exactly, since routes within one feature don't share a single path prefix (e.g. badges feature has both `/organizations/:orgId/badges` and `/badges/:id`). `server/app.ts` calls each feature's register function directly.
-- **Auth middleware boundary:** `isAuthenticated`, `hasOrganizationAccess`, `isAdminOrManager` (moving to `server/middleware/auth.ts`) keep their current direct `res.status(...).json(...)` responses — they are cross-cutting guards that run *before* any feature's handler, not part of a single feature's service layer, so they are **not** migrated to the throw-based pattern in this phase. This is a deliberate scope boundary, not an oversight.
+- **Auth middleware boundary:** `isAuthenticated`, `hasOrganizationAccess`, `isAdminOrManager` (moving to `server/middleware/auth.ts`) keep their current direct `res.status(...).json(...)` responses — they are cross-cutting guards that run _before_ any feature's handler, not part of a single feature's service layer, so they are **not** migrated to the throw-based pattern in this phase. This is a deliberate scope boundary, not an oversight.
 - No placeholders: every task below either reproduces the exact current implementation being moved (verified against the actual file at plan-writing time) or specifies the exact new code, in full.
 - Spec: `docs/superpowers/specs/2026-07-13-agentic-modernization-design.md` (Phase 3 section) plus the Phase-3 follow-up bullet added during Phase 2's final review (badge-progress storage gap, `autoAwardBadgeIfComplete` status mismatch — the status-mismatch half is fixed in Task 6, the storage-gap half is explicitly **not** touched here).
 - Deferred to sibling sub-phases (not in scope here): client type consolidation (3b), dependency bumps (3c), OpenAPI rewrite (3d).
@@ -113,9 +113,11 @@ export function errorHandler(
   // Array.isArray(res.body.errors), and err.errors is still the raw zod
   // issues array either way.
   if (err instanceof z.ZodError) {
-    return res
-      .status(400)
-      .json({ message: "Validation failed", code: "VALIDATION_ERROR", errors: err.errors });
+    return res.status(400).json({
+      message: "Validation failed",
+      code: "VALIDATION_ERROR",
+      errors: err.errors,
+    });
   }
   if (err instanceof ValidationError) {
     return res
@@ -123,7 +125,9 @@ export function errorHandler(
       .json({ message: err.message, code: err.code, errors: err.errors });
   }
   if (err instanceof ApiError) {
-    return res.status(err.status).json({ message: err.message, code: err.code });
+    return res
+      .status(err.status)
+      .json({ message: err.message, code: err.code });
   }
   console.error("Unhandled error:", err);
   return res
@@ -287,6 +291,7 @@ Delete `server/middleware.ts`.
 - [ ] **Step 5: Update `server/routes.ts`'s import of the middleware module**
 
 Find, near the top of `server/routes.ts`:
+
 ```ts
 import {
   isAuthenticated,
@@ -295,7 +300,9 @@ import {
   requireSessionUserId,
 } from "./middleware";
 ```
+
 Replace with:
+
 ```ts
 import {
   isAuthenticated,
@@ -304,11 +311,13 @@ import {
   requireSessionUserId,
 } from "./middleware/auth";
 ```
+
 No other change to `server/routes.ts` in this task.
 
 - [ ] **Step 6: Add `PORT` to `server/config.ts`**
 
 Find:
+
 ```ts
 const envSchema = z.object({
   NODE_ENV: z
@@ -321,7 +330,9 @@ const envSchema = z.object({
     .optional(),
 });
 ```
+
 Replace with:
+
 ```ts
 const envSchema = z.object({
   NODE_ENV: z
@@ -335,7 +346,9 @@ const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(5000),
 });
 ```
+
 Find:
+
 ```ts
 export const config = {
   nodeEnv: env.NODE_ENV,
@@ -344,7 +357,9 @@ export const config = {
   sessionSecret: env.SESSION_SECRET ?? ephemeralSecret(),
 };
 ```
+
 Replace with:
+
 ```ts
 export const config = {
   nodeEnv: env.NODE_ENV,
@@ -358,6 +373,7 @@ export const config = {
 - [ ] **Step 7: Wire `config.port` into `server/index.ts`**
 
 Find:
+
 ```ts
   // ALWAYS serve the app on port 5000
   // this serves both the API and the client.
@@ -365,20 +381,26 @@ Find:
   const port = 5000;
   httpServer.listen(
 ```
+
 Replace with:
+
 ```ts
   // Serves both the API and the client on one port. Defaults to 5000
   // (config.port) — override with PORT if you need a different one.
   const port = config.port;
   httpServer.listen(
 ```
+
 Add `config` to `server/index.ts`'s imports — find:
+
 ```ts
 import { createApp } from "./app";
 import { setupVite, serveStatic } from "./vite";
 import { log } from "./logger";
 ```
+
 Replace with:
+
 ```ts
 import { createApp } from "./app";
 import { config } from "./config";
@@ -389,33 +411,38 @@ import { log } from "./logger";
 - [ ] **Step 8: Swap the error middleware in `server/app.ts`**
 
 Find:
+
 ```ts
-  const httpServer = await registerRoutes(app);
+const httpServer = await registerRoutes(app);
 
-  // NOTE (pre-existing, not touched by Phase 2): this rethrows `err` after
-  // already sending a response, which is dead code today only because every
-  // route handler has its own try/catch — it only fires for errors Express
-  // itself raises (e.g. malformed JSON bodies). Revisit in Phase 3; do not
-  // write a test that intentionally hits this path, it can crash the process.
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
+// NOTE (pre-existing, not touched by Phase 2): this rethrows `err` after
+// already sending a response, which is dead code today only because every
+// route handler has its own try/catch — it only fires for errors Express
+// itself raises (e.g. malformed JSON bodies). Revisit in Phase 3; do not
+// write a test that intentionally hits this path, it can crash the process.
+app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+  const status = err.status || err.statusCode || 500;
+  const message = err.message || "Internal Server Error";
 
-    res.status(status).json({ message });
-    throw err;
-  });
+  res.status(status).json({ message });
+  throw err;
+});
 
-  return { app, httpServer };
+return { app, httpServer };
 ```
+
 Replace with:
+
 ```ts
-  const httpServer = await registerRoutes(app);
+const httpServer = await registerRoutes(app);
 
-  app.use(errorHandler);
+app.use(errorHandler);
 
-  return { app, httpServer };
+return { app, httpServer };
 ```
+
 Add the import — find:
+
 ```ts
 import { config } from "./config";
 import express, { type Request, Response, NextFunction } from "express";
@@ -426,7 +453,9 @@ import { registerRoutes } from "./routes";
 import { pool } from "@db";
 import { log } from "./logger";
 ```
+
 Replace with:
+
 ```ts
 import { config } from "./config";
 import express from "express";
@@ -438,6 +467,7 @@ import { errorHandler } from "./middleware/errors";
 import { pool } from "@db";
 import { log } from "./logger";
 ```
+
 (`Request`/`Response`/`NextFunction` types are no longer referenced directly in `app.ts` once the inline error handler is gone — the request-logging middleware above it uses inferred types from `app.use((req, res, next) => {...})`, which doesn't need the explicit type imports. If `npm run check` disagrees, keep whichever subset it actually needs.)
 
 - [ ] **Step 9: Verify — typecheck, lint, full suite**
@@ -687,7 +717,11 @@ import * as z from "zod";
 import { asyncHandler } from "../../middleware/asyncHandler";
 import { isAuthenticated, requireSessionUserId } from "../../middleware/auth";
 import { ForbiddenError, NotFoundError } from "../../middleware/errors";
-import { getUsersByOrganization, getUserById, getRequesterOrThrow } from "./service";
+import {
+  getUsersByOrganization,
+  getUserById,
+  getRequesterOrThrow,
+} from "./service";
 
 export function registerUsersRoutes(app: Express) {
   const apiPrefix = "/api/v1";
@@ -772,138 +806,150 @@ Note: the original `GET /users/:id` handler used `parseInt(req.params.id)` with 
 - [ ] **Step 3: Wire `getUserById` in `server/middleware/auth.ts` from the new service**
 
 Find:
+
 ```ts
 import { Request, Response, NextFunction } from "express";
 import * as storage from "../storage";
 ```
+
 Replace with:
+
 ```ts
 import { Request, Response, NextFunction } from "express";
 import { getUserById } from "../features/users/service";
 ```
+
 Then find both occurrences of `storage.getUserById(req.session.userId)` in this file (in `hasOrganizationAccess` and `isAdminOrManager`) and replace each with `getUserById(req.session.userId)`. No other change to this file.
 
 - [ ] **Step 4: Mount the users feature in `server/app.ts`**
 
 Find:
+
 ```ts
 import { registerRoutes } from "./routes";
 import { errorHandler } from "./middleware/errors";
 ```
+
 Replace with:
+
 ```ts
 import { registerRoutes } from "./routes";
 import { registerUsersRoutes } from "./features/users/routes";
 import { errorHandler } from "./middleware/errors";
 ```
+
 Find:
-```ts
-  const httpServer = await registerRoutes(app);
 
-  app.use(errorHandler);
+```ts
+const httpServer = await registerRoutes(app);
+
+app.use(errorHandler);
 ```
-Replace with:
-```ts
-  registerUsersRoutes(app);
-  const httpServer = await registerRoutes(app);
 
-  app.use(errorHandler);
+Replace with:
+
+```ts
+registerUsersRoutes(app);
+const httpServer = await registerRoutes(app);
+
+app.use(errorHandler);
 ```
 
 - [ ] **Step 5: Delete the 2 users routes from `server/routes.ts`**
 
 Find and delete this entire block (the `// User endpoints` section):
+
 ```ts
-  // User endpoints
-  app.get(
-    `${apiPrefix}/organizations/:orgId/users`,
-    isAuthenticated,
-    async (req, res) => {
-      try {
-        const orgId = parseInt(req.params.orgId);
-
-        // Verify organization access
-        const userId = requireSessionUserId(req);
-        const currentUser = await storage.getUserById(userId);
-
-        if (!currentUser) {
-          return res.status(401).json({ message: "User not found" });
-        }
-
-        const hasAccess =
-          currentUser.role === "admin" ||
-          (currentUser.organizations &&
-            currentUser.organizations.some((org: any) => org.id === orgId));
-
-        if (!hasAccess) {
-          return res
-            .status(403)
-            .json({ message: "No access to this organization" });
-        }
-
-        const users = await storage.getUsersByOrganization(orgId);
-
-        return res.status(200).json(users);
-      } catch (error) {
-        console.error("Error fetching users:", error);
-        return res.status(500).json({ message: "Internal server error" });
-      }
-    },
-  );
-
-  app.get(`${apiPrefix}/users/:id`, isAuthenticated, async (req, res) => {
+// User endpoints
+app.get(
+  `${apiPrefix}/organizations/:orgId/users`,
+  isAuthenticated,
+  async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
-      const user = await storage.getUserById(id);
+      const orgId = parseInt(req.params.orgId);
 
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
+      // Verify organization access
+      const userId = requireSessionUserId(req);
+      const currentUser = await storage.getUserById(userId);
+
+      if (!currentUser) {
+        return res.status(401).json({ message: "User not found" });
       }
 
-      // If requesting another user, verify they're in the same organization
-      const requesterId = requireSessionUserId(req);
+      const hasAccess =
+        currentUser.role === "admin" ||
+        (currentUser.organizations &&
+          currentUser.organizations.some((org: any) => org.id === orgId));
 
-      if (id !== requesterId) {
-        const requester = await storage.getUserById(requesterId);
-
-        if (!requester) {
-          return res.status(401).json({ message: "Requester not found" });
-        }
-
-        // Admin can view any user
-        if (requester.role !== "admin") {
-          // Check if the requested user and requester share any organization
-          const requesterOrgIds = requester.organizations
-            ? requester.organizations.map((org: any) => org.id)
-            : [];
-          const userOrgIds = user.organizations
-            ? user.organizations.map((org: any) => org.id)
-            : [];
-
-          // Find common organizations
-          const sharedOrgs = requesterOrgIds.filter((orgId: number) =>
-            userOrgIds.includes(orgId),
-          );
-
-          if (sharedOrgs.length === 0) {
-            return res.status(403).json({ message: "No access to this user" });
-          }
-        }
+      if (!hasAccess) {
+        return res
+          .status(403)
+          .json({ message: "No access to this organization" });
       }
 
-      return res.status(200).json({
-        id: user.id,
-        username: user.username,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        organizations: user.organizations || [],
-      });
+      const users = await storage.getUsersByOrganization(orgId);
+
+      return res.status(200).json(users);
     } catch (error) {
-      console.error("Error fetching user:", error);
+      console.error("Error fetching users:", error);
       return res.status(500).json({ message: "Internal server error" });
     }
-  });
+  },
+);
+
+app.get(`${apiPrefix}/users/:id`, isAuthenticated, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const user = await storage.getUserById(id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // If requesting another user, verify they're in the same organization
+    const requesterId = requireSessionUserId(req);
+
+    if (id !== requesterId) {
+      const requester = await storage.getUserById(requesterId);
+
+      if (!requester) {
+        return res.status(401).json({ message: "Requester not found" });
+      }
+
+      // Admin can view any user
+      if (requester.role !== "admin") {
+        // Check if the requested user and requester share any organization
+        const requesterOrgIds = requester.organizations
+          ? requester.organizations.map((org: any) => org.id)
+          : [];
+        const userOrgIds = user.organizations
+          ? user.organizations.map((org: any) => org.id)
+          : [];
+
+        // Find common organizations
+        const sharedOrgs = requesterOrgIds.filter((orgId: number) =>
+          userOrgIds.includes(orgId),
+        );
+
+        if (sharedOrgs.length === 0) {
+          return res.status(403).json({ message: "No access to this user" });
+        }
+      }
+    }
+
+    return res.status(200).json({
+      id: user.id,
+      username: user.username,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      organizations: user.organizations || [],
+    });
+  } catch (error) {
+    console.error("Error fetching user:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+});
 ```
 
 **Every other call to `storage.getUserById(...)` elsewhere in `routes.ts` stays exactly as-is for now** (still calling the storage.ts version, which still exists and still works — organizations/badges/progress routes migrate in later tasks). Do not touch any route outside the block above.
@@ -919,22 +965,30 @@ After this step, `server/storage.ts` still has `getUserById`, `getUserByUsername
 - [ ] **Step 7: Update `tests/support/fixtures.ts`**
 
 Find:
+
 ```ts
 import * as storage from "../../server/storage";
 ```
+
 Replace with:
+
 ```ts
 import * as storage from "../../server/storage";
 import { createUser } from "../../server/features/users/service";
 ```
+
 Find, inside `createTestUser`:
+
 ```ts
   const user = await storage.createUser(
 ```
+
 Replace with:
+
 ```ts
   const user = await createUser(
 ```
+
 (`storage` is still imported and still used by `createTestOrganization`, `createTestCategory`, `createTestBadge` — do not remove the `storage` import itself, just stop using `storage.createUser`.)
 
 - [ ] **Step 8: Verify — typecheck, lint, full suite**
@@ -975,7 +1029,10 @@ git commit -m "feat: extract users feature (routes+service), migrate off storage
 ```ts
 import crypto from "node:crypto";
 import argon2 from "argon2";
-import { getUserByUsername, createUser as createUserRecord } from "../users/service";
+import {
+  getUserByUsername,
+  createUser as createUserRecord,
+} from "../users/service";
 import { UnauthorizedError, ApiError } from "../../middleware/errors";
 import type { RegisterUser } from "@shared/schema";
 
@@ -1145,28 +1202,35 @@ Note: `/auth/me` and `/auth/logout` are left as close to their original inline f
 - [ ] **Step 3: Mount the auth feature in `server/app.ts`**
 
 Find:
+
 ```ts
 import { registerRoutes } from "./routes";
 import { registerUsersRoutes } from "./features/users/routes";
 import { errorHandler } from "./middleware/errors";
 ```
+
 Replace with:
+
 ```ts
 import { registerRoutes } from "./routes";
 import { registerUsersRoutes } from "./features/users/routes";
 import { registerAuthRoutes } from "./features/auth/routes";
 import { errorHandler } from "./middleware/errors";
 ```
+
 Find:
+
 ```ts
-  registerUsersRoutes(app);
-  const httpServer = await registerRoutes(app);
+registerUsersRoutes(app);
+const httpServer = await registerRoutes(app);
 ```
+
 Replace with:
+
 ```ts
-  registerUsersRoutes(app);
-  registerAuthRoutes(app);
-  const httpServer = await registerRoutes(app);
+registerUsersRoutes(app);
+registerAuthRoutes(app);
+const httpServer = await registerRoutes(app);
 ```
 
 - [ ] **Step 4: Delete the 4 auth routes from `server/routes.ts`**
@@ -1561,24 +1625,31 @@ export function registerOrganizationsRoutes(app: Express) {
 - [ ] **Step 3: Mount the organizations feature in `server/app.ts`**
 
 Find:
+
 ```ts
 import { registerAuthRoutes } from "./features/auth/routes";
 ```
+
 Replace with:
+
 ```ts
 import { registerAuthRoutes } from "./features/auth/routes";
 import { registerOrganizationsRoutes } from "./features/organizations/routes";
 ```
+
 Find:
+
 ```ts
-  registerAuthRoutes(app);
-  const httpServer = await registerRoutes(app);
+registerAuthRoutes(app);
+const httpServer = await registerRoutes(app);
 ```
+
 Replace with:
+
 ```ts
-  registerAuthRoutes(app);
-  registerOrganizationsRoutes(app);
-  const httpServer = await registerRoutes(app);
+registerAuthRoutes(app);
+registerOrganizationsRoutes(app);
+const httpServer = await registerRoutes(app);
 ```
 
 - [ ] **Step 4: Delete the 7 organizations/categories/stats routes from `server/routes.ts`**
@@ -1592,11 +1663,14 @@ Delete `getOrganizations`, `getOrganizationById`, `createOrganization`, `updateO
 - [ ] **Step 6: Update `tests/support/fixtures.ts`**
 
 Find:
+
 ```ts
 import * as storage from "../../server/storage";
 import { createUser } from "../../server/features/users/service";
 ```
+
 Replace with:
+
 ```ts
 import * as storage from "../../server/storage";
 import { createUser } from "../../server/features/users/service";
@@ -1605,6 +1679,7 @@ import {
   createBadgeCategory,
 } from "../../server/features/organizations/service";
 ```
+
 In `createTestOrganization`, change `return storage.createOrganization({` to `return createOrganization({`. In `createTestCategory`, change `return storage.createBadgeCategory({` to `return createBadgeCategory({`.
 
 - [ ] **Step 7: Verify — typecheck, lint, full suite**
@@ -1646,11 +1721,7 @@ git commit -m "feat: extract organizations feature (routes+service, incl. catego
 ```ts
 import { db, pool } from "@db";
 import { eq } from "drizzle-orm";
-import {
-  badges,
-  type InsertBadge,
-  type Badge,
-} from "@shared/schema";
+import { badges, type InsertBadge, type Badge } from "@shared/schema";
 
 export async function getBadges(organizationId: number, categoryId?: number) {
   try {
@@ -1833,7 +1904,9 @@ export function registerBadgesRoutes(app: Express) {
       const hasAccess =
         user.role === "admin" ||
         (user.organizations &&
-          user.organizations.some((org: any) => org.id === badge.organizationId));
+          user.organizations.some(
+            (org: any) => org.id === badge.organizationId,
+          ));
 
       if (!hasAccess) {
         throw new ForbiddenError("No access to this badge's organization");
@@ -1959,24 +2032,31 @@ export function registerBadgesRoutes(app: Express) {
 - [ ] **Step 3: Mount the badges feature in `server/app.ts`**
 
 Find:
+
 ```ts
 import { registerOrganizationsRoutes } from "./features/organizations/routes";
 ```
+
 Replace with:
+
 ```ts
 import { registerOrganizationsRoutes } from "./features/organizations/routes";
 import { registerBadgesRoutes } from "./features/badges/routes";
 ```
+
 Find:
+
 ```ts
-  registerOrganizationsRoutes(app);
-  const httpServer = await registerRoutes(app);
+registerOrganizationsRoutes(app);
+const httpServer = await registerRoutes(app);
 ```
+
 Replace with:
+
 ```ts
-  registerOrganizationsRoutes(app);
-  registerBadgesRoutes(app);
-  const httpServer = await registerRoutes(app);
+registerOrganizationsRoutes(app);
+registerBadgesRoutes(app);
+const httpServer = await registerRoutes(app);
 ```
 
 - [ ] **Step 4: Delete the 5 badges routes from `server/routes.ts`**
@@ -1992,13 +2072,16 @@ Delete `getBadges`, `createBadge`, `updateBadge`, `deleteBadge` — confirm each
 - [ ] **Step 6: Update `tests/support/fixtures.ts`**
 
 Find:
+
 ```ts
 import {
   createOrganization,
   createBadgeCategory,
 } from "../../server/features/organizations/service";
 ```
+
 Replace with:
+
 ```ts
 import {
   createOrganization,
@@ -2006,6 +2089,7 @@ import {
 } from "../../server/features/organizations/service";
 import { createBadge } from "../../server/features/badges/service";
 ```
+
 In `createTestBadge`, change `return storage.createBadge({` to `return createBadge({`. At this point `storage` (the `import * as storage from "../../server/storage"` line) has no remaining callers in this file — remove that import entirely if `npm run lint` confirms it's unused.
 
 - [ ] **Step 7: Verify — typecheck, lint, full suite**
@@ -2041,7 +2125,7 @@ git commit -m "feat: extract badges feature (routes+service)"
 - Consumes: `getBadgeById` (`server/features/badges/service.ts`, Task 5), `getRequesterOrThrow` (`server/features/users/service.ts`, Task 2).
 - Produces: `awardBadge`, `getAwardedBadges`, `getUserAwardedBadges`, `getBadgeProgress`, `getUserProgressForAllBadges`, `getBadgeProgressForOrganization`, `createOrUpdateBadgeProgress`, `autoAwardBadgeIfComplete` from `server/features/progress/service.ts`.
 
-**One deliberate, pre-authorized behavior change in this task** (the other exception besides Task 7's `progress.tsx` fix, both called out in Global Constraints): `autoAwardBadgeIfComplete` currently writes `status: "completed"` when auto-awarding a badge, inconsistent with the manual award path's `status: "achieved"` (fixed during Phase 2). This was tracked as a required Phase 3 item in the spec doc (`docs/superpowers/specs/2026-07-13-agentic-modernization-design.md`, Phase 3 section) specifically *because* this task would be rewriting this exact function — fix it here: change `"completed"` to `"achieved"`. **Do not** touch the actual progress-persistence bug (the flat-percentage-has-no-storage gap) — that's explicitly out of scope, tracked separately, and this task's two "documents a known bug" tests (`tests/progress.test.ts`) must keep passing unchanged, proving the no-op behavior is still exactly what it was.
+**One deliberate, pre-authorized behavior change in this task** (the other exception besides Task 7's `progress.tsx` fix, both called out in Global Constraints): `autoAwardBadgeIfComplete` currently writes `status: "completed"` when auto-awarding a badge, inconsistent with the manual award path's `status: "achieved"` (fixed during Phase 2). This was tracked as a required Phase 3 item in the spec doc (`docs/superpowers/specs/2026-07-13-agentic-modernization-design.md`, Phase 3 section) specifically _because_ this task would be rewriting this exact function — fix it here: change `"completed"` to `"achieved"`. **Do not** touch the actual progress-persistence bug (the flat-percentage-has-no-storage gap) — that's explicitly out of scope, tracked separately, and this task's two "documents a known bug" tests (`tests/progress.test.ts`) must keep passing unchanged, proving the no-op behavior is still exactly what it was.
 
 This task also collapses the `awardedBadges`/`achievements` dual-naming (both names refer to the same Drizzle table today, `shared/schema.ts:509` `export const awardedBadges = achievements;`) down to `achievements` only, throughout the new service — the old duality was a `storage.ts` artifact, not a real distinction.
 
@@ -2643,7 +2727,9 @@ export function registerProgressRoutes(app: Express) {
         );
 
       if (!targetUserHasAccess) {
-        throw new ForbiddenError("Target user not in this badge's organization");
+        throw new ForbiddenError(
+          "Target user not in this badge's organization",
+        );
       }
 
       const awardData = achievementsInsertSchema.parse({
@@ -2898,7 +2984,9 @@ export function registerProgressRoutes(app: Express) {
         );
 
       if (!targetUserHasAccess) {
-        throw new ForbiddenError("Target user not in this badge's organization");
+        throw new ForbiddenError(
+          "Target user not in this badge's organization",
+        );
       }
 
       const body = z
@@ -2942,25 +3030,33 @@ export function registerProgressRoutes(app: Express) {
 - [ ] **Step 3: Mount the progress feature in `server/app.ts`**
 
 Find:
+
 ```ts
 import { registerBadgesRoutes } from "./features/badges/routes";
 ```
+
 Replace with:
+
 ```ts
 import { registerBadgesRoutes } from "./features/badges/routes";
 import { registerProgressRoutes } from "./features/progress/routes";
 ```
+
 Find:
+
 ```ts
-  registerBadgesRoutes(app);
-  const httpServer = await registerRoutes(app);
+registerBadgesRoutes(app);
+const httpServer = await registerRoutes(app);
 ```
+
 Replace with:
+
 ```ts
-  registerBadgesRoutes(app);
-  registerProgressRoutes(app);
-  const httpServer = await registerRoutes(app);
+registerBadgesRoutes(app);
+registerProgressRoutes(app);
+const httpServer = await registerRoutes(app);
 ```
+
 `server/app.ts` now calls all five `registerXRoutes(app)` functions plus the (now nearly empty) `registerRoutes(app)`.
 
 - [ ] **Step 4: Delete the remaining 7 routes from `server/routes.ts`**
@@ -2980,7 +3076,7 @@ Prune every now-unused import at the top of the file — at this point essential
 
 Delete `awardBadge`, `getAwardedBadges`, `getUserAwardedBadges`, `getBadgeProgress`, `getUserProgressForAllBadges`, `getBadgeProgressForOrganization`, `createOrUpdateBadgeProgress`, `autoAwardBadgeIfComplete`. Also delete the dead `_getTableColumns` function (confirmed zero callers during Phase 3 research).
 
-Additionally, delete `getUserById` and `getBadgeById` from `server/storage.ts`. Both were deliberately left there by earlier tasks (duplicated alongside `features/users/service.ts` and `features/badges/service.ts` respectively) because callers remained: `routes.ts`'s not-yet-migrated organizations/badges/progress routes were still calling `storage.getUserById`, and `getBadgeById` additionally had two *internal* callers inside `storage.ts`'s own `getBadgeProgressForOrganization`/`getUserProgressForAllBadges` (both deleted by this same step) plus 3 external `storage.getBadgeById(...)` calls in `routes.ts`'s award/progress routes (deleted by Step 4 above). After Step 4's route deletion and this step's function deletions, both have zero remaining callers — confirm with `grep -n "storage\.getUserById\|storage\.getBadgeById\|[^.]getBadgeById(" server/routes.ts server/storage.ts` that nothing unexpected remains before deleting (some matches from `server/features/*/service.ts` files are expected and fine — those are the new implementations, not `storage.ts` callers).
+Additionally, delete `getUserById` and `getBadgeById` from `server/storage.ts`. Both were deliberately left there by earlier tasks (duplicated alongside `features/users/service.ts` and `features/badges/service.ts` respectively) because callers remained: `routes.ts`'s not-yet-migrated organizations/badges/progress routes were still calling `storage.getUserById`, and `getBadgeById` additionally had two _internal_ callers inside `storage.ts`'s own `getBadgeProgressForOrganization`/`getUserProgressForAllBadges` (both deleted by this same step) plus 3 external `storage.getBadgeById(...)` calls in `routes.ts`'s award/progress routes (deleted by Step 4 above). After Step 4's route deletion and this step's function deletions, both have zero remaining callers — confirm with `grep -n "storage\.getUserById\|storage\.getBadgeById\|[^.]getBadgeById(" server/routes.ts server/storage.ts` that nothing unexpected remains before deleting (some matches from `server/features/*/service.ts` files are expected and fine — those are the new implementations, not `storage.ts` callers).
 
 Prune now-unused imports left over from all of the above. `server/storage.ts` should now be either empty or contain only import statements with nothing left to export — do not delete the file itself yet, that's Task 7.
 
@@ -3027,33 +3123,44 @@ git rm server/routes.ts server/storage.ts
 - [ ] **Step 2: Replace `registerRoutes` with direct server creation in `server/app.ts`**
 
 Find:
+
 ```ts
 import { registerRoutes } from "./routes";
 ```
+
 Delete that line. Find:
+
 ```ts
 import { pool } from "@db";
 ```
+
 Replace with:
+
 ```ts
 import { createServer } from "http";
 import { pool } from "@db";
 ```
+
 Find:
+
 ```ts
-  registerProgressRoutes(app);
-  const httpServer = await registerRoutes(app);
+registerProgressRoutes(app);
+const httpServer = await registerRoutes(app);
 ```
+
 Replace with:
+
 ```ts
-  registerProgressRoutes(app);
-  const httpServer = createServer(app);
+registerProgressRoutes(app);
+const httpServer = createServer(app);
 ```
+
 (`createApp` was already `async` before this change and stays `async` — nothing else in its signature changes; it still returns `{ app, httpServer }`.)
 
 - [ ] **Step 3: Clean up `shared/schema.ts`**
 
 Delete the 3 dead imports — find:
+
 ```ts
 import {
   pgTable,
@@ -3068,7 +3175,9 @@ import {
   numeric as _numeric,
 } from "drizzle-orm/pg-core";
 ```
+
 Replace with:
+
 ```ts
 import {
   pgTable,
@@ -3082,12 +3191,15 @@ import {
 ```
 
 Delete the backward-compat block — first confirm it's genuinely unused now that `server/storage.ts` (its only real consumer) is deleted:
+
 ```bash
 grep -rn "awardedBadges\b\|badgeProgress\b\|InsertAwardedBadge\|InsertBadgeProgress\|AwardedBadge\b\|BadgeProgress\b" server/ client/src/ tests/ db/ shared/schema.ts
 ```
+
 Note the scope includes `db/` — `db/seed.ts` genuinely consumes `schema.awardedBadges` (5 references: `db.query.awardedBadges.findFirst`, three `eq(schema.awardedBadges.<col>, ...)` calls, and `db.insert(schema.awardedBadges)`). Before deleting the backward-compat block, migrate these 5 references in `db/seed.ts` to `achievements`/`schema.achievements` (mechanical rename, same as the `awardedBadges`→`achievements` rename already applied throughout `server/features/progress/service.ts` in Task 6 — no behavior change, just the identifier). `badgeProgress` has zero consumers anywhere including `db/`, so it needs no such migration.
 
 Expect zero matches outside `shared/schema.ts`'s own declaration lines, `db/seed.ts` (migrated per above), and the local `AwardedBadge`/`Badge` interfaces client-side (those are unrelated, unimported local types — Phase 3b's problem, not this task's). If the grep turns up any other unexpected consumer, stop and leave the block in place rather than guessing — report it. Once `db/seed.ts` is migrated and the grep is otherwise clean, find and delete:
+
 ```ts
 // For backward compatibility - these will be deprecated
 export const awardedBadges = achievements;
@@ -3104,6 +3216,7 @@ export type BadgeProgress = Progress;
 - [ ] **Step 4: Fix the `${badge.color}20` bug in `client/src/pages/progress.tsx` (both instances)**
 
 Instance 1 — find:
+
 ```ts
   style={{
     backgroundColor:
@@ -3112,7 +3225,9 @@ Instance 1 — find:
     color: badge.color || "#5E2B97",
   }}
 ```
+
 Replace with:
+
 ```ts
   style={{
     backgroundColor: badge.color
@@ -3123,6 +3238,7 @@ Replace with:
 ```
 
 Instance 2 — find:
+
 ```ts
   style={{
     backgroundColor:
@@ -3131,7 +3247,9 @@ Instance 2 — find:
     color: item.badgeColor || "#5E2B97",
   }}
 ```
+
 Replace with:
+
 ```ts
   style={{
     backgroundColor: item.badgeColor
@@ -3158,12 +3276,14 @@ In `client/src/pages/users.tsx`: delete the unused `Input as _Input` import alia
 - [ ] **Step 6: Clean up `client/src/components/badge-dialog.tsx`**
 
 Delete the dead `_CriteriaSection` type:
+
 ```ts
 type _CriteriaSection = {
   title: string;
   criteria: CriterionItem[];
 };
 ```
+
 Delete the dead `cn as _cn` import (confirm via grep for `_cn` in this file first — if genuinely unused, remove it from the `@/lib/utils` import line). Delete the dead `const [_showProgressOptions, _setShowProgressOptions] = useState(true);` line (confirmed unused — the component always shows progress options unconditionally per its own comment).
 
 **Do not touch `client/src/pages/register.tsx`'s `confirmPassword: _confirmPassword` destructure.** This is intentional omit-via-destructure (stripping `confirmPassword` out of the object before the remaining `userData` is sent to the API), not leftover dead code — deleting the line would silently start sending `confirmPassword` in the register POST body. Leave it exactly as-is; it's flagged here only so nobody "cleans it up" by mistake later in this task.
@@ -3171,6 +3291,7 @@ Delete the dead `cn as _cn` import (confirm via grep for `_cn` in this file firs
 - [ ] **Step 7: Fully re-enable `no-constant-binary-expression`, scope `no-require-imports`**
 
 In `eslint.config.js`, find:
+
 ```js
       // Flags a pre-existing `templateLiteral || fallback` pattern in
       // progress.tsx where the left side is always truthy; the fallback is
@@ -3184,7 +3305,9 @@ In `eslint.config.js`, find:
   },
 );
 ```
+
 Replace with:
+
 ```js
     },
   },
@@ -3201,6 +3324,7 @@ Replace with:
   },
 );
 ```
+
 (`no-constant-binary-expression` is not mentioned anywhere in the new content — it's fully re-enabled by omission, now that Step 4 fixed its only two violations. Verify the surrounding brace/paren structure matches `tseslint.config(...)`'s call signature — it takes any number of config objects as separate arguments, so adding one more object before the closing `)` is syntactically valid; re-read the full current file before editing to get the exact brace nesting right, since this excerpt only shows the tail.)
 
 - [ ] **Step 8: Verify — typecheck, lint, format, full suite**
@@ -3229,7 +3353,7 @@ After Task 7: final whole-branch review (superpowers:requesting-code-review, mos
 
 1. A fourth typed error class, `UnauthorizedError` (401), added beyond the spec's named three (`NotFoundError`, `ForbiddenError`, `ValidationError`) — the app has real, distinct 401 cases that would otherwise have to be miscoded as 403s, a genuine status-code regression.
 2. `autoAwardBadgeIfComplete`'s `status: "completed"` → `"achieved"` fix (Task 6) — pre-authorized via the Phase 3 spec bullet written during Phase 2's final review, not a new judgment call.
-3. `progress.tsx`'s `${badge.color}20` truthy-fallback bug, both instances, fixed (Task 7) — this is the exact bug the Phase 0 review flagged `no-constant-binary-expression` as disabled *for*; fixing it is why that rule can be fully re-enabled.
+3. `progress.tsx`'s `${badge.color}20` truthy-fallback bug, both instances, fixed (Task 7) — this is the exact bug the Phase 0 review flagged `no-constant-binary-expression` as disabled _for_; fixing it is why that rule can be fully re-enabled.
 4. `GET /users/:id` and `GET /organizations/:orgId/users` (Task 2) now validate `:id`/`:orgId` via `z.coerce.number()` instead of unchecked `parseInt`, changing a malformed-id response from 404 to 400 — flagged in Task 2 for the task reviewer to explicitly confirm, not silently accepted.
 5. `getUsers` and `updateUser` (dead, zero-caller exports) deleted rather than migrated (Task 2); `getBadgeCategoryById` (dead) deleted rather than migrated (Task 4); `_getTableColumns` (dead function) deleted (Task 6).
 6. The `awardedBadges`/`achievements` and `badgeProgress`/`progress` naming duality collapsed to one name each (`achievements`, `progress`) throughout the new `progress` feature and `shared/schema.ts`'s backward-compat aliases removed (Tasks 6-7).

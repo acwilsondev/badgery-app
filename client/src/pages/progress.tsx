@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@shared/schema";
-import { useToast } from "@/hooks/use-toast";
 import { Sidebar } from "@/components/sidebar";
 import { apiPrefix } from "@/lib/queryClient";
 import { BadgeProgressDialog } from "@/components/badge-progress-dialog";
@@ -42,7 +41,6 @@ interface ProgressProps {
 }
 
 export default function ProgressTracker({ user, onLogout }: ProgressProps) {
-  const { toast: _toast } = useToast();
   const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   const [progressDialogOpen, setProgressDialogOpen] = useState(false);
@@ -289,9 +287,9 @@ export default function ProgressTracker({ user, onLogout }: ProgressProps) {
                                 <div
                                   className="w-8 h-8 flex items-center justify-center rounded-full"
                                   style={{
-                                    backgroundColor:
-                                      `${badge.color}20` ||
-                                      "rgba(94, 43, 151, 0.1)",
+                                    backgroundColor: badge.color
+                                      ? `${badge.color}20`
+                                      : "rgba(94, 43, 151, 0.1)",
                                     color: badge.color || "#5E2B97",
                                   }}
                                 >
@@ -437,9 +435,9 @@ export default function ProgressTracker({ user, onLogout }: ProgressProps) {
                                     <div
                                       className="w-6 h-6 flex items-center justify-center rounded-full"
                                       style={{
-                                        backgroundColor:
-                                          `${item.badgeColor}20` ||
-                                          "rgba(94, 43, 151, 0.1)",
+                                        backgroundColor: item.badgeColor
+                                          ? `${item.badgeColor}20`
+                                          : "rgba(94, 43, 151, 0.1)",
                                         color: item.badgeColor || "#5E2B97",
                                       }}
                                     >

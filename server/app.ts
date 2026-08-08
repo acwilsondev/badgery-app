@@ -3,13 +3,13 @@ import express from "express";
 import "./types"; // Import session type extensions
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
-import { registerRoutes } from "./routes";
 import { registerUsersRoutes } from "./features/users/routes";
 import { registerAuthRoutes } from "./features/auth/routes";
 import { registerOrganizationsRoutes } from "./features/organizations/routes";
 import { registerBadgesRoutes } from "./features/badges/routes";
 import { registerProgressRoutes } from "./features/progress/routes";
 import { errorHandler } from "./middleware/errors";
+import { createServer } from "http";
 import { pool } from "@db";
 import { log } from "./logger";
 
@@ -80,7 +80,7 @@ export async function createApp() {
   registerOrganizationsRoutes(app);
   registerBadgesRoutes(app);
   registerProgressRoutes(app);
-  const httpServer = await registerRoutes(app);
+  const httpServer = createServer(app);
 
   app.use(errorHandler);
 

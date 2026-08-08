@@ -5,10 +5,7 @@ import {
   integer,
   boolean,
   timestamp,
-  json as _json,
-  uuid as _uuid,
   jsonb,
-  numeric as _numeric,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -505,14 +502,3 @@ export const progressRelations = relations(progress, ({ one }) => ({
     references: [users.id],
   }),
 }));
-
-// For backward compatibility - these will be deprecated
-export const awardedBadges = achievements;
-export const awardedBadgesInsertSchema = achievementsInsertSchema;
-export type InsertAwardedBadge = InsertAchievement;
-export type AwardedBadge = Achievement;
-
-export const badgeProgress = progress;
-export const badgeProgressInsertSchema = progressInsertSchema;
-export type InsertBadgeProgress = InsertProgress;
-export type BadgeProgress = Progress;

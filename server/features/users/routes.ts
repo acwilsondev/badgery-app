@@ -3,7 +3,11 @@ import * as z from "zod";
 import { asyncHandler } from "../../middleware/asyncHandler";
 import { isAuthenticated, requireSessionUserId } from "../../middleware/auth";
 import { ForbiddenError, NotFoundError } from "../../middleware/errors";
-import { getUsersByOrganization, getUserById, getRequesterOrThrow } from "./service";
+import {
+  getUsersByOrganization,
+  getUserById,
+  getRequesterOrThrow,
+} from "./service";
 
 export function registerUsersRoutes(app: Express) {
   const apiPrefix = "/api/v1";

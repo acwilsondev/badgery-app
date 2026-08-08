@@ -1,6 +1,9 @@
 import crypto from "node:crypto";
 import argon2 from "argon2";
-import { getUserByUsername, createUser as createUserRecord } from "../users/service";
+import {
+  getUserByUsername,
+  createUser as createUserRecord,
+} from "../users/service";
 import { UnauthorizedError, ApiError } from "../../middleware/errors";
 import type { RegisterUser } from "@shared/schema";
 

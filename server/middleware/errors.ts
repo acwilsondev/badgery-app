@@ -59,9 +59,11 @@ export function errorHandler(
   // Array.isArray(res.body.errors), and err.errors is still the raw zod
   // issues array either way.
   if (err instanceof z.ZodError) {
-    return res
-      .status(400)
-      .json({ message: "Validation failed", code: "VALIDATION_ERROR", errors: err.errors });
+    return res.status(400).json({
+      message: "Validation failed",
+      code: "VALIDATION_ERROR",
+      errors: err.errors,
+    });
   }
   if (err instanceof ValidationError) {
     return res
@@ -69,7 +71,9 @@ export function errorHandler(
       .json({ message: err.message, code: err.code, errors: err.errors });
   }
   if (err instanceof ApiError) {
-    return res.status(err.status).json({ message: err.message, code: err.code });
+    return res
+      .status(err.status)
+      .json({ message: err.message, code: err.code });
   }
   console.error("Unhandled error:", err);
   return res
