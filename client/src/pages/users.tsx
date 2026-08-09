@@ -24,6 +24,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { getInitials } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import type { AuthUser } from "@/types/session";
+import type { OrgUser } from "@/types/user";
 
 interface UsersProps {
   user: AuthUser;
@@ -35,12 +36,12 @@ export default function Users({ user, onLogout }: UsersProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const { data: users = [], isLoading } = useQuery<any[]>({
+  const { data: users = [], isLoading } = useQuery<OrgUser[]>({
     queryKey: [`${apiPrefix}/organizations/${organizationId}/users`],
   });
 
   const filteredUsers = Array.isArray(users)
-    ? users.filter((user: any) => {
+    ? users.filter((user: OrgUser) => {
         return searchQuery
           ? user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
               user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -113,7 +114,7 @@ export default function Users({ user, onLogout }: UsersProps) {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredUsers.map((user: any) => (
+                      {filteredUsers.map((user: OrgUser) => (
                         <TableRow
                           key={user.id}
                           className="border-b border-border hover:bg-muted/30 cursor-pointer transition-colors"
