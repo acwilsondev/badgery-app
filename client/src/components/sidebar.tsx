@@ -27,12 +27,7 @@ import { useState, useEffect } from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { apiPrefix } from "@/lib/queryClient";
 import type { AuthUser } from "@/types/session";
-
-interface Organization {
-  id: number;
-  name: string;
-  description?: string;
-}
+import type { Organization } from "@shared/schema";
 
 interface SidebarProps {
   user: AuthUser;
