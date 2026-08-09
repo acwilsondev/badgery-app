@@ -98,29 +98,34 @@ function Router() {
           <RegisterPage />
         )}
       </Route>
+      {/* currentUser is guaranteed non-null below: the redirect guard
+          above already sends unauthenticated visitors to "/" for every
+          route path except "/" and "/register", which are handled by
+          their own ternaries above. TS can't infer this across the
+          <Switch>'s separate route branches, hence the assertions. */}
       <Route path="/dashboard">
-        <Dashboard user={currentUser} onLogout={handleLogout} />
+        <Dashboard user={currentUser!} onLogout={handleLogout} />
       </Route>
       <Route path="/badges">
-        <Badges user={currentUser} onLogout={handleLogout} />
+        <Badges user={currentUser!} onLogout={handleLogout} />
       </Route>
       <Route path="/users">
-        <Users user={currentUser} onLogout={handleLogout} />
+        <Users user={currentUser!} onLogout={handleLogout} />
       </Route>
       <Route path="/users/:id">
         {(params) => (
           <UserProfile
             id={params.id}
-            user={currentUser}
+            user={currentUser!}
             onLogout={handleLogout}
           />
         )}
       </Route>
       <Route path="/progress">
-        <ProgressTracker user={currentUser} onLogout={handleLogout} />
+        <ProgressTracker user={currentUser!} onLogout={handleLogout} />
       </Route>
       <Route path="/branding">
-        <Branding user={currentUser} onLogout={handleLogout} />
+        <Branding user={currentUser!} onLogout={handleLogout} />
       </Route>
       <Route>
         <NotFound />
