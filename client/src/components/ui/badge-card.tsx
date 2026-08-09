@@ -1,21 +1,4 @@
-import { Badge as BaseBadge } from "@shared/schema";
-
-// Extended Badge type with criteriaSections and category
-type Badge = BaseBadge & {
-  criteriaSections?: Array<{
-    title: string;
-    criteria: Array<{
-      id: number;
-      name: string;
-      description?: string;
-    }>;
-  }>;
-  category?: {
-    id: number;
-    name: string;
-  } | null;
-  awarded?: number;
-};
+import type { BadgeWithExtras as Badge } from "@/types/badge";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { generateBadgeIcon } from "@/lib/badge-icons";

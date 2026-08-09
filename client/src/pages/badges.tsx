@@ -4,25 +4,9 @@ import { Sidebar } from "@/components/sidebar";
 import { BadgeCard, NewBadgeCard } from "@/components/ui/badge-card";
 import { BadgeDialog } from "@/components/badge-dialog";
 import { AwardBadgeDialog } from "@/components/award-badge-dialog";
-import { Badge as BaseBadge } from "@shared/schema";
+import type { BadgeWithExtras as Badge } from "@/types/badge";
 import { apiPrefix } from "@/lib/queryClient";
 import type { AuthUser } from "@/types/session";
-
-// Extended Badge type with criteriaSections and category
-type Badge = BaseBadge & {
-  criteriaSections?: Array<{
-    title: string;
-    criteria: Array<{
-      id: number;
-      name: string;
-      description?: string;
-    }>;
-  }>;
-  category?: {
-    id: number;
-    name: string;
-  } | null;
-};
 import {
   Menu,
   Plus,
@@ -97,7 +81,7 @@ export default function Badges({ user, onLogout }: BadgesProps) {
 
   // Enhance badges with category information
   const badgesWithCategories: Badge[] = Array.isArray(badges)
-    ? badges.map((badge: BaseBadge) => {
+    ? badges.map((badge: Badge) => {
         // Find the category that matches this badge's categoryId
         const category = Array.isArray(categories)
           ? categories.find((cat: any) => cat.id === badge.categoryId)
