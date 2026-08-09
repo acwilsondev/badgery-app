@@ -79,6 +79,71 @@ to:
 const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
 ```
 
+**Plan correction (found during implementation, not anticipated above):** typing `currentUser` as `AuthUser | null` makes `tsc` reject the 6 `<Route>` blocks below (`/dashboard`, `/badges`, `/users`, `/users/:id`, `/progress`, `/branding`) that pass `currentUser` straight into a `user: AuthUser` prop with no local null check. This is not a runtime bug: the redirect guard just above the `<Switch>` (`if (!currentUser && location !== "/" && location !== "/register") { setLocation("/"); return null; }`) already guarantees `currentUser` is non-null by the time any of those 6 routes render — but TypeScript cannot see that, because the guard's condition is a disjunction (`!currentUser && location !== "/" && location !== "/register"`) and the routes it protects live in separate JSX branches TS can't correlate with that specific `<Route>` matching at runtime. This gap existed before this task too; it was invisible only because `currentUser` was typed `any`.
+
+Fix (in the same Step 3, same file): add a non-null assertion at each of the 6 call sites that lack a local `currentUser ? ... : ...` guard (the `/` and `/register` routes already ternary-guard and need no change). Change:
+
+```tsx
+      <Route path="/dashboard">
+        <Dashboard user={currentUser} onLogout={handleLogout} />
+      </Route>
+      <Route path="/badges">
+        <Badges user={currentUser} onLogout={handleLogout} />
+      </Route>
+      <Route path="/users">
+        <Users user={currentUser} onLogout={handleLogout} />
+      </Route>
+      <Route path="/users/:id">
+        {(params) => (
+          <UserProfile
+            id={params.id}
+            user={currentUser}
+            onLogout={handleLogout}
+          />
+        )}
+      </Route>
+      <Route path="/progress">
+        <ProgressTracker user={currentUser} onLogout={handleLogout} />
+      </Route>
+      <Route path="/branding">
+        <Branding user={currentUser} onLogout={handleLogout} />
+      </Route>
+```
+
+to:
+
+```tsx
+      {/* currentUser is guaranteed non-null below: the redirect guard
+          above already sends unauthenticated visitors to "/" for every
+          route path except "/" and "/register", which are handled by
+          their own ternaries above. TS can't infer this across the
+          <Switch>'s separate route branches, hence the assertions. */}
+      <Route path="/dashboard">
+        <Dashboard user={currentUser!} onLogout={handleLogout} />
+      </Route>
+      <Route path="/badges">
+        <Badges user={currentUser!} onLogout={handleLogout} />
+      </Route>
+      <Route path="/users">
+        <Users user={currentUser!} onLogout={handleLogout} />
+      </Route>
+      <Route path="/users/:id">
+        {(params) => (
+          <UserProfile
+            id={params.id}
+            user={currentUser!}
+            onLogout={handleLogout}
+          />
+        )}
+      </Route>
+      <Route path="/progress">
+        <ProgressTracker user={currentUser!} onLogout={handleLogout} />
+      </Route>
+      <Route path="/branding">
+        <Branding user={currentUser!} onLogout={handleLogout} />
+      </Route>
+```
+
 Add the import near the top with the other `@/` imports:
 
 ```ts
@@ -106,7 +171,7 @@ Replace the inline shape (all 7 are byte-identical):
 with:
 
 ```ts
-  user: AuthUser;
+user: AuthUser;
 ```
 
 (In `user-profile.tsx`, this is inside `UserProfileProps` alongside its own `id: string` field — only the nested `user: {...}` block changes; leave `id: string` as-is, it's the route param, unrelated to the session user.)
@@ -463,37 +528,37 @@ import type { OrgUser } from "@/types/user";
 Change (current lines 43-52):
 
 ```ts
-  const { data: users = [], isLoading } = useQuery<any[]>({
-    queryKey: [`${apiPrefix}/organizations/${organizationId}/users`],
-  });
+const { data: users = [], isLoading } = useQuery<any[]>({
+  queryKey: [`${apiPrefix}/organizations/${organizationId}/users`],
+});
 
-  const filteredUsers = Array.isArray(users)
-    ? users.filter((user: any) => {
-        return searchQuery
-          ? user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-              user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-              user.username.toLowerCase().includes(searchQuery.toLowerCase())
-          : true;
-      })
-    : [];
+const filteredUsers = Array.isArray(users)
+  ? users.filter((user: any) => {
+      return searchQuery
+        ? user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            user.username.toLowerCase().includes(searchQuery.toLowerCase())
+        : true;
+    })
+  : [];
 ```
 
 to:
 
 ```ts
-  const { data: users = [], isLoading } = useQuery<OrgUser[]>({
-    queryKey: [`${apiPrefix}/organizations/${organizationId}/users`],
-  });
+const { data: users = [], isLoading } = useQuery<OrgUser[]>({
+  queryKey: [`${apiPrefix}/organizations/${organizationId}/users`],
+});
 
-  const filteredUsers = Array.isArray(users)
-    ? users.filter((user: OrgUser) => {
-        return searchQuery
-          ? user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-              user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-              user.username.toLowerCase().includes(searchQuery.toLowerCase())
-          : true;
-      })
-    : [];
+const filteredUsers = Array.isArray(users)
+  ? users.filter((user: OrgUser) => {
+      return searchQuery
+        ? user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            user.username.toLowerCase().includes(searchQuery.toLowerCase())
+        : true;
+    })
+  : [];
 ```
 
 Note: this page also has a local page-scope variable named `user` from `UsersProps` destructuring (the logged-in session user, now typed `AuthUser` per Task 1) — the `.filter((user: OrgUser) => ...)` callback parameter shadows it, exactly as the original `(user: any) =>` did. This is pre-existing shadowing, not introduced by this task; leave it as-is (renaming it is an unrelated cleanup, out of scope).
