@@ -31,6 +31,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Trash2 } from "lucide-react";
 import { apiRequest, apiPrefix, queryClient } from "@/lib/queryClient";
+import type { Badge, BadgeCategory } from "@shared/schema";
 
 // Type definitions
 type ApiError = {
@@ -44,25 +45,6 @@ interface BadgeDialogProps {
   badge?: Badge;
   organizationId: number;
 }
-
-type BadgeCategory = {
-  id: number;
-  name: string;
-  organizationId: number;
-};
-
-type Badge = {
-  id: number;
-  name: string;
-  description: string;
-  imageUrl?: string | null;
-  categoryId?: number | null;
-  organizationId: number;
-  requiresProgress: boolean;
-  criteriaType?: string;
-  criteriaSections?: unknown;
-  criteriaSectionsJson?: string;
-};
 
 // Badge Form Schema
 const badgeFormSchema = z.object({
