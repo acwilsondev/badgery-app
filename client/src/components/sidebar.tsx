@@ -26,21 +26,11 @@ import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { apiPrefix } from "@/lib/queryClient";
-
-interface Organization {
-  id: number;
-  name: string;
-  description?: string;
-}
+import type { AuthUser } from "@/types/session";
+import type { Organization } from "@shared/schema";
 
 interface SidebarProps {
-  user: {
-    id: number;
-    name: string;
-    email: string;
-    role: string;
-    organizationId?: number;
-  };
+  user: AuthUser;
   onLogout: () => void;
   isMobileOpen?: boolean;
   onMobileClose?: () => void;

@@ -16,15 +16,10 @@ import {
   User,
   Users,
 } from "lucide-react";
+import type { AuthUser } from "@/types/session";
 
 interface BrandingProps {
-  user: {
-    id: number;
-    name: string;
-    email: string;
-    role: string;
-    organizationId?: number;
-  };
+  user: AuthUser;
   onLogout: () => void;
 }
 

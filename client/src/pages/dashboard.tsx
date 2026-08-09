@@ -20,15 +20,10 @@ import { generateBadgeIcon } from "@/lib/badge-icons";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { PageHeader } from "@/components/page-header";
 import { apiPrefix } from "@/lib/queryClient";
+import type { AuthUser } from "@/types/session";
 
 interface DashboardProps {
-  user: {
-    id: number;
-    name: string;
-    email: string;
-    role: string;
-    organizationId?: number;
-  };
+  user: AuthUser;
   onLogout: () => void;
 }
 

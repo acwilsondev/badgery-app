@@ -8,6 +8,7 @@ import { generateBadgeIcon } from "@/lib/badge-icons";
 import { formatDate } from "@/lib/utils";
 import { PageHeader } from "@/components/page-header";
 import { Menu } from "lucide-react";
+import type { AuthUser } from "@/types/session";
 
 import {
   Card,
@@ -30,13 +31,7 @@ import { Button } from "@/components/ui/button";
 import { LucideEdit, Award, ArrowRight } from "lucide-react";
 
 interface ProgressProps {
-  user: {
-    id: number;
-    name: string;
-    email: string;
-    role: string;
-    organizationId?: number;
-  };
+  user: AuthUser;
   onLogout: () => void;
 }
 
