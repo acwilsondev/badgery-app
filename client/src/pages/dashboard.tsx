@@ -7,15 +7,7 @@ import { BadgeCard, NewBadgeCard } from "@/components/ui/badge-card";
 import { BadgeDialog } from "@/components/badge-dialog";
 import { AwardBadgeDialog } from "@/components/award-badge-dialog";
 import { Button } from "@/components/ui/button";
-import {
-  Tag,
-  Users,
-  CheckCircle,
-  Search as _Search,
-  Menu,
-  Bell as _Bell,
-  Plus,
-} from "lucide-react";
+import { Tag, Users, CheckCircle, Menu, Plus } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -42,7 +34,7 @@ interface DashboardProps {
 
 export default function Dashboard({ user, onLogout }: DashboardProps) {
   const organizationId = user.organizationId || 1;
-  const _isMobile = useIsMobile();
+  useIsMobile();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("all");
   const [badgeDialogOpen, setBadgeDialogOpen] = useState(false);

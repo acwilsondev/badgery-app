@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -30,7 +29,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { cn as _cn } from "@/lib/utils";
 import { PlusCircle, Trash2 } from "lucide-react";
 import { apiRequest, apiPrefix, queryClient } from "@/lib/queryClient";
 
@@ -46,19 +44,6 @@ interface BadgeDialogProps {
   badge?: Badge;
   organizationId: number;
 }
-
-type CriterionItem = {
-  id: number;
-  name: string;
-  description: string;
-  maxValue?: number;
-  valueType?: string;
-};
-
-type _CriteriaSection = {
-  title: string;
-  criteria: CriterionItem[];
-};
 
 type BadgeCategory = {
   id: number;
@@ -139,9 +124,6 @@ export function BadgeDialog({
         ],
     },
   });
-
-  // State for managing criteria sections
-  const [_showProgressOptions, _setShowProgressOptions] = useState(true); // Always show progress options
 
   const { data: categories = [] } = useQuery<BadgeCategory[]>({
     queryKey: [

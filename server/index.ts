@@ -1,4 +1,5 @@
 import { createApp } from "./app";
+import { config } from "./config";
 import { setupVite, serveStatic } from "./vite";
 import { log } from "./logger";
 
@@ -14,10 +15,9 @@ import { log } from "./logger";
     serveStatic(app);
   }
 
-  // ALWAYS serve the app on port 5000
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const port = 5000;
+  // Serves both the API and the client on one port. Defaults to 5000
+  // (config.port) — override with PORT if you need a different one.
+  const port = config.port;
   httpServer.listen(
     {
       port,

@@ -16,13 +16,16 @@ export default tseslint.config(
         "error",
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
       ],
-      // Flags a pre-existing `templateLiteral || fallback` pattern in
-      // progress.tsx where the left side is always truthy; the fallback is
-      // dead code today, but fixing it changes behavior. Revisit in Phase 3.
-      "no-constant-binary-expression": "off",
-      // tailwind.config.ts loads plugins via require(); converting it to
-      // static imports risks changing how the Tailwind/PostCSS pipeline
-      // resolves the config. Revisit in Phase 3.
+    },
+  },
+  {
+    // tailwind.config.ts loads plugins via require() — converting it to
+    // static imports risks changing how the Tailwind/PostCSS pipeline
+    // resolves the config, so this stays scoped to just this one file
+    // rather than off repo-wide (Phase 3 cleanup, see the Phase 0 note
+    // this closes out).
+    files: ["tailwind.config.ts"],
+    rules: {
       "@typescript-eslint/no-require-imports": "off",
     },
   },

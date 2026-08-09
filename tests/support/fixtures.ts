@@ -2,7 +2,12 @@ import crypto from "node:crypto";
 import argon2 from "argon2";
 import request from "supertest";
 import type { Express } from "express";
-import * as storage from "../../server/storage";
+import { createUser } from "../../server/features/users/service";
+import {
+  createOrganization,
+  createBadgeCategory,
+} from "../../server/features/organizations/service";
+import { createBadge } from "../../server/features/badges/service";
 
 // Fixtures are intentionally never cleaned up (no afterEach truncation).
 // Uniqueness (uniqueSuffix()) is what prevents collisions between tests;
@@ -20,7 +25,7 @@ export const TEST_PASSWORD = "test-password-123";
 export async function createTestOrganization(
   overrides: { name?: string; description?: string } = {},
 ) {
-  return storage.createOrganization({
+  return createOrganization({
     name: overrides.name ?? `Test Org ${uniqueSuffix()}`,
     description:
       overrides.description ?? "Fixture organization for integration tests",
@@ -38,7 +43,7 @@ export async function createTestUser(
 ) {
   const suffix = uniqueSuffix();
   const passwordHash = await argon2.hash(TEST_PASSWORD);
-  const user = await storage.createUser(
+  const user = await createUser(
     {
       username: options.username ?? `user_${suffix}`,
       password: passwordHash,
@@ -55,7 +60,7 @@ export async function createTestCategory(
   organizationId: number,
   overrides: { name?: string } = {},
 ) {
-  return storage.createBadgeCategory({
+  return createBadgeCategory({
     name: overrides.name ?? `Category ${uniqueSuffix()}`,
     organizationId,
   });
@@ -70,7 +75,7 @@ export async function createTestBadge(
     requiresProgress?: boolean;
   } = {},
 ) {
-  return storage.createBadge({
+  return createBadge({
     name: overrides.name ?? `Badge ${uniqueSuffix()}`,
     description: overrides.description ?? "Fixture badge for integration tests",
     organizationId,
