@@ -23,15 +23,10 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { getInitials } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import type { AuthUser } from "@/types/session";
 
 interface UsersProps {
-  user: {
-    id: number;
-    name: string;
-    email: string;
-    role: string;
-    organizationId?: number;
-  };
+  user: AuthUser;
   onLogout: () => void;
 }
 

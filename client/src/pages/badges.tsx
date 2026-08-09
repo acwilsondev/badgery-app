@@ -6,6 +6,7 @@ import { BadgeDialog } from "@/components/badge-dialog";
 import { AwardBadgeDialog } from "@/components/award-badge-dialog";
 import { Badge as BaseBadge } from "@shared/schema";
 import { apiPrefix } from "@/lib/queryClient";
+import type { AuthUser } from "@/types/session";
 
 // Extended Badge type with criteriaSections and category
 type Badge = BaseBadge & {
@@ -50,13 +51,7 @@ import {
 } from "@/components/ui/dialog";
 
 interface BadgesProps {
-  user: {
-    id: number;
-    name: string;
-    email: string;
-    role: string;
-    organizationId?: number;
-  };
+  user: AuthUser;
   onLogout: () => void;
 }
 

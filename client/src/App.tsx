@@ -14,9 +14,10 @@ import { useState, useEffect } from "react";
 import { apiRequest, apiPrefix } from "@/lib/queryClient";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
+import type { AuthUser } from "@/types/session";
 
 function Router() {
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [location, setLocation] = useLocation();
 

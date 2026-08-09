@@ -12,16 +12,11 @@ import { getInitials, formatDate } from "@/lib/utils";
 import { generateBadgeIcon } from "@/lib/badge-icons";
 import { Link } from "wouter";
 import { AwardBadgeDialog } from "@/components/award-badge-dialog";
+import type { AuthUser } from "@/types/session";
 
 interface UserProfileProps {
   id: string;
-  user: {
-    id: number;
-    name: string;
-    email: string;
-    role: string;
-    organizationId?: number;
-  };
+  user: AuthUser;
   onLogout: () => void;
 }
 
