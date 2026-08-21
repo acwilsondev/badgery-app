@@ -6,6 +6,14 @@
 // responding, and a few of those reshapes are inconsistent with each other
 // for "the same concept" (documented per-type below, not fixed — see
 // docs/superpowers/plans/2026-08-21-phase-3d-openapi-and-response-types.md).
+//
+// A note on `Date`-typed fields (createdAt, awardedAt, lastUpdated, etc.):
+// they're typed `Date` here because that's what the server-side object
+// literal passed to res.json() actually holds. Once serialized over HTTP
+// and parsed as JSON on the client, they arrive as ISO-8601 strings, not
+// `Date` instances. Client code consuming these types should not call
+// `Date`-only methods on them without an explicit `new Date(...)`
+// conversion first.
 
 import type { Achievement, Badge } from "./schema";
 

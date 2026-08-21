@@ -50,5 +50,13 @@ describe("openapi contract", () => {
       nonexistent,
       "openapi.yaml paths with no matching registered route",
     ).toEqual([]);
+
+    // Floor on route count: guards against enumerateRoutes() silently
+    // returning an empty (or near-empty) array — e.g. app._router being
+    // undefined — which would otherwise leave both diffs above vacuously
+    // empty and this test green despite the drift guard being defeated.
+    // There are exactly 25 real routes today; a floor rather than an
+    // exact count avoids needing an update every time a route is added.
+    expect(registered.size).toBeGreaterThan(20);
   });
 });

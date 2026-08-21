@@ -8,6 +8,9 @@ info:
 servers:
   - url: /api/v1
 
+security:
+  - cookieAuth: []
+
 paths:
   /auth/register:
     post:
@@ -576,6 +579,12 @@ paths:
           $ref: "#/components/responses/NotFound"
 
 components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: connect.sid
+
   parameters:
     id:
       name: id
