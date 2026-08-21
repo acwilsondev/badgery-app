@@ -42,3 +42,16 @@ export type UserProfileResponse = {
 // (POST /auth/logout, DELETE /badges/:id) — these two are genuinely
 // identical, unlike the shapes above.
 export type MessageResponse = { message: string };
+
+// POST /auth/login, POST /auth/register, GET /auth/me all return this
+// exact shape (server/features/auth/routes.ts).
+export type AuthUserResponse = {
+  id: number;
+  username: string;
+  name: string;
+  email: string;
+  role: string;
+  organizationId: number | null;
+};
+
+export type LogoutResponse = MessageResponse;
