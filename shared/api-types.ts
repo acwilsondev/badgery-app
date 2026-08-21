@@ -7,6 +7,8 @@
 // for "the same concept" (documented per-type below, not fixed — see
 // docs/superpowers/plans/2026-08-21-phase-3d-openapi-and-response-types.md).
 
+import type { Badge } from "./schema";
+
 // A minimal organization reference embedded in user-shaped responses.
 export type OrganizationRef = { id: number; name: string };
 
@@ -55,3 +57,30 @@ export type AuthUserResponse = {
 };
 
 export type LogoutResponse = MessageResponse;
+
+// GET /organizations/:orgId/badges (array) and GET /badges/:id (single) —
+// server/features/badges/service.ts getBadges/getBadgeById. A raw-SQL
+// join, not a Drizzle-inferred row.
+export type BadgeResponse = {
+  id: number;
+  name: string;
+  description: string;
+  criteria: string | null;
+  imageUrl: string | null;
+  color: string | null;
+  categoryId: number | null;
+  organizationId: number;
+  createdAt: Date;
+  requiresProgress: boolean;
+  criteriaSections: unknown;
+  criteriaType: string;
+  category: { id: number; name: string } | null;
+};
+
+// POST/PUT /badges return the raw Drizzle row directly — notably no
+// `category` object, unlike BadgeResponse above. A real, pre-existing
+// inconsistency between the write and read shapes for "a badge";
+// documented as-is, not fixed by this phase.
+export type BadgeWriteResponse = Badge;
+
+export type DeleteBadgeResponse = MessageResponse;

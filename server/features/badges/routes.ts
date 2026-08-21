@@ -8,6 +8,10 @@ import {
 } from "../../middleware/auth";
 import { ForbiddenError, NotFoundError } from "../../middleware/errors";
 import { getRequesterOrThrow } from "../users/service";
+import type {
+  BadgeWriteResponse,
+  DeleteBadgeResponse,
+} from "@shared/api-types";
 import {
   getBadges,
   getBadgeById,
@@ -102,7 +106,8 @@ export function registerBadgesRoutes(app: Express) {
         createdBy: req.session.userId || null,
       });
 
-      return res.status(201).json(newBadge);
+      const response: BadgeWriteResponse = newBadge;
+      return res.status(201).json(response);
     }),
   );
 
@@ -148,7 +153,8 @@ export function registerBadgesRoutes(app: Express) {
         throw new NotFoundError("Badge not found");
       }
 
-      return res.status(200).json(updatedBadge);
+      const response: BadgeWriteResponse = updatedBadge;
+      return res.status(200).json(response);
     }),
   );
 
@@ -180,7 +186,10 @@ export function registerBadgesRoutes(app: Express) {
 
       await deleteBadge(id);
 
-      return res.status(200).json({ message: "Badge deleted successfully" });
+      const response: DeleteBadgeResponse = {
+        message: "Badge deleted successfully",
+      };
+      return res.status(200).json(response);
     }),
   );
 }
