@@ -34,7 +34,10 @@ import type { BadgeWithExtras } from "@/types/badge";
 interface AwardBadgeDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  badge: Pick<BadgeWithExtras, "id" | "name" | "description" | "color" | "imageUrl">;
+  badge: Pick<
+    BadgeWithExtras,
+    "id" | "name" | "description" | "color" | "imageUrl"
+  >;
   organizationId: number;
 }
 

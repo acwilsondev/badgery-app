@@ -34,7 +34,9 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("all");
   const [badgeDialogOpen, setBadgeDialogOpen] = useState(false);
   const [awardDialogOpen, setAwardDialogOpen] = useState(false);
-  const [selectedBadge, setSelectedBadge] = useState<BadgeWithExtras | null>(null);
+  const [selectedBadge, setSelectedBadge] = useState<BadgeWithExtras | null>(
+    null,
+  );
 
   type StatsData = {
     totalBadges: number;

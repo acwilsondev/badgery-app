@@ -520,7 +520,8 @@ export default function Badges({ user, onLogout }: BadgesProps) {
                   ) {
                     return null;
                   }
-                  const sections = selectedBadge.criteriaSections as CriteriasSection[];
+                  const sections =
+                    selectedBadge.criteriaSections as CriteriasSection[];
                   return (
                     <div className="mt-4">
                       <h3 className="text-sm font-semibold mb-2">
