@@ -84,3 +84,37 @@ export type BadgeResponse = {
 export type BadgeWriteResponse = Badge;
 
 export type DeleteBadgeResponse = MessageResponse;
+
+// GET /organizations for an admin caller (server/features/organizations
+// /service.ts getOrganizations — raw SQL, narrower than the Drizzle
+// Organization row: no createdBy/updatedAt/updatedBy/active).
+export type OrganizationSummary = {
+  id: number;
+  name: string;
+  description: string | null;
+  createdAt: Date;
+};
+
+// GET /organizations/:id, POST /organizations, and PUT /organizations/:id
+// all return the full Drizzle Organization row (shared/schema.ts) — wider
+// than OrganizationSummary above. A non-admin caller to GET /organizations
+// instead gets OrganizationRef[] (organizations/routes.ts) — three
+// different widths for "an organization" depending on endpoint and caller
+// role; documented as-is, not unified.
+
+// GET /organizations/:orgId/categories (server/features/organizations
+// /service.ts getBadgeCategories — raw SQL).
+export type BadgeCategorySummary = {
+  id: number;
+  name: string;
+  organizationId: number;
+  createdAt: Date;
+};
+
+// GET /organizations/:orgId/stats.
+export type OrganizationStats = {
+  totalBadges: number;
+  totalUsers: number;
+  totalAwarded: number;
+  inProgress: number;
+};

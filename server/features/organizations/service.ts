@@ -8,8 +8,13 @@ import {
   type Organization,
   type InsertBadgeCategory,
 } from "@shared/schema";
+import type {
+  OrganizationSummary,
+  BadgeCategorySummary,
+  OrganizationStats,
+} from "@shared/api-types";
 
-export async function getOrganizations() {
+export async function getOrganizations(): Promise<OrganizationSummary[]> {
   try {
     // Use raw SQL query to avoid schema-related issues
     const sql = `
@@ -52,7 +57,9 @@ export async function updateOrganization(
   return updatedOrganization;
 }
 
-export async function getBadgeCategories(organizationId: number) {
+export async function getBadgeCategories(
+  organizationId: number,
+): Promise<BadgeCategorySummary[]> {
   try {
     // Use raw SQL query to avoid schema-related issues
     const sql = `
@@ -81,7 +88,9 @@ export async function createBadgeCategory(
   return newCategory;
 }
 
-export async function getOrganizationStats(organizationId: number) {
+export async function getOrganizationStats(
+  organizationId: number,
+): Promise<OrganizationStats> {
   try {
     // Count badges in organization
     const badgeSql = `
