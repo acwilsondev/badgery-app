@@ -7,7 +7,7 @@
 // for "the same concept" (documented per-type below, not fixed — see
 // docs/superpowers/plans/2026-08-21-phase-3d-openapi-and-response-types.md).
 
-import type { Badge } from "./schema";
+import type { Achievement, Badge } from "./schema";
 
 // A minimal organization reference embedded in user-shaped responses.
 export type OrganizationRef = { id: number; name: string };
@@ -118,3 +118,106 @@ export type OrganizationStats = {
   totalAwarded: number;
   inProgress: number;
 };
+
+// POST /badges/:badgeId/award returns the raw Drizzle row directly.
+export type AwardBadgeResponse = Achievement;
+
+// GET /organizations/:orgId/awarded-badges (server/features/progress
+// /service.ts getAwardedBadges).
+export type OrgAwardedBadge = {
+  id: number;
+  badgeId: number;
+  userId: number;
+  awardedBy: number | null;
+  awardedAt: Date | null;
+  status: string;
+  badgeName: string;
+  badgeDescription: string;
+  badgeColor: string | null;
+  badgeImageUrl: string | null;
+  userName: string;
+  awardedByName: string;
+};
+
+// GET /users/:userId/awarded-badges — same shape minus userName (the
+// caller already knows which user this is).
+export type UserAwardedBadge = Omit<OrgAwardedBadge, "userName">;
+
+export type ProgressMetricEntry = {
+  value: string;
+  name: string;
+  description: string;
+  type: string;
+  targetValue: number;
+};
+
+// GET /badges/:badgeId/progress/:userId, and the response of
+// POST /badges/:badgeId/progress/:userId when it doesn't no-op (see
+// UpdateBadgeProgressResponse below).
+export type BadgeProgressDetail = {
+  id: number;
+  userId: number;
+  badgeId: number;
+  progress: number;
+  progressData: Record<number, ProgressMetricEntry>;
+  lastUpdated: Date;
+  status: "completed" | "in_progress";
+  badge: BadgeResponse;
+  metrics: Array<{
+    id: number;
+    userId: number;
+    metricId: number;
+    value: string;
+    lastUpdatedAt: Date;
+    updatedBy: number | null;
+    metricName: string;
+    metricDescription: string;
+    metricType: string;
+    targetValue: number;
+  }>;
+};
+
+// GET /users/:userId/progress — a differently-shaped per-badge summary
+// (flat badgeName/badgeColor/etc. fields instead of a nested `badge`
+// object, unlike BadgeProgressDetail above); documented as-is.
+export type UserBadgeProgressSummary = {
+  id: number;
+  badgeId: number;
+  userId: number;
+  progress: number;
+  progressData: Record<number, ProgressMetricEntry>;
+  lastUpdated: Date;
+  updatedBy: number | null;
+  status: "completed" | "in_progress";
+  badgeName: string;
+  badgeDescription: string;
+  badgeColor: string | null;
+  badgeImageUrl: string | null;
+  requiresProgress: true;
+  criteriaSections: unknown;
+  updatedByName: string;
+};
+
+// GET /organizations/:orgId/progress — yet another shape. `progress` is a
+// hardcoded placeholder 0 (server/features/progress/service.ts, "will be
+// calculated properly in the client") and `status` is always
+// "in_progress" — both pre-existing and faithfully documented, not fixed.
+export type OrgBadgeProgressSummary = {
+  id: number;
+  badgeId: number;
+  userId: number;
+  lastUpdated: Date;
+  updatedBy: number | null;
+  badgeName: string;
+  userName: string;
+  updatedByName: string;
+  progress: number;
+  status: string;
+};
+
+// POST /badges/:badgeId/progress/:userId returns whatever
+// getBadgeProgress(badgeId, userId) returns after the update: null if the
+// badge has no configured badgeMetrics rows (the known-broken case
+// documented in CLAUDE.md and tests/progress.test.ts), otherwise
+// BadgeProgressDetail.
+export type UpdateBadgeProgressResponse = BadgeProgressDetail | null;
