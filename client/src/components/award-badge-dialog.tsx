@@ -28,13 +28,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@shared/schema";
 import { generateBadgeIcon } from "@/lib/badge-icons";
+import type { BadgeWithExtras } from "@/types/badge";
 
 interface AwardBadgeDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  badge: Pick<Badge, "id" | "name" | "description" | "color" | "imageUrl">;
+  badge: Pick<BadgeWithExtras, "id" | "name" | "description" | "color" | "imageUrl">;
   organizationId: number;
 }
 

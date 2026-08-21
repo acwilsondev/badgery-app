@@ -34,6 +34,16 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
+// Type definition for criteriaSections structure
+type CriteriasSection = {
+  title: string;
+  criteria: Array<{
+    id: number;
+    name: string;
+    description?: string;
+  }>;
+};
+
 interface BadgesProps {
   user: AuthUser;
   onLogout: () => void;
@@ -503,34 +513,43 @@ export default function Badges({ user, onLogout }: BadgesProps) {
                 </div>
 
                 {/* Criteria sections if available */}
-                {selectedBadge.criteriaSections && (
-                  <div className="mt-4">
-                    <h3 className="text-sm font-semibold mb-2">
-                      Badge Criteria
-                    </h3>
-                    <div className="space-y-4">
-                      {selectedBadge.criteriaSections.map((section, index) => (
-                        <div key={index} className="border rounded-md p-3">
-                          <h4 className="font-medium text-sm mb-2">
-                            {section.title}
-                          </h4>
-                          <ul className="space-y-1">
-                            {section.criteria.map((criterion, cIndex) => (
-                              <li key={cIndex} className="text-sm">
-                                • {criterion.name}
-                                {criterion.description && (
-                                  <span className="text-muted-foreground block ml-3 text-xs">
-                                    {criterion.description}
-                                  </span>
-                                )}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      ))}
+                {(() => {
+                  if (
+                    !selectedBadge.criteriaSections ||
+                    !Array.isArray(selectedBadge.criteriaSections)
+                  ) {
+                    return null;
+                  }
+                  const sections = selectedBadge.criteriaSections as CriteriasSection[];
+                  return (
+                    <div className="mt-4">
+                      <h3 className="text-sm font-semibold mb-2">
+                        Badge Criteria
+                      </h3>
+                      <div className="space-y-4">
+                        {sections.map((section, index) => (
+                          <div key={index} className="border rounded-md p-3">
+                            <h4 className="font-medium text-sm mb-2">
+                              {section.title}
+                            </h4>
+                            <ul className="space-y-1">
+                              {section.criteria.map((criterion, cIndex) => (
+                                <li key={cIndex} className="text-sm">
+                                  • {criterion.name}
+                                  {criterion.description && (
+                                    <span className="text-muted-foreground block ml-3 text-xs">
+                                      {criterion.description}
+                                    </span>
+                                  )}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  );
+                })()}
               </div>
             </div>
           </DialogContent>

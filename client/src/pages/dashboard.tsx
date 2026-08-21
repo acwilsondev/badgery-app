@@ -15,12 +15,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@shared/schema";
 import { generateBadgeIcon } from "@/lib/badge-icons";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { PageHeader } from "@/components/page-header";
 import { apiPrefix } from "@/lib/queryClient";
 import type { AuthUser } from "@/types/session";
+import type { BadgeWithExtras } from "@/types/badge";
 
 interface DashboardProps {
   user: AuthUser;
@@ -34,7 +34,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("all");
   const [badgeDialogOpen, setBadgeDialogOpen] = useState(false);
   const [awardDialogOpen, setAwardDialogOpen] = useState(false);
-  const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
+  const [selectedBadge, setSelectedBadge] = useState<BadgeWithExtras | null>(null);
 
   type StatsData = {
     totalBadges: number;
@@ -111,12 +111,12 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
     setBadgeDialogOpen(true);
   };
 
-  const handleEditBadge = (badge: Badge) => {
+  const handleEditBadge = (badge: BadgeWithExtras) => {
     setSelectedBadge(badge);
     setBadgeDialogOpen(true);
   };
 
-  const handleAwardBadge = (badge: Badge) => {
+  const handleAwardBadge = (badge: BadgeWithExtras) => {
     setSelectedBadge(badge);
     setAwardDialogOpen(true);
   };
