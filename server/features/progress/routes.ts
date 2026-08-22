@@ -20,6 +20,10 @@ import {
   createOrUpdateBadgeProgress,
   autoAwardBadgeIfComplete,
 } from "./service";
+import type {
+  AwardBadgeResponse,
+  UpdateBadgeProgressResponse,
+} from "@shared/api-types";
 
 export function registerProgressRoutes(app: Express) {
   const apiPrefix = "/api/v1";
@@ -79,7 +83,8 @@ export function registerProgressRoutes(app: Express) {
 
       const newAward = await awardBadge(awardData);
 
-      return res.status(201).json(newAward);
+      const response: AwardBadgeResponse = newAward;
+      return res.status(201).json(response);
     }),
   );
 
@@ -357,7 +362,8 @@ export function registerProgressRoutes(app: Express) {
         });
       }
 
-      return res.status(200).json(updatedProgress);
+      const response: UpdateBadgeProgressResponse = updatedProgress;
+      return res.status(200).json(response);
     }),
   );
 }

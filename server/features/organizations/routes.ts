@@ -3,6 +3,7 @@ import {
   organizationsInsertSchema,
   badgeCategoriesInsertSchema,
 } from "@shared/schema";
+import type { OrganizationRef } from "@shared/api-types";
 import { asyncHandler } from "../../middleware/asyncHandler";
 import {
   isAuthenticated,
@@ -40,7 +41,8 @@ export function registerOrganizationsRoutes(app: Express) {
           return res.status(200).json(organizations);
         } else {
           // Regular users only see organizations they belong to
-          return res.status(200).json(user.organizations || []);
+          const response: OrganizationRef[] = user.organizations;
+          return res.status(200).json(response);
         }
       }
 

@@ -10,6 +10,13 @@ import {
   type InsertAchievement,
 } from "@shared/schema";
 import { getBadgeById } from "../badges/service";
+import type {
+  OrgAwardedBadge,
+  UserAwardedBadge,
+  BadgeProgressDetail,
+  UserBadgeProgressSummary,
+  OrgBadgeProgressSummary,
+} from "@shared/api-types";
 
 export async function awardBadge(awardData: InsertAchievement) {
   const [newAward] = await db
@@ -19,7 +26,9 @@ export async function awardBadge(awardData: InsertAchievement) {
   return newAward;
 }
 
-export async function getAwardedBadges(organizationId: number) {
+export async function getAwardedBadges(
+  organizationId: number,
+): Promise<OrgAwardedBadge[]> {
   return db
     .select({
       id: achievements.id,
@@ -46,7 +55,9 @@ export async function getAwardedBadges(organizationId: number) {
     .orderBy(desc(achievements.awardedAt));
 }
 
-export async function getUserAwardedBadges(userId: number) {
+export async function getUserAwardedBadges(
+  userId: number,
+): Promise<UserAwardedBadge[]> {
   return db
     .select({
       id: achievements.id,
@@ -72,7 +83,10 @@ export async function getUserAwardedBadges(userId: number) {
 }
 
 // Badge Progress - These functions use the metrics/progress model
-export async function getBadgeProgress(badgeId: number, userId: number) {
+export async function getBadgeProgress(
+  badgeId: number,
+  userId: number,
+): Promise<BadgeProgressDetail | null> {
   try {
     // Get metrics associated with the badge
     const badgeMetricsResult = await db
@@ -169,7 +183,9 @@ export async function getBadgeProgress(badgeId: number, userId: number) {
   }
 }
 
-export async function getUserProgressForAllBadges(userId: number) {
+export async function getUserProgressForAllBadges(
+  userId: number,
+): Promise<UserBadgeProgressSummary[]> {
   try {
     // Get all badges that have metrics
     const badgesWithMetrics = await db
@@ -230,7 +246,7 @@ export async function getUserProgressForAllBadges(userId: number) {
     }
 
     // Create combined progress objects
-    const result = [];
+    const result: UserBadgeProgressSummary[] = [];
     for (const [badgeId, items] of Object.entries(progressByBadge)) {
       const badgeDetails = await getBadgeById(parseInt(badgeId));
       if (!badgeDetails) continue;
@@ -302,7 +318,9 @@ export async function getUserProgressForAllBadges(userId: number) {
   }
 }
 
-export async function getBadgeProgressForOrganization(organizationId: number) {
+export async function getBadgeProgressForOrganization(
+  organizationId: number,
+): Promise<OrgBadgeProgressSummary[]> {
   try {
     // Get all badges in the organization that have metrics
     const badgesInOrg = await db
@@ -407,7 +425,9 @@ export async function getBadgeProgressForOrganization(organizationId: number) {
   }
 }
 
-export async function createOrUpdateBadgeProgress(progressData: any) {
+export async function createOrUpdateBadgeProgress(
+  progressData: any,
+): Promise<BadgeProgressDetail | null> {
   try {
     // Start a transaction
     return await db.transaction(async (tx) => {

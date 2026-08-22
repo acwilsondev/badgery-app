@@ -13,6 +13,7 @@ import { generateBadgeIcon } from "@/lib/badge-icons";
 import { Link } from "wouter";
 import { AwardBadgeDialog } from "@/components/award-badge-dialog";
 import type { AuthUser } from "@/types/session";
+import type { UserProfileResponse, UserAwardedBadge } from "@shared/api-types";
 
 interface UserProfileProps {
   id: string;
@@ -27,15 +28,6 @@ export default function UserProfile({ id, user, onLogout }: UserProfileProps) {
   const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
 
   // Define types for the API responses
-  interface ProfileUser {
-    id: number;
-    name: string;
-    email: string;
-    role: string;
-    organizationId?: number;
-    username: string;
-  }
-
   interface Badge {
     id: number;
     name: string;
@@ -48,40 +40,13 @@ export default function UserProfile({ id, user, onLogout }: UserProfileProps) {
     criteriaSections?: any;
   }
 
-  interface AwardedBadge {
-    id: number;
-    badgeId: number;
-    userId: number;
-    awardedBy: number;
-    awardedAt: string;
-    status: string;
-    badgeColor: string;
-    badgeName: string;
-    badgeDescription: string;
-    badgeImageUrl: string | null;
-    awardedByName: string;
-    badge: {
-      name: string;
-      description: string;
-      color: string;
-      imageUrl: string | null;
-    };
-    user: {
-      name: string;
-    };
-    awardedByUser: {
-      name: string;
-    };
-  }
-
-  const { data: profileUser, isLoading: isLoadingUser } = useQuery<ProfileUser>(
-    {
+  const { data: profileUser, isLoading: isLoadingUser } =
+    useQuery<UserProfileResponse>({
       queryKey: [`${apiPrefix}/users/${id}`],
-    },
-  );
+    });
 
   const { data: awardedBadges = [], isLoading: isLoadingBadges } = useQuery<
-    AwardedBadge[]
+    UserAwardedBadge[]
   >({
     queryKey: [`${apiPrefix}/users/${id}/awarded-badges`],
   });

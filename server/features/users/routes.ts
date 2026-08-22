@@ -3,6 +3,7 @@ import * as z from "zod";
 import { asyncHandler } from "../../middleware/asyncHandler";
 import { isAuthenticated, requireSessionUserId } from "../../middleware/auth";
 import { ForbiddenError, NotFoundError } from "../../middleware/errors";
+import type { UserProfileResponse } from "@shared/api-types";
 import {
   getUsersByOrganization,
   getUserById,
@@ -56,12 +57,8 @@ export function registerUsersRoutes(app: Express) {
         // Admin can view any user
         if (requester.role !== "admin") {
           // Check if the requested user and requester share any organization
-          const requesterOrgIds = requester.organizations
-            ? requester.organizations.map((org: any) => org.id)
-            : [];
-          const userOrgIds = user.organizations
-            ? user.organizations.map((org: any) => org.id)
-            : [];
+          const requesterOrgIds = requester.organizations.map((org) => org.id);
+          const userOrgIds = user.organizations.map((org) => org.id);
 
           // Find common organizations
           const sharedOrgs = requesterOrgIds.filter((orgId: number) =>
@@ -74,14 +71,15 @@ export function registerUsersRoutes(app: Express) {
         }
       }
 
-      return res.status(200).json({
+      const response: UserProfileResponse = {
         id: user.id,
         username: user.username,
         name: user.name,
         email: user.email,
         role: user.role,
-        organizations: user.organizations || [],
-      });
+        organizations: user.organizations,
+      };
+      return res.status(200).json(response);
     }),
   );
 }

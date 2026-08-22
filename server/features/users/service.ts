@@ -1,8 +1,26 @@
 import { pool } from "@db";
 import { UnauthorizedError } from "../../middleware/errors";
 import type { InsertUser } from "@shared/schema";
+import type { OrgUserResponse } from "@shared/api-types";
 
-export async function getUserById(id: number) {
+// The full row this module's raw-SQL queries build, joined with the
+// user's organizations. Server-internal only — includes `password` and is
+// never sent as a response body directly; every route that responds with
+// user data hand-picks a subset of this into one of shared/api-types.ts's
+// response types instead.
+export type UserRecord = {
+  id: number;
+  username: string;
+  password: string;
+  name: string;
+  email: string;
+  role: string;
+  organizationId: number | null;
+  createdAt: Date;
+  organizations: Array<{ id: number; name: string }>;
+};
+
+export async function getUserById(id: number): Promise<UserRecord | null> {
   try {
     // Use direct SQL query to avoid relationship issues during schema transition
     const sql = `
@@ -47,7 +65,9 @@ export async function getUserById(id: number) {
   }
 }
 
-export async function getUserByUsername(username: string) {
+export async function getUserByUsername(
+  username: string,
+): Promise<UserRecord | null> {
   try {
     // Use direct SQL query to avoid relationship issues during schema transition
     const sql = `
@@ -140,7 +160,9 @@ export async function createUser(
   }
 }
 
-export async function getUsersByOrganization(organizationId: number) {
+export async function getUsersByOrganization(
+  organizationId: number,
+): Promise<OrgUserResponse[]> {
   try {
     // Use raw SQL query for compatibility during schema transition
     const sql = `
@@ -190,7 +212,7 @@ export async function getUsersByOrganization(organizationId: number) {
  * is an auth-state problem, not a "the resource you asked for is missing"
  * problem — and it preserves the exact 401 the old code returned here.
  */
-export async function getRequesterOrThrow(userId: number) {
+export async function getRequesterOrThrow(userId: number): Promise<UserRecord> {
   const user = await getUserById(userId);
   if (!user) {
     throw new UnauthorizedError("User not found");

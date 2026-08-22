@@ -1,8 +1,12 @@
 import { db, pool } from "@db";
 import { eq } from "drizzle-orm";
 import { badges, type InsertBadge, type Badge } from "@shared/schema";
+import type { BadgeResponse } from "@shared/api-types";
 
-export async function getBadges(organizationId: number, categoryId?: number) {
+export async function getBadges(
+  organizationId: number,
+  categoryId?: number,
+): Promise<BadgeResponse[]> {
   try {
     // Using SQL directly to avoid schema caching issues
     let sql = `
@@ -48,7 +52,7 @@ export async function getBadges(organizationId: number, categoryId?: number) {
   }
 }
 
-export async function getBadgeById(id: number) {
+export async function getBadgeById(id: number): Promise<BadgeResponse | null> {
   try {
     // Using SQL directly to avoid schema caching issues
     const sql = `

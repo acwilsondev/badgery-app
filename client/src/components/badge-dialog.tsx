@@ -31,7 +31,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Trash2 } from "lucide-react";
 import { apiRequest, apiPrefix, queryClient } from "@/lib/queryClient";
-import type { Badge, BadgeCategory } from "@shared/schema";
+import type { BadgeCategory } from "@shared/schema";
+import type { BadgeWithExtras } from "@/types/badge";
 
 // Type definitions
 type ApiError = {
@@ -42,7 +43,7 @@ type ApiError = {
 interface BadgeDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  badge?: Badge;
+  badge?: BadgeWithExtras;
   organizationId: number;
 }
 

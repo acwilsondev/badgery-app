@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import rateLimit from "express-rate-limit";
 import { loginSchema, registerUserSchema } from "@shared/schema";
+import type { AuthUserResponse, LogoutResponse } from "@shared/api-types";
 import { asyncHandler } from "../../middleware/asyncHandler";
 import { verifyCredentials, registerUser } from "./service";
 import { getUserById } from "../users/service";
@@ -43,14 +44,15 @@ export function registerAuthRoutes(app: Express) {
         req.session.organizationId = user.organizationId;
       }
 
-      return res.status(200).json({
+      const response: AuthUserResponse = {
         id: user.id,
         username: user.username,
         name: user.name,
         email: user.email,
         role: user.role,
-        organizationId: user.organizationId || null,
-      });
+        organizationId: user.organizationId,
+      };
+      return res.status(200).json(response);
     }),
   );
 
@@ -61,14 +63,15 @@ export function registerAuthRoutes(app: Express) {
       const userData = registerUserSchema.parse(req.body);
       const newUser = await registerUser(userData);
 
-      return res.status(201).json({
+      const response: AuthUserResponse = {
         id: newUser.id,
         username: newUser.username,
         name: newUser.name,
         email: newUser.email,
         role: newUser.role,
-        organizationId: newUser.organizationId || null,
-      });
+        organizationId: newUser.organizationId,
+      };
+      return res.status(201).json(response);
     }),
   );
 
@@ -84,20 +87,22 @@ export function registerAuthRoutes(app: Express) {
         return res.status(404).json({ message: "User not found" });
       }
 
-      return res.status(200).json({
+      const response: AuthUserResponse = {
         id: user.id,
         username: user.username,
         name: user.name,
         email: user.email,
         role: user.role,
-        organizationId: user.organizationId || null,
-      });
+        organizationId: user.organizationId,
+      };
+      return res.status(200).json(response);
     }),
   );
 
   app.post(`${apiPrefix}/auth/logout`, (req, res) => {
     req.session.destroy(() => {
-      res.status(200).json({ message: "Logged out successfully" });
+      const response: LogoutResponse = { message: "Logged out successfully" };
+      res.status(200).json(response);
     });
   });
 }

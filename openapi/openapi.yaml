@@ -1,321 +1,153 @@
 openapi: 3.0.3
 info:
   title: Badgery API
-  description: API for badge management system
-  version: 1.0.0
+  description: >
+    Multi-tenant achievement-badge platform API. Session-cookie
+    authentication (not JWT) — see the auth paths below.
+  version: 2.0.0
 servers:
   - url: /api/v1
+
+security:
+  - cookieAuth: []
+
 paths:
   /auth/register:
     post:
       summary: Register a new user
-      operationId: registerUser
-      tags:
-        - Authentication
+      tags: [auth]
+      security: []
       requestBody:
+        required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UserCreate"
-      responses:
-        "201":
-          description: User registered successfully
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/LoginResponse"
-        "400":
-          description: Invalid input or user already exists
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/AuthError"
-
-  /auth/login:
-    post:
-      summary: Login with email/username and password
-      operationId: loginUser
-      tags:
-        - Authentication
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/LoginRequest"
-      responses:
-        "200":
-          description: Login successful
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/LoginResponse"
-        "400":
-          description: Invalid credentials
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/AuthError"
-        "401":
-          description: Authentication failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/AuthError"
-
-  /auth/refresh:
-    post:
-      summary: Refresh access token using refresh token
-      operationId: refreshToken
-      tags:
-        - Authentication
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/RefreshTokenRequest"
-      responses:
-        "200":
-          description: Token refreshed successfully
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/TokenResponse"
-        "400":
-          description: Invalid request
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/AuthError"
-        "401":
-          description: Invalid or expired refresh token
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/AuthError"
-
-  /auth/logout:
-    post:
-      summary: Logout and invalidate tokens
-      operationId: logoutUser
-      tags:
-        - Authentication
-      security:
-        - bearerAuth: []
-      responses:
-        "204":
-          description: Logout successful
-        "401":
-          description: Not authenticated
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/AuthError"
-
-  /auth/password-reset-request:
-    post:
-      summary: Request a password reset
-      operationId: requestPasswordReset
-      tags:
-        - Authentication
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/PasswordResetRequest"
-      responses:
-        "202":
-          description: Password reset email sent
-        "400":
-          description: Invalid email
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/AuthError"
-
-  /auth/password-reset:
-    post:
-      summary: Reset password with token
-      operationId: resetPassword
-      tags:
-        - Authentication
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/PasswordResetConfirmation"
-      responses:
-        "200":
-          description: Password reset successful
-        "400":
-          description: Invalid or expired token
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/AuthError"
-
-  /auth/me:
-    get:
-      summary: Get current authenticated user info
-      operationId: getCurrentUser
-      tags:
-        - Authentication
-      security:
-        - bearerAuth: []
-      responses:
-        "200":
-          description: Current user details
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/User"
-        "401":
-          description: Not authenticated
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/AuthError"
-
-  /users:
-    get:
-      summary: List all users
-      operationId: listUsers
-      parameters:
-        - name: page
-          in: query
-          schema:
-            type: integer
-            default: 1
-        - name: limit
-          in: query
-          schema:
-            type: integer
-            default: 20
-        - name: organizationId
-          in: query
-          schema:
-            type: string
-            format: uuid
-      responses:
-        "200":
-          description: List of users
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/User"
-                  pagination:
-                    $ref: "#/components/schemas/Pagination"
-    post:
-      summary: Create a new user
-      operationId: createUser
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/UserCreate"
+              type: object
+              required: [username, password, name, email]
+              properties:
+                username:
+                  type: string
+                  minLength: 3
+                password:
+                  type: string
+                  minLength: 6
+                name:
+                  type: string
+                  minLength: 2
+                email:
+                  type: string
+                  format: email
       responses:
         "201":
           description: User created
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/User"
+                $ref: "#/components/schemas/AuthUserResponse"
         "400":
-          description: Invalid input
+          $ref: "#/components/responses/ValidationError"
 
-  /users/{userId}:
-    parameters:
-      - name: userId
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-    get:
-      summary: Get a user by ID
-      operationId: getUserById
-      responses:
-        "200":
-          description: User details
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/User"
-        "404":
-          description: User not found
-    put:
-      summary: Update a user
-      operationId: updateUser
+  /auth/login:
+    post:
+      summary: Log in and start a session
+      tags: [auth]
+      security: []
       requestBody:
+        required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UserUpdate"
+              type: object
+              required: [username, password]
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
       responses:
         "200":
-          description: User updated
+          description: Logged in
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/User"
+                $ref: "#/components/schemas/AuthUserResponse"
         "400":
-          description: Invalid input
-        "404":
-          description: User not found
-    delete:
-      summary: Delete a user
-      operationId: deleteUser
-      security:
-        - bearerAuth: []
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/me:
+    get:
+      summary: Get the current session's user
+      tags: [auth]
       responses:
-        "204":
-          description: User deleted
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthUserResponse"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         "404":
-          description: User not found
+          description: Session points to a deleted user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/logout:
+    post:
+      summary: Log out and destroy the session
+      tags: [auth]
+      responses:
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
 
   /organizations:
     get:
-      summary: List all organizations
-      operationId: listOrganizations
-      parameters:
-        - name: page
-          in: query
-          schema:
-            type: integer
-            default: 1
-        - name: limit
-          in: query
-          schema:
-            type: integer
-            default: 20
+      summary: List organizations
+      description: >
+        Admins get every organization (OrganizationSummary[]); non-admins
+        get only the organizations they belong to (OrganizationRef[]) — two
+        different response shapes on one endpoint depending on caller role.
+      tags: [organizations]
       responses:
         "200":
-          description: List of organizations
+          description: Organizations visible to the caller
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  data:
-                    type: array
+                oneOf:
+                  - type: array
                     items:
-                      $ref: "#/components/schemas/Organization"
-                  pagination:
-                    $ref: "#/components/schemas/Pagination"
+                      $ref: "#/components/schemas/OrganizationSummary"
+                  - type: array
+                    items:
+                      $ref: "#/components/schemas/OrganizationRef"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
     post:
-      summary: Create a new organization
-      operationId: createOrganization
-      security:
-        - bearerAuth: []
+      summary: Create an organization
+      tags: [organizations]
       requestBody:
+        required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/OrganizationCreate"
+              $ref: "#/components/schemas/OrganizationInput"
       responses:
         "201":
           description: Organization created
@@ -324,1482 +156,1213 @@ paths:
               schema:
                 $ref: "#/components/schemas/Organization"
         "400":
-          description: Invalid input
+          $ref: "#/components/responses/ValidationError"
+        "403":
+          $ref: "#/components/responses/Forbidden"
 
-  /organizations/{organizationId}:
-    parameters:
-      - name: organizationId
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
+  /organizations/{id}:
     get:
-      summary: Get an organization by ID
-      operationId: getOrganizationById
+      summary: Get an organization by id
+      tags: [organizations]
+      parameters:
+        - $ref: "#/components/parameters/id"
       responses:
         "200":
-          description: Organization details
+          description: Organization (full row — wider than OrganizationSummary)
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Organization"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "404":
-          description: Organization not found
+          $ref: "#/components/responses/NotFound"
     put:
       summary: Update an organization
-      operationId: updateOrganization
-      security:
-        - bearerAuth: []
+      tags: [organizations]
+      parameters:
+        - $ref: "#/components/parameters/id"
       requestBody:
+        required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/OrganizationUpdate"
+              $ref: "#/components/schemas/OrganizationInput"
       responses:
         "200":
-          description: Organization updated
+          description: Updated organization
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Organization"
-        "400":
-          description: Invalid input
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "404":
-          description: Organization not found
-    delete:
-      summary: Delete an organization
-      operationId: deleteOrganization
-      security:
-        - bearerAuth: []
-      responses:
-        "204":
-          description: Organization deleted
-        "404":
-          description: Organization not found
+          $ref: "#/components/responses/NotFound"
 
-  /organizations/{organizationId}/users:
-    parameters:
-      - name: organizationId
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
+  /organizations/{orgId}/users:
     get:
-      summary: Get users in an organization
-      operationId: getOrganizationUsers
-      responses:
-        "200":
-          description: List of users in organization
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/UserWithRole"
-                  pagination:
-                    $ref: "#/components/schemas/Pagination"
-        "404":
-          description: Organization not found
-
-  /user-organization-roles:
-    post:
-      summary: Assign a user to an organization with a role
-      operationId: assignUserRole
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/UserOrganizationRoleCreate"
-      responses:
-        "201":
-          description: User assigned to organization
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UserOrganizationRole"
-        "400":
-          description: Invalid input
-        "404":
-          description: User or organization not found
-
-  /user-organization-roles/{roleId}:
-    parameters:
-      - name: roleId
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-    put:
-      summary: Update a user's role in an organization
-      operationId: updateUserRole
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/UserOrganizationRoleUpdate"
-      responses:
-        "200":
-          description: Role updated
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UserOrganizationRole"
-        "400":
-          description: Invalid input
-        "404":
-          description: Role assignment not found
-    delete:
-      summary: Remove a user from an organization
-      operationId: removeUserFromOrganization
-      responses:
-        "204":
-          description: User removed from organization
-        "404":
-          description: Role assignment not found
-
-  /badges:
-    get:
-      summary: List all badges
-      operationId: listBadges
+      summary: List an organization's members
+      tags: [organizations, users]
       parameters:
-        - name: page
-          in: query
-          schema:
-            type: integer
-            default: 1
-        - name: limit
-          in: query
-          schema:
-            type: integer
-            default: 20
-        - name: organizationId
-          in: query
-          schema:
-            type: string
-            format: uuid
+        - $ref: "#/components/parameters/orgId"
       responses:
         "200":
-          description: List of badges
+          description: Members of the organization
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/Badge"
-                  pagination:
-                    $ref: "#/components/schemas/Pagination"
+                type: array
+                items:
+                  $ref: "#/components/schemas/OrgUserResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /organizations/{orgId}/categories:
+    get:
+      summary: List an organization's badge categories
+      tags: [organizations, badges]
+      parameters:
+        - $ref: "#/components/parameters/orgId"
+      responses:
+        "200":
+          description: Badge categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BadgeCategorySummary"
+        "403":
+          $ref: "#/components/responses/Forbidden"
     post:
-      summary: Create a new badge
-      operationId: createBadge
-      security:
-        - bearerAuth: []
+      summary: Create a badge category
+      tags: [organizations, badges]
+      parameters:
+        - $ref: "#/components/parameters/orgId"
       requestBody:
+        required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/BadgeCreate"
+              $ref: "#/components/schemas/BadgeCategoryInput"
       responses:
         "201":
-          description: Badge created
+          description: Category created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadgeCategory"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /organizations/{orgId}/stats:
+    get:
+      summary: Get organization-level counts
+      tags: [organizations]
+      parameters:
+        - $ref: "#/components/parameters/orgId"
+      responses:
+        "200":
+          description: >
+            Aggregate counts. On an internal query error this endpoint
+            returns all-zeros rather than a 5xx (pre-existing, not fixed by
+            this phase).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrganizationStats"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /organizations/{orgId}/badges:
+    get:
+      summary: List badges in an organization
+      tags: [badges]
+      parameters:
+        - $ref: "#/components/parameters/orgId"
+        - name: categoryId
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Badges
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BadgeResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      summary: Create a badge
+      tags: [badges]
+      parameters:
+        - $ref: "#/components/parameters/orgId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BadgeInput"
+      responses:
+        "201":
+          description: >
+            Badge created. Returns the raw row (BadgeWriteResponse) — no
+            `category` object, unlike the GET endpoints' BadgeResponse.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Badge"
         "400":
-          description: Invalid input
+          $ref: "#/components/responses/ValidationError"
+        "403":
+          $ref: "#/components/responses/Forbidden"
 
-  /badges/{badgeId}:
-    parameters:
-      - name: badgeId
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
+  /badges/{id}:
     get:
-      summary: Get a badge by ID
-      operationId: getBadgeById
+      summary: Get a badge by id
+      tags: [badges]
+      parameters:
+        - $ref: "#/components/parameters/id"
       responses:
         "200":
-          description: Badge details
+          description: Badge
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/BadgeDetail"
+                $ref: "#/components/schemas/BadgeResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "404":
-          description: Badge not found
+          $ref: "#/components/responses/NotFound"
     put:
       summary: Update a badge
-      operationId: updateBadge
-      security:
-        - bearerAuth: []
+      tags: [badges]
+      parameters:
+        - $ref: "#/components/parameters/id"
       requestBody:
+        required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/BadgeUpdate"
+              $ref: "#/components/schemas/BadgeUpdateInput"
       responses:
         "200":
-          description: Badge updated
+          description: Updated badge (raw row, same caveat as POST above)
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Badge"
         "400":
-          description: Invalid input
+          $ref: "#/components/responses/ValidationError"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "404":
-          description: Badge not found
+          $ref: "#/components/responses/NotFound"
     delete:
       summary: Delete a badge
-      operationId: deleteBadge
-      security:
-        - bearerAuth: []
-      responses:
-        "204":
-          description: Badge deleted
-        "404":
-          description: Badge not found
-
-  /badges/{badgeId}/metrics:
-    parameters:
-      - name: badgeId
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-    get:
-      summary: Get metrics required for a badge
-      operationId: getBadgeMetrics
-      responses:
-        "200":
-          description: List of required metrics for the badge
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/BadgeMetricRequired"
-        "404":
-          description: Badge not found
-    post:
-      summary: Add a required metric to a badge
-      operationId: addMetricToBadge
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/BadgeMetricRequiredCreate"
-      responses:
-        "201":
-          description: Metric requirement added
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/BadgeMetricRequired"
-        "400":
-          description: Invalid input
-        "404":
-          description: Badge or metric not found
-
-  /badges/{badgeId}/prerequisites:
-    parameters:
-      - name: badgeId
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-    get:
-      summary: Get prerequisite badges for a badge
-      operationId: getBadgePrerequisites
-      responses:
-        "200":
-          description: List of prerequisite badges
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/BadgeBadgeRequired"
-        "404":
-          description: Badge not found
-    post:
-      summary: Add a prerequisite badge
-      operationId: addPrerequisiteBadge
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/BadgeBadgeRequiredCreate"
-      responses:
-        "201":
-          description: Prerequisite added
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/BadgeBadgeRequired"
-        "400":
-          description: Invalid input
-        "404":
-          description: Badge not found
-
-  /badge-metric-required/{requirementId}:
-    parameters:
-      - name: requirementId
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-    delete:
-      summary: Remove a metric requirement from a badge
-      operationId: removeMetricRequirement
-      responses:
-        "204":
-          description: Requirement removed
-        "404":
-          description: Requirement not found
-
-  /badge-badge-required/{requirementId}:
-    parameters:
-      - name: requirementId
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-    delete:
-      summary: Remove a badge prerequisite
-      operationId: removeBadgePrerequisite
-      responses:
-        "204":
-          description: Prerequisite removed
-        "404":
-          description: Prerequisite not found
-
-  /metrics:
-    get:
-      summary: List all metrics
-      operationId: listMetrics
+      tags: [badges]
       parameters:
-        - name: page
-          in: query
-          schema:
-            type: integer
-            default: 1
-        - name: limit
-          in: query
-          schema:
-            type: integer
-            default: 20
-        - name: organizationId
-          in: query
-          schema:
-            type: string
-            format: uuid
+        - $ref: "#/components/parameters/id"
       responses:
         "200":
-          description: List of metrics
+          description: Deleted
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/Metric"
-                  pagination:
-                    $ref: "#/components/schemas/Pagination"
-    post:
-      summary: Create a new metric
-      operationId: createMetric
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/MetricCreate"
-      responses:
-        "201":
-          description: Metric created
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Metric"
-        "400":
-          description: Invalid input
+                $ref: "#/components/schemas/MessageResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
 
-  /metrics/{metricId}:
-    parameters:
-      - name: metricId
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-    get:
-      summary: Get a metric by ID
-      operationId: getMetricById
-      responses:
-        "200":
-          description: Metric details
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Metric"
-        "404":
-          description: Metric not found
-    put:
-      summary: Update a metric
-      operationId: updateMetric
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/MetricUpdate"
-      responses:
-        "200":
-          description: Metric updated
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Metric"
-        "400":
-          description: Invalid input
-        "404":
-          description: Metric not found
-    delete:
-      summary: Delete a metric
-      operationId: deleteMetric
-      responses:
-        "204":
-          description: Metric deleted
-        "404":
-          description: Metric not found
-
-  /users/{userId}/badges/awarded:
-    parameters:
-      - name: userId
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-    get:
-      summary: Get badges awarded to a user
-      operationId: getUserAwardedBadges
-      responses:
-        "200":
-          description: List of awarded badges
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/UserBadgeAwarded"
-                  pagination:
-                    $ref: "#/components/schemas/Pagination"
-        "404":
-          description: User not found
+  /badges/{badgeId}/award:
     post:
       summary: Award a badge to a user
-      operationId: awardBadgeToUser
-      security:
-        - bearerAuth: []
+      tags: [progress]
+      parameters:
+        - $ref: "#/components/parameters/badgeId"
       requestBody:
+        required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UserBadgeAwardedCreate"
+              type: object
+              required: [userId]
+              properties:
+                userId:
+                  type: integer
       responses:
         "201":
-          description: Badge awarded
+          description: Achievement created (raw row)
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UserBadgeAwarded"
-        "400":
-          description: Invalid input
+                $ref: "#/components/schemas/Achievement"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "404":
-          description: User or badge not found
-        "409":
-          description: Badge already awarded to user
+          $ref: "#/components/responses/NotFound"
 
-  /users/{userId}/badges/tracked:
-    parameters:
-      - name: userId
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
+  /badges/{badgeId}/progress/{userId}:
     get:
-      summary: Get badges being tracked by a user
-      operationId: getUserTrackedBadges
+      summary: Get one user's progress on one badge
+      tags: [progress]
+      parameters:
+        - $ref: "#/components/parameters/badgeId"
+        - $ref: "#/components/parameters/userId"
       responses:
         "200":
-          description: List of tracked badges
+          description: >
+            Progress detail. 404s if the badge has no configured
+            badgeMetrics rows — the normal case for badges created through
+            the UI (see CLAUDE.md's "Badge progress persistence is broken"
+            note).
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/UserBadgeTracked"
-                  pagination:
-                    $ref: "#/components/schemas/Pagination"
+                $ref: "#/components/schemas/BadgeProgressDetail"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "404":
-          description: User not found
+          $ref: "#/components/responses/NotFound"
     post:
-      summary: Track a badge for a user
-      operationId: trackBadgeForUser
-      security:
-        - bearerAuth: []
+      summary: Update a user's progress on a badge
+      description: >
+        Known broken: this route's request body sends a flat
+        `{ progress: 0-100 }` percentage, but persistence is built around a
+        per-metric model — for badges without pre-configured badgeMetrics
+        rows this silently no-ops and returns null. Documented as observed,
+        not fixed (see CLAUDE.md and tests/progress.test.ts).
+      tags: [progress]
+      parameters:
+        - $ref: "#/components/parameters/badgeId"
+        - $ref: "#/components/parameters/userId"
       requestBody:
+        required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UserBadgeTrackedCreate"
-      responses:
-        "201":
-          description: Badge now being tracked
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UserBadgeTracked"
-        "400":
-          description: Invalid input
-        "404":
-          description: User or badge not found
-        "409":
-          description: Badge already being tracked by user
-
-  /user-badge-awarded/{awardId}:
-    parameters:
-      - name: awardId
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-    get:
-      summary: Get details of a badge awarded to a user
-      operationId: getBadgeAwardDetails
+              type: object
+              properties:
+                progress:
+                  type: number
+                  minimum: 0
+                  maximum: 100
+                progressData: {}
+                notes:
+                  type: string
+                status:
+                  type: string
       responses:
         "200":
-          description: Award details
+          description: Updated progress, or null if the update silently no-op'd
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UserBadgeAwarded"
+                nullable: true
+                allOf:
+                  - $ref: "#/components/schemas/BadgeProgressDetail"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "404":
-          description: Award not found
-    delete:
-      summary: Revoke a badge award
-      operationId: revokeBadgeAward
-      responses:
-        "204":
-          description: Badge award revoked
-        "404":
-          description: Award not found
+          $ref: "#/components/responses/NotFound"
 
-  /user-badge-tracked/{trackingId}:
-    parameters:
-      - name: trackingId
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
+  /organizations/{orgId}/awarded-badges:
     get:
-      summary: Get details of a badge being tracked by a user
-      operationId: getBadgeTrackingDetails
+      summary: List badges awarded within an organization
+      tags: [progress]
+      parameters:
+        - $ref: "#/components/parameters/orgId"
       responses:
         "200":
-          description: Tracking details
+          description: Awarded badges, with awarding-user names
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UserBadgeTracked"
-        "404":
-          description: Tracking not found
-    delete:
-      summary: Stop tracking a badge
-      operationId: stopTrackingBadge
+                type: array
+                items:
+                  $ref: "#/components/schemas/OrgAwardedBadge"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /users/{userId}/awarded-badges:
+    get:
+      summary: List badges awarded to a user
+      tags: [progress]
+      parameters:
+        - $ref: "#/components/parameters/userId"
       responses:
-        "204":
-          description: Badge tracking removed
+        "200":
+          description: >
+            Awarded badges (same shape as the org-scoped endpoint, minus
+            userName)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UserAwardedBadge"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "404":
-          description: Tracking not found
+          $ref: "#/components/responses/NotFound"
 
   /users/{userId}/progress:
-    parameters:
-      - name: userId
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
     get:
-      summary: Get user's overall progress on badges
-      operationId: getUserProgress
-      responses:
-        "200":
-          description: User badge progress
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  awarded:
-                    type: integer
-                  tracked:
-                    type: integer
-                  inProgress:
-                    type: integer
-                  metrics:
-                    type: object
-                    additionalProperties:
-                      type: integer
-                  metricStatuses:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/UserMetricStatus"
-        "404":
-          description: User not found
-
-  /users/{userId}/metrics:
-    parameters:
-      - name: userId
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-    get:
-      summary: Get all metric statuses for a user
-      operationId: getUserMetricStatuses
+      summary: List a user's progress across all badges
+      tags: [progress]
       parameters:
-        - name: page
-          in: query
-          schema:
-            type: integer
-            default: 1
-        - name: limit
-          in: query
-          schema:
-            type: integer
-            default: 20
+        - $ref: "#/components/parameters/userId"
       responses:
         "200":
-          description: List of user's metric statuses
+          description: >
+            Per-badge progress summaries — a different shape than
+            /badges/{badgeId}/progress/{userId} (flat badge fields instead
+            of a nested `badge` object).
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/UserMetricStatus"
-                  pagination:
-                    $ref: "#/components/schemas/Pagination"
+                type: array
+                items:
+                  $ref: "#/components/schemas/UserBadgeProgressSummary"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "404":
-          description: User not found
-    post:
-      summary: Create or update a metric status for a user
-      operationId: createUserMetricStatus
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/UserMetricStatusCreate"
-      responses:
-        "201":
-          description: Metric status created
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UserMetricStatus"
-        "400":
-          description: Invalid input
-        "404":
-          description: User or metric not found
+          $ref: "#/components/responses/NotFound"
 
-  /users/{userId}/metrics/{metricId}:
-    parameters:
-      - name: userId
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-      - name: metricId
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
+  /organizations/{orgId}/progress:
     get:
-      summary: Get a specific metric status for a user
-      operationId: getUserMetricStatus
+      summary: List all users' progress within an organization
+      tags: [progress]
+      parameters:
+        - $ref: "#/components/parameters/orgId"
       responses:
         "200":
-          description: User's metric status
+          description: >
+            Per-user-per-badge summaries. `progress` is currently a
+            hardcoded 0 and `status` is always "in_progress" — pre-existing,
+            documented, not fixed by this phase.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UserMetricStatus"
-        "404":
-          description: User or metric status not found
-    put:
-      summary: Update a metric status for a user
-      operationId: updateUserMetricStatus
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/UserMetricStatusUpdate"
+                type: array
+                items:
+                  $ref: "#/components/schemas/OrgBadgeProgressSummary"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /users/{id}:
+    get:
+      summary: Get a user's profile
+      tags: [users]
+      parameters:
+        - $ref: "#/components/parameters/id"
       responses:
         "200":
-          description: Metric status updated
+          description: >
+            User profile — a third user-shape, distinct from
+            AuthUserResponse and OrgUserResponse (see UserProfileResponse).
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UserMetricStatus"
-        "400":
-          description: Invalid input
+                $ref: "#/components/schemas/UserProfileResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "404":
-          description: User or metric status not found
-    delete:
-      summary: Reset a metric status for a user
-      operationId: resetUserMetricStatus
-      responses:
-        "204":
-          description: Metric status reset
-        "404":
-          description: User or metric status not found
+          $ref: "#/components/responses/NotFound"
 
 components:
   securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-      description: JWT Bearer token authentication
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: connect.sid
+
+  parameters:
+    id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+    orgId:
+      name: orgId
+      in: path
+      required: true
+      schema:
+        type: integer
+    badgeId:
+      name: badgeId
+      in: path
+      required: true
+      schema:
+        type: integer
+    userId:
+      name: userId
+      in: path
+      required: true
+      schema:
+        type: integer
+
+  responses:
+    Unauthorized:
+      description: Not authenticated
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    Forbidden:
+      description: Authenticated but not permitted
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    ValidationError:
+      description: Request body failed validation
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ValidationErrorResponse"
+
   schemas:
-    User:
-      description: A user account in the badge management system. Users can belong to organizations, track badges, and be awarded badges for their achievements.
+    ErrorResponse:
       type: object
+      required: [message, code]
+      properties:
+        message:
+          type: string
+        code:
+          type: string
+
+    ValidationErrorResponse:
+      type: object
+      required: [message, code, errors]
+      properties:
+        message:
+          type: string
+        code:
+          type: string
+        errors:
+          type: array
+          items: {}
+
+    MessageResponse:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+
+    AuthUserResponse:
+      type: object
+      required: [id, username, name, email, role, organizationId]
       properties:
         id:
-          type: string
-          format: uuid
-          description: Unique identifier for the user
+          type: integer
         username:
           type: string
-          description: Unique username for login and identification
+        name:
+          type: string
         email:
           type: string
-          format: email
-          description: User's email address, must be unique in the system
-        displayName:
+        role:
           type: string
-          description: User's full name or preferred display name
-        bio:
+        organizationId:
+          type: integer
+          nullable: true
+
+    OrganizationRef:
+      type: object
+      required: [id, name]
+      properties:
+        id:
+          type: integer
+        name:
           type: string
-          description: Optional biography or description of the user
-        avatarUrl:
+
+    OrganizationSummary:
+      type: object
+      required: [id, name, description, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
           type: string
-          format: uri
-          description: Optional URL to the user's profile image
+        description:
+          type: string
+          nullable: true
         createdAt:
           type: string
           format: date-time
-        updatedAt:
-          type: string
-          format: date-time
-      required:
-        - id
-        - username
-        - email
-        - displayName
-        - createdAt
-        - updatedAt
-
-    UserCreate:
-      description: Input schema for creating a new user. Contains all required information to register a user account, including authentication credentials.
-      type: object
-      properties:
-        username:
-          type: string
-        email:
-          type: string
-          format: email
-        displayName:
-          type: string
-        bio:
-          type: string
-        avatarUrl:
-          type: string
-          format: uri
-        password:
-          type: string
-          format: password
-          minLength: 8
-      required:
-        - username
-        - email
-        - displayName
-        - password
-
-    UserUpdate:
-      description: Input schema for updating an existing user's information. All fields are optional - only provided fields will be updated.
-      type: object
-      properties:
-        username:
-          type: string
-        email:
-          type: string
-          format: email
-        displayName:
-          type: string
-        bio:
-          type: string
-        avatarUrl:
-          type: string
-          format: uri
 
     Organization:
-      description: An organization that users can belong to. Organizations can create badges and metrics for their members to achieve. Users can have different roles within organizations.
+      description: Full Drizzle row (shared/schema.ts organizations table)
       type: object
+      required:
+        [
+          id,
+          name,
+          description,
+          createdAt,
+          createdBy,
+          updatedAt,
+          updatedBy,
+          active,
+        ]
       properties:
         id:
-          type: string
-          format: uuid
-          description: Unique identifier for the organization
-        name:
-          type: string
-          description: Organization's display name, must be unique
-        description:
-          type: string
-          description: Detailed description of the organization, its purpose and activities
-        logoUrl:
-          type: string
-          format: uri
-          description: Optional URL to the organization's logo image
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
-      required:
-        - id
-        - name
-        - createdAt
-        - updatedAt
-
-    OrganizationCreate:
-      description: Input schema for creating a new organization. Only the name is required, other fields can be added later.
-      type: object
-      properties:
-        name:
-          type: string
-        description:
-          type: string
-        logoUrl:
-          type: string
-          format: uri
-      required:
-        - name
-
-    OrganizationUpdate:
-      description: Input schema for updating an existing organization's details. All fields are optional - only provided fields will be updated.
-      type: object
-      properties:
-        name:
-          type: string
-        description:
-          type: string
-        logoUrl:
-          type: string
-          format: uri
-
-    UserOrganizationRole:
-      description: Represents a user's membership and role within an organization. Each user can belong to multiple organizations with different roles.
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          description: Unique identifier for this role assignment
-        userId:
-          type: string
-          format: uuid
-          description: Reference to the user
-        organizationId:
-          type: string
-          format: uuid
-          description: Reference to the organization
-        role:
-          type: string
-          enum: [owner, admin, manager, member]
-          description: The user's role in the organization. Determines permissions - owner has full control, admin can manage users, manager can manage badges, member has basic access.
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
-      required:
-        - id
-        - userId
-        - organizationId
-        - role
-        - createdAt
-        - updatedAt
-
-    UserOrganizationRoleCreate:
-      description: Input schema for assigning a user to an organization with a specific role. Used when adding users to organizations.
-      type: object
-      properties:
-        userId:
-          type: string
-          format: uuid
-        organizationId:
-          type: string
-          format: uuid
-        role:
-          type: string
-          enum: [owner, admin, manager, member]
-          default: member
-      required:
-        - userId
-        - organizationId
-        - role
-
-    UserOrganizationRoleUpdate:
-      description: Input schema for changing a user's role within an organization. Only the role can be changed.
-      type: object
-      properties:
-        role:
-          type: string
-          enum: [owner, admin, manager, member]
-      required:
-        - role
-
-    UserWithRole:
-      description: A combined schema that includes user information along with their role in a specific organization. Used when listing users in an organization.
-      type: object
-      properties:
-        user:
-          $ref: "#/components/schemas/User"
-        role:
-          type: string
-          enum: [owner, admin, manager, member]
-      required:
-        - user
-        - role
-
-    Badge:
-      description: A badge that users can earn. Badges represent achievements and can require specific metrics or other badges as prerequisites. Badges belong to organizations.
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          description: Unique identifier for the badge
-        name:
-          type: string
-          description: Display name of the badge
-        description:
-          type: string
-          description: Detailed description of the badge and how to earn it
-        imageUrl:
-          type: string
-          format: uri
-          description: URL to the badge's image or icon
-        organizationId:
-          type: string
-          format: uuid
-          description: The organization that created and manages this badge
-        level:
           type: integer
-          minimum: 1
-          maximum: 5
-          default: 1
-          description: Difficulty or prestige level of the badge, 1 being easiest and 5 being hardest
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
-      required:
-        - id
-        - name
-        - organizationId
-        - level
-        - createdAt
-        - updatedAt
-
-    BadgeDetail:
-      description: Extended badge information that includes its prerequisites and metrics. Used when viewing detailed badge information.
-      allOf:
-        - $ref: "#/components/schemas/Badge"
-        - type: object
-          properties:
-            metrics:
-              type: array
-              items:
-                $ref: "#/components/schemas/BadgeMetricRequired"
-            prerequisites:
-              type: array
-              items:
-                $ref: "#/components/schemas/BadgeBadgeRequired"
-            awardedCount:
-              type: integer
-              description: Number of users who have been awarded this badge
-
-    BadgeCreate:
-      description: Input schema for creating a new badge. Requires a name and organization, with optional fields for additional details.
-      type: object
-      properties:
         name:
           type: string
         description:
           type: string
-        imageUrl:
-          type: string
-          format: uri
-        organizationId:
-          type: string
-          format: uuid
-        level:
-          type: integer
-          minimum: 1
-          maximum: 5
-          default: 1
-      required:
-        - name
-        - organizationId
-
-    BadgeUpdate:
-      description: Input schema for updating an existing badge's information. All fields are optional - only provided fields will be updated.
-      type: object
-      properties:
-        name:
-          type: string
-        description:
-          type: string
-        imageUrl:
-          type: string
-          format: uri
-        level:
-          type: integer
-          minimum: 1
-          maximum: 5
-
-    BadgeMetricRequired:
-      description: Links a badge to a metric that must be achieved to earn the badge. A badge can require multiple metrics.
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          description: Unique identifier for this badge-metric requirement
-        badgeId:
-          type: string
-          format: uuid
-          description: Reference to the badge
-        metricId:
-          type: string
-          format: uuid
-          description: Reference to the metric that must be achieved
-        createdAt:
-          type: string
-          format: date-time
-      required:
-        - id
-        - badgeId
-        - metricId
-        - createdAt
-
-    BadgeMetricRequiredCreate:
-      description: Input schema for adding a metric requirement to a badge. Used when specifying which metrics are needed to earn a badge.
-      type: object
-      properties:
-        metricId:
-          type: string
-          format: uuid
-      required:
-        - metricId
-
-    BadgeBadgeRequired:
-      description: Links a badge to another badge that is a prerequisite. Represents a requirement that a user must first earn one badge before being eligible for another.
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          description: Unique identifier for this badge prerequisite relationship
-        badgeId:
-          type: string
-          format: uuid
-          description: The badge that has a prerequisite
-        prerequisiteBadgeId:
-          type: string
-          format: uuid
-          description: The badge that must be earned first as a prerequisite
-        createdAt:
-          type: string
-          format: date-time
-      required:
-        - id
-        - badgeId
-        - prerequisiteBadgeId
-        - createdAt
-      type: object
-      properties:
-        prerequisiteBadgeId:
-          type: string
-          format: uuid
-      required:
-        - prerequisiteBadgeId
-
-    UserBadgeAwarded:
-      description: Represents a badge award event - when a specific badge was granted to a user. Includes tracking of who created the award and when it happened.
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        userId:
-          type: string
-          format: uuid
-        badgeId:
-          type: string
-          format: uuid
+          nullable: true
         createdAt:
           type: string
           format: date-time
         createdBy:
-          type: string
-          format: uuid
-          description: User ID of person who created the award record
-      required:
-        - id
-        - userId
-        - badgeId
-        - createdAt
-        - createdBy
-
-    UserBadgeAwardedCreate:
-      description: Input schema for awarding a badge to a user. Requires at minimum the badge ID, and optionally evidence to support the award. The current authenticated user will be recorded as the awarder.
-      type: object
-      properties:
-        badgeId:
-          type: string
-          format: uuid
-        evidence:
-          type: string
-          description: Optional text or URL with evidence for the badge award
-      required:
-        - badgeId
-
-    UserBadgeTracked:
-      description: Represents a user's active intention to work towards earning a specific badge. Tracking a badge allows progress to be monitored and enables the system to notify when requirements are met.
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        userId:
-          type: string
-          format: uuid
-        badgeId:
-          type: string
-          format: uuid
-        createdAt:
-          type: string
-          format: date-time
+          type: integer
+          nullable: true
         updatedAt:
           type: string
           format: date-time
-      required:
-        - id
-        - userId
-        - badgeId
-        - createdAt
-        - updatedAt
+          nullable: true
+        updatedBy:
+          type: integer
+          nullable: true
+        active:
+          type: boolean
 
-    UserBadgeTrackedCreate:
-      description: Input schema for a user to start tracking a badge. Only requires the badge ID. The system will automatically begin tracking metrics related to the badge requirements.
+    OrganizationInput:
       type: object
+      required: [name]
       properties:
-        badgeId:
-          type: string
-          format: uuid
-      required:
-        - badgeId
-
-    Metric:
-      description: Defines a measurable activity or achievement that can be tracked for users. Metrics are created by organizations and can be requirements for badges. Examples include training hours, tasks completed, or skills practiced.
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
         name:
           type: string
+          minLength: 3
         description:
           type: string
-        targetValue:
-          type: number
-          description: Target value for the metric
-        unit:
+          minLength: 5
+
+    BadgeCategorySummary:
+      type: object
+      required: [id, name, organizationId, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
           type: string
-          description: Unit of measurement (e.g., hours, points, iterations)
         organizationId:
-          type: string
-          format: uuid
+          type: integer
         createdAt:
           type: string
           format: date-time
-        updatedAt:
-          type: string
-          format: date-time
+
+    BadgeCategory:
+      description: Full Drizzle row (shared/schema.ts badgeCategories table)
+      type: object
       required:
-        - id
-        - name
-        - targetValue
-        - unit
-        - organizationId
-        - createdAt
-        - updatedAt
-
-    MetricCreate:
-      description: Input schema for creating a new metric. Requires a name, target value, unit of measurement, and organization ID. The organization context determines which users can earn this metric.
-      type: object
-      properties:
-        name:
-          type: string
-        description:
-          type: string
-        targetValue:
-          type: number
-          description: Target value for the metric
-        unit:
-          type: string
-          description: Unit of measurement (e.g., hours, points, iterations)
-        organizationId:
-          type: string
-          format: uuid
-      required:
-        - name
-        - targetValue
-        - unit
-        - organizationId
-
-    MetricUpdate:
-      description: Input schema for updating an existing metric's properties. All fields are optional - only provided fields will be updated. Current metric values for users are not affected by changes.
-      type: object
-      properties:
-        name:
-          type: string
-        description:
-          type: string
-        targetValue:
-          type: number
-          description: Target value for the metric
-        unit:
-          type: string
-          description: Unit of measurement (e.g., hours, points, iterations)
-
-    Pagination:
-      description: Standard pagination information returned with all paginated responses. Provides total counts and navigation data for result sets.
-      type: object
-      properties:
-        totalItems:
-          type: integer
-          description: Total number of items available
-        totalPages:
-          type: integer
-          description: Total number of pages
-        currentPage:
-          type: integer
-          description: Current page number
-        pageSize:
-          type: integer
-          description: Number of items per page
-      required:
-        - totalItems
-        - totalPages
-        - currentPage
-        - pageSize
-
-    UserMetricStatus:
-      description: Tracks a user's progress on a specific metric. Records the current value the user has achieved, which can be compared against the metric's target value to calculate progress percentage. Used to determine badge eligibility.
-      type: object
+        [
+          id,
+          name,
+          organizationId,
+          createdAt,
+          createdBy,
+          updatedAt,
+          updatedBy,
+          active,
+        ]
       properties:
         id:
+          type: integer
+        name:
           type: string
-          format: uuid
-        userId:
-          type: string
-          format: uuid
-        metricId:
-          type: string
-          format: uuid
-        currentValue:
-          type: number
+        organizationId:
+          type: integer
         createdAt:
           type: string
           format: date-time
+        createdBy:
+          type: integer
+          nullable: true
         updatedAt:
           type: string
           format: date-time
-      required:
-        - id
-        - userId
-        - metricId
-        - currentValue
-        - createdAt
-        - updatedAt
+          nullable: true
+        updatedBy:
+          type: integer
+          nullable: true
+        active:
+          type: boolean
 
-    UserMetricStatusCreate:
-      description: Input schema for creating or initializing a user's progress on a metric. Sets the starting current value for the metric tracking. Required when a user first begins tracking a metric.
+    BadgeCategoryInput:
       type: object
+      required: [name]
       properties:
-        metricId:
+        name:
           type: string
-          format: uuid
-        currentValue:
-          type: number
-      required:
-        - metricId
-        - currentValue
+          minLength: 2
 
-    UserMetricStatusUpdate:
-      description: Input schema for updating a user's progress on a metric. Supports either direct value setting (currentValue) or incremental updates (incrementBy). The oneOf constraint ensures one of these methods must be used.
+    OrganizationStats:
       type: object
+      required: [totalBadges, totalUsers, totalAwarded, inProgress]
       properties:
-        currentValue:
-          type: number
-        incrementBy:
-          type: number
-          description: Value to add to the current value (alternative to setting currentValue directly)
-      oneOf:
-        - required: [currentValue]
-        - required: [incrementBy]
+        totalBadges:
+          type: integer
+        totalUsers:
+          type: integer
+        totalAwarded:
+          type: integer
+        inProgress:
+          type: integer
 
-    LoginRequest:
-      description: Authentication request that supports login with either email+password or username+password combinations. The oneOf constraint ensures one of these credential sets must be provided.
+    OrgUserResponse:
       type: object
+      required: [id, username, name, email, role, createdAt, organizations]
       properties:
-        email:
-          type: string
-          format: email
+        id:
+          type: integer
         username:
           type: string
-        password:
+        name:
           type: string
-          format: password
-      oneOf:
-        - required: [email, password]
-        - required: [username, password]
-
-    LoginResponse:
-      description: Response returned after successful authentication, containing both the user's profile information and authentication tokens for subsequent API calls.
-      type: object
-      properties:
-        user:
-          $ref: "#/components/schemas/User"
-        tokens:
-          $ref: "#/components/schemas/TokenResponse"
-      required:
-        - user
-        - tokens
-
-    TokenResponse:
-      description: Contains authentication tokens used for accessing protected resources. Includes an access token (short-lived) for API calls and a refresh token (longer-lived) for obtaining new access tokens without re-authentication.
-      type: object
-      properties:
-        accessToken:
-          type: string
-        refreshToken:
-          type: string
-        tokenType:
-          type: string
-          default: Bearer
-        expiresIn:
-          type: integer
-          description: Expiration time in seconds
-      required:
-        - accessToken
-        - refreshToken
-        - tokenType
-        - expiresIn
-
-    RefreshTokenRequest:
-      description: Request to obtain a new access token using a valid refresh token. Used when an access token has expired but the user's session should remain active without requiring re-authentication.
-      type: object
-      properties:
-        refreshToken:
-          type: string
-      required:
-        - refreshToken
-
-    PasswordResetRequest:
-      description: Initiates the password reset process by requesting a reset token be sent to the user's email address. The first step in the two-step password reset workflow.
-      type: object
-      properties:
         email:
           type: string
-          format: email
-      required:
-        - email
+        role:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        organizations:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrganizationRef"
 
-    PasswordResetConfirmation:
-      description: Completes the password reset process by providing the reset token (received via email) and the new password. The second and final step in the password reset workflow.
+    UserProfileResponse:
+      type: object
+      required: [id, username, name, email, role, organizations]
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+        organizations:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrganizationRef"
+
+    BadgeResponse:
+      type: object
+      required:
+        - id
+        - name
+        - description
+        - criteria
+        - imageUrl
+        - color
+        - categoryId
+        - organizationId
+        - createdAt
+        - requiresProgress
+        - criteriaSections
+        - criteriaType
+        - category
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        criteria:
+          type: string
+          nullable: true
+        imageUrl:
+          type: string
+          nullable: true
+        color:
+          type: string
+          nullable: true
+        categoryId:
+          type: integer
+          nullable: true
+        organizationId:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        requiresProgress:
+          type: boolean
+        criteriaSections: {}
+        criteriaType:
+          type: string
+        category:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/OrganizationRef"
+
+    Badge:
+      description: Full Drizzle row (shared/schema.ts badges table) — sent by POST/PUT, unlike BadgeResponse above
+      type: object
+      required:
+        - id
+        - name
+        - description
+        - criteria
+        - imageUrl
+        - color
+        - categoryId
+        - organizationId
+        - requiresProgress
+        - criteriaSections
+        - criteriaType
+        - createdAt
+        - createdBy
+        - updatedAt
+        - updatedBy
+        - active
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        criteria:
+          type: string
+          nullable: true
+        imageUrl:
+          type: string
+          nullable: true
+        color:
+          type: string
+          nullable: true
+        categoryId:
+          type: integer
+          nullable: true
+        organizationId:
+          type: integer
+        requiresProgress:
+          type: boolean
+        criteriaSections: {}
+        criteriaType:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        createdBy:
+          type: integer
+          nullable: true
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+        updatedBy:
+          type: integer
+          nullable: true
+        active:
+          type: boolean
+
+    BadgeInput:
+      type: object
+      required: [name, description]
+      properties:
+        name:
+          type: string
+          minLength: 2
+        description:
+          type: string
+          minLength: 5
+        criteria:
+          type: string
+        imageUrl:
+          type: string
+        color:
+          type: string
+        categoryId:
+          type: integer
+        requiresProgress:
+          type: boolean
+        criteriaSections: {}
+        criteriaType:
+          type: string
+          enum: [binary, numeric]
+
+    BadgeUpdateInput:
+      description: Same as BadgeInput but all fields optional, organizationId/createdBy never client-assignable
       type: object
       properties:
-        token:
+        name:
           type: string
-        password:
+          minLength: 2
+        description:
           type: string
-          format: password
-          minLength: 8
-      required:
-        - token
-        - password
+          minLength: 5
+        criteria:
+          type: string
+        imageUrl:
+          type: string
+        color:
+          type: string
+        categoryId:
+          type: integer
+        requiresProgress:
+          type: boolean
+        criteriaSections: {}
+        criteriaType:
+          type: string
+          enum: [binary, numeric]
 
-    AuthError:
-      description: Standardized error response for authentication-related failures. Includes an error code for programmatic handling, a human-readable message, and optional detailed information for debugging.
+    Achievement:
+      description: Full Drizzle row (shared/schema.ts achievements table)
       type: object
+      required:
+        [
+          id,
+          userId,
+          badgeId,
+          status,
+          awardedAt,
+          awardedBy,
+          createdAt,
+          createdBy,
+          updatedAt,
+          updatedBy,
+          active,
+        ]
       properties:
-        code:
+        id:
+          type: integer
+        userId:
+          type: integer
+        badgeId:
+          type: integer
+        status:
           type: string
-        message:
+          enum: [in_progress, achieved]
+        awardedAt:
           type: string
-        details:
+          format: date-time
+          nullable: true
+        awardedBy:
+          type: integer
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        createdBy:
+          type: integer
+          nullable: true
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+        updatedBy:
+          type: integer
+          nullable: true
+        active:
+          type: boolean
+
+    OrgAwardedBadge:
+      type: object
+      required:
+        [
+          id,
+          badgeId,
+          userId,
+          awardedBy,
+          awardedAt,
+          status,
+          badgeName,
+          badgeDescription,
+          badgeColor,
+          badgeImageUrl,
+          userName,
+          awardedByName,
+        ]
+      properties:
+        id:
+          type: integer
+        badgeId:
+          type: integer
+        userId:
+          type: integer
+        awardedBy:
+          type: integer
+          nullable: true
+        awardedAt:
+          type: string
+          format: date-time
+          nullable: true
+        status:
+          type: string
+        badgeName:
+          type: string
+        badgeDescription:
+          type: string
+        badgeColor:
+          type: string
+          nullable: true
+        badgeImageUrl:
+          type: string
+          nullable: true
+        userName:
+          type: string
+        awardedByName:
+          type: string
+
+    UserAwardedBadge:
+      description: Same as OrgAwardedBadge minus userName
+      type: object
+      required:
+        [
+          id,
+          badgeId,
+          userId,
+          awardedBy,
+          awardedAt,
+          status,
+          badgeName,
+          badgeDescription,
+          badgeColor,
+          badgeImageUrl,
+          awardedByName,
+        ]
+      properties:
+        id:
+          type: integer
+        badgeId:
+          type: integer
+        userId:
+          type: integer
+        awardedBy:
+          type: integer
+          nullable: true
+        awardedAt:
+          type: string
+          format: date-time
+          nullable: true
+        status:
+          type: string
+        badgeName:
+          type: string
+        badgeDescription:
+          type: string
+        badgeColor:
+          type: string
+          nullable: true
+        badgeImageUrl:
+          type: string
+          nullable: true
+        awardedByName:
+          type: string
+
+    ProgressMetricEntry:
+      type: object
+      required: [value, name, description, type, targetValue]
+      properties:
+        value:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+        targetValue:
+          type: integer
+
+    BadgeProgressDetail:
+      type: object
+      required:
+        [
+          id,
+          userId,
+          badgeId,
+          progress,
+          progressData,
+          lastUpdated,
+          status,
+          badge,
+          metrics,
+        ]
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        badgeId:
+          type: integer
+        progress:
+          type: integer
+        progressData:
           type: object
+          additionalProperties:
+            $ref: "#/components/schemas/ProgressMetricEntry"
+        lastUpdated:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [completed, in_progress]
+        badge:
+          $ref: "#/components/schemas/BadgeResponse"
+        metrics:
+          type: array
+          items:
+            type: object
+            required:
+              [
+                id,
+                userId,
+                metricId,
+                value,
+                lastUpdatedAt,
+                updatedBy,
+                metricName,
+                metricDescription,
+                metricType,
+                targetValue,
+              ]
+            properties:
+              id:
+                type: integer
+              userId:
+                type: integer
+              metricId:
+                type: integer
+              value:
+                type: string
+              lastUpdatedAt:
+                type: string
+                format: date-time
+              updatedBy:
+                type: integer
+                nullable: true
+              metricName:
+                type: string
+              metricDescription:
+                type: string
+              metricType:
+                type: string
+              targetValue:
+                type: integer
+
+    UserBadgeProgressSummary:
+      type: object
       required:
-        - code
-        - message
+        [
+          id,
+          badgeId,
+          userId,
+          progress,
+          progressData,
+          lastUpdated,
+          updatedBy,
+          status,
+          badgeName,
+          badgeDescription,
+          badgeColor,
+          badgeImageUrl,
+          requiresProgress,
+          criteriaSections,
+          updatedByName,
+        ]
+      properties:
+        id:
+          type: integer
+        badgeId:
+          type: integer
+        userId:
+          type: integer
+        progress:
+          type: integer
+        progressData:
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/ProgressMetricEntry"
+        lastUpdated:
+          type: string
+          format: date-time
+        updatedBy:
+          type: integer
+          nullable: true
+        status:
+          type: string
+          enum: [completed, in_progress]
+        badgeName:
+          type: string
+        badgeDescription:
+          type: string
+        badgeColor:
+          type: string
+          nullable: true
+        badgeImageUrl:
+          type: string
+          nullable: true
+        requiresProgress:
+          type: boolean
+          enum: [true]
+        criteriaSections: {}
+        updatedByName:
+          type: string
+
+    OrgBadgeProgressSummary:
+      type: object
+      required:
+        [
+          id,
+          badgeId,
+          userId,
+          lastUpdated,
+          updatedBy,
+          badgeName,
+          userName,
+          updatedByName,
+          progress,
+          status,
+        ]
+      properties:
+        id:
+          type: integer
+        badgeId:
+          type: integer
+        userId:
+          type: integer
+        lastUpdated:
+          type: string
+          format: date-time
+        updatedBy:
+          type: integer
+          nullable: true
+        badgeName:
+          type: string
+        userName:
+          type: string
+        updatedByName:
+          type: string
+        progress:
+          type: integer
+          description: Currently always 0 — pre-existing placeholder, not fixed by this phase
+        status:
+          type: string
+          description: Currently always "in_progress" — pre-existing, not fixed by this phase

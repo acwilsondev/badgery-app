@@ -1,12 +1,6 @@
-// The shape returned by POST /api/v1/auth/login and GET /api/v1/auth/me
-// (server/features/auth/routes.ts). Not a shared/schema.ts type: this is
-// an API response projection of the users table, not a raw DB row (no
-// password, no createdAt/updatedAt/active audit fields).
-export type AuthUser = {
-  id: number;
-  username: string;
-  name: string;
-  email: string;
-  role: string;
-  organizationId?: number | null;
-};
+// The shape returned by POST /api/v1/auth/login, POST /api/v1/auth
+// /register, and GET /api/v1/auth/me. Re-exported from shared/api-types.ts
+// (server/features/auth/routes.ts) rather than hand-duplicated, so a
+// future server-side field change fails this file's imports at compile
+// time instead of silently drifting.
+export type { AuthUserResponse as AuthUser } from "@shared/api-types";
