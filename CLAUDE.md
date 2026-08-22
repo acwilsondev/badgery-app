@@ -31,6 +31,15 @@ feature modules, client type cleanup); Docker/CD (Phase 4) is not done yet —
 
 ## Getting started / running
 
+This repo pins its Node version via `flake.nix` + `.envrc` (Nix flakes +
+direnv) — matches whatever `.github/workflows/ci.yml`'s `actions/setup-node`
+uses (currently Node 22), so `npm ci`/`npm install` resolve the same way
+locally as in CI. If you have direnv and Nix (with flakes enabled) set up,
+`cd` into the repo and run `direnv allow` once; it activates automatically
+after that. Without direnv, you'll need a Node version matching CI yourself
+(`nix develop`, `nvm`, etc.) — a Node-version mismatch has broken CI's
+`package-lock.json` resolution before (see the gotcha below).
+
 ```
 docker compose up -d      # starts local Postgres (see docker-compose.yml)
 cp .env.example .env      # then set SESSION_SECRET (openssl rand -hex 32)
@@ -207,10 +216,18 @@ actual `features/*/routes.ts` files as ground truth.
   behavior.
 - **Don't run a bare `npm install`** — it can silently re-mutate
   `package-lock.json` to the local npm's resolution style, which then
-  breaks CI (pinned to Node 20 / its bundled npm via
-  `.github/workflows/ci.yml`). If a step accidentally produces a lockfile
-  diff, `git checkout -- package-lock.json` and investigate rather than
-  committing it.
+  breaks CI (pinned to a specific Node version, currently 22, and its
+  bundled npm, via `.github/workflows/ci.yml`). If a step accidentally
+  produces a lockfile diff, `git checkout -- package-lock.json` and
+  investigate rather than committing it. `flake.nix`/`.envrc` (direnv) pin
+  the same Node version locally so this is less likely to bite day-to-day,
+  but if you're on a machine without direnv/Nix, verify your local Node
+  major version matches CI's before touching the lockfile — if it doesn't
+  and Docker isn't available either, `podman run --rm -v "$(pwd)":/app:Z -w
+  /app --network host node:<CI version> sh -c "npm ci && ..."` reproduces
+  CI's exact environment (see PR #35 for the pattern; used once already to
+  work around this repo not having a matching local Node before the
+  flake/direnv setup existed).
 - `db/migrations/` is excluded from ESLint (generated output).
 - `@typescript-eslint/no-explicit-any` is deliberately off repo-wide — the
   codebase has a lot of `any` left over from its prototype days; cleaning
