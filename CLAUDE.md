@@ -11,9 +11,9 @@ is currently under active modernization — see
 `docs/superpowers/specs/2026-07-13-agentic-modernization-design.md` for the
 full roadmap (Phases 0–5: hygiene, security, tests/CI, restructure,
 Docker/CD, agentic layer) and `docs/superpowers/plans/` for the
-already-executed phase plans. Phases 0–3b are done (server restructure into
-feature modules, client type cleanup); Docker/CD (Phase 4) is not done yet —
-`docker-compose.yml` only runs Postgres, there's no app container/Dockerfile.
+already-executed phase plans. Phases 0–3d are done (server restructure into feature modules, client type
+cleanup, OpenAPI rewrite). Phase 4 (Docker + k8s GitOps deploy) is done —
+see "Deployment" below; Phase 5 (agentic layer) is not done yet.
 
 ## Stack
 
@@ -116,6 +116,26 @@ npm scripts) — they never touch `badgery` dev data.
 `main`: `npm ci`, `npm run check`, `npm run lint`, `npm test`, `npm run
 build`, against a `postgres:17` service container. Intended as a required
 status check on `main`.
+
+## Deployment
+
+`Dockerfile` builds a production image (`node:22-alpine`, multi-stage:
+`npm run build` in a builder stage, `npm ci --omit=dev` + the built
+`dist/` in the runtime stage). `.github/workflows/build.yml` builds and
+pushes `ghcr.io/acwilsondev/badgery-app:latest` and
+`ghcr.io/acwilsondev/badgery-app:<commit sha>` on every push to `main`.
+
+The image is deployed to Aaron's personal k3s homelab cluster via Argo CD
+GitOps — the actual deploy config (Helm values, Postgres, Traefik
+ingress, secrets setup) lives in a separate repo,
+`~/Projects/homelab-docker` (`k8s/apps/badgery/` and
+`k8s/apps/badgery-postgres/`), not in this one. Promoting a new image
+build is a manual step there (bump the pinned image tag in
+`k8s/apps/badgery/values.yaml`, push) — see that repo's
+`k8s/apps/badgery/SETUP.md`.
+
+`GET /healthz` checks real DB connectivity (`SELECT 1`) and is what the
+k8s liveness/readiness probes hit — not just a process-alive check.
 
 ## Architecture
 
