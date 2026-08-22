@@ -142,7 +142,7 @@ k8s liveness/readiness probes hit — not just a process-alive check.
 One Express process serves both the API and the built client on a single
 port (`config.port`, default 5000); in dev, Vite middleware handles the
 client, in production `serveStatic` serves the built `dist/public`
-(`server/vite.ts`). API routes live under `/api/v1`.
+(`server/static.ts`). API routes live under `/api/v1`.
 
 ```
 server/
