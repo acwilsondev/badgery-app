@@ -116,6 +116,36 @@ paths:
               schema:
                 $ref: "#/components/schemas/MessageResponse"
 
+  /healthz:
+    get:
+      summary: Health check (database connectivity)
+      description: >
+        Used by container/orchestrator liveness and readiness probes.
+        Not versioned under /api/v1 — checked at the true application root.
+      tags: [health]
+      security: []
+      responses:
+        "200":
+          description: Healthy — database reachable
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+        "503":
+          description: Unhealthy — database unreachable
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: error
+
   /organizations:
     get:
       summary: List organizations
