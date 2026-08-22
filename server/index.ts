@@ -1,6 +1,6 @@
 import { createApp } from "./app";
 import { config } from "./config";
-import { setupVite, serveStatic } from "./vite";
+import { serveStatic } from "./static";
 import { log } from "./logger";
 
 (async () => {
@@ -10,6 +10,7 @@ import { log } from "./logger";
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
   if (app.get("env") === "development") {
+    const { setupVite } = await import("./vite");
     await setupVite(app, httpServer);
   } else {
     serveStatic(app);
