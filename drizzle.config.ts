@@ -12,5 +12,10 @@ export default defineConfig({
   dbCredentials: {
     url: process.env.DATABASE_URL,
   },
+  // connect-pg-simple owns this table at runtime (server/app.ts,
+  // createTableIfMissing: true) — it's deliberately not declared in
+  // shared/schema.ts, and without this exclusion `db:push --force`
+  // treats it as an orphaned table and drops it on every push.
+  tablesFilter: ["!session"],
   verbose: true,
 });
