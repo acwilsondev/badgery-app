@@ -139,14 +139,28 @@ server/
   Reconcile both status values when this is fixed. Regression tests
   documenting the current (broken) behavior: `tests/progress.test.ts`.
 
-### Phase 4 — Docker + CD
+### Phase 4 — Docker + Kubernetes (GitOps) deploy
 
-- Multi-stage Dockerfile (build → slim runtime image).
-- docker-compose for the VPS: app + Postgres + volume; `.env`-driven config.
-- `/healthz` endpoint (checks DB connectivity) used by compose healthcheck and
-  the deploy workflow.
-- GitHub Actions CD: on merge to `main`, build image, deploy to VPS over SSH,
-  verify health.
+Revised from the original VPS/docker-compose/SSH-CD design once Aaron's
+existing k3s homelab cluster (`~/Projects/homelab-docker`, a separate
+GitOps repo) became the actual deploy target — see
+`docs/superpowers/plans/2026-08-22-phase-4-docker-and-k8s-deploy.md` for
+the decision and full detail.
+
+- Multi-stage Dockerfile (`node:22-alpine`, build → slim runtime image).
+- `/healthz` endpoint (checks DB connectivity) — the k8s liveness/readiness
+  probe target.
+- GitHub Actions: on push to `main`, build and push
+  `ghcr.io/acwilsondev/badgery-app` (tagged `latest` and by commit SHA).
+- Deploy config lives in `homelab-docker`, not here: an Argo CD child
+  `Application` per bjw-s-labs/app-template + a dedicated Postgres
+  `Application` (same split `matrix-postgresql`/`matrix-synapse` uses),
+  both in a `badgery` namespace; a Traefik `IngressRoute` at
+  `badges.anarchy.pizza` with the CrowdSec bouncer middleware but no
+  Authelia gate (badgery has its own multi-tenant session auth, same
+  reasoning as Vaultwarden). Image promotion is a manual pinned-tag bump
+  in that repo, not automatic — Aaron's explicit choice, to avoid adding
+  cross-repo CI credentials for a one-app cluster.
 
 ### Phase 5 — Agentic layer
 
