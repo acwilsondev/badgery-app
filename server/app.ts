@@ -24,6 +24,16 @@ export async function createApp() {
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
 
+  app.get("/healthz", async (_req, res) => {
+    try {
+      await pool.query("SELECT 1");
+      res.status(200).json({ status: "ok" });
+    } catch (err) {
+      console.error("Health check failed:", err);
+      res.status(503).json({ status: "error" });
+    }
+  });
+
   // Add session middleware
   const PgSession = connectPgSimple(session);
   app.use(

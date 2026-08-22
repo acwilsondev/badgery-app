@@ -33,3 +33,17 @@ describe("test harness smoke test", () => {
     expect(res.status).toBe(401);
   });
 });
+
+describe("GET /healthz", () => {
+  let app: Express;
+
+  beforeAll(async () => {
+    ({ app } = await createApp());
+  });
+
+  it("returns 200 when the database is reachable", async () => {
+    const res = await request(app).get("/healthz");
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ status: "ok" });
+  });
+});
