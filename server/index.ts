@@ -29,4 +29,16 @@ import { log } from "./logger";
       log(`serving on port ${port}`);
     },
   );
+
+  // Without an explicit handler, Node ignores SIGTERM entirely (there's no
+  // init process wrapping PID 1 in the container), so k8s pod deletes /
+  // rollouts / Argo CD syncs would stall for the full
+  // terminationGracePeriodSeconds and then hard-kill in-flight requests.
+  // Closing the server here lets in-flight requests finish first.
+  for (const sig of ["SIGTERM", "SIGINT"] as const) {
+    process.on(sig, () => {
+      log(`received ${sig}, shutting down`);
+      httpServer.close(() => process.exit(0));
+    });
+  }
 })();

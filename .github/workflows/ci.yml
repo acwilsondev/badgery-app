@@ -47,3 +47,13 @@ jobs:
       - run: npm test
 
       - run: npm run build
+
+      - name: production bundle must not statically import dev-only vite
+        run: |
+          shopt -s nullglob
+          files=(dist/index.js dist/chunk-*.js)
+          if grep -l 'from "vite"' "${files[@]}"; then
+            echo "static vite import leaked into the production entry or a shared chunk"
+            exit 1
+          fi
+          echo "OK: no static vite import in the production bundle"
